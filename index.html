@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0f4c81" />
+  <title>Unified Schedule Studio</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark">PC</div><div><strong>Unified Schedule Studio</strong><small>P6 XER + Microsoft Project XML • local-first project controls</small></div></div>
+    <div class="top-actions">
+      <label class="project-wrap">Project<select id="projectSelect" disabled><option>No schedule loaded</option></select></label>
+      <button id="openBtn" class="primary">Open Schedule</button><button id="saveXerBtn" disabled>Save as XER</button><button id="saveMspBtn" disabled>Save as MSP XML</button><button id="savePackageBtn" disabled>Project Package</button><button id="openPackageBtn">Open Package</button><input id="packageInput" type="file" accept=".ussproj,.json,application/json" hidden /><button id="calcBtn" disabled>Schedule (F9)</button><button id="undoBtn" disabled title="Undo">↶</button><button id="redoBtn" disabled title="Redo">↷</button>
+      <input id="fileInput" type="file" accept=".xer,.xml,text/plain,application/xml" hidden />
+      <button id="compareBtn">Compare Schedule</button>
+      <input id="compareInput" type="file" accept=".xer,.xml,text/plain,application/xml" hidden />
+      <input id="baselineInput" type="file" accept=".xer,.xml,text/plain,application/xml" multiple hidden />
+      <button id="themeBtn" title="Toggle dark mode">◐</button>
+    </div>
+  </header>
+  <div id="dropOverlay" class="drop-overlay">Drop a P6 .XER or Microsoft Project .XML schedule here</div>
+  <div class="workspace">
+    <aside class="sidebar">
+      <nav id="nav">
+        <button data-view="dashboard" class="active">▦ <span>Dashboard</span></button>
+        <button data-view="activities">▤ <span>Activities</span></button>
+        <button data-view="wbs">⌘ <span>WBS</span></button>
+        <button data-view="relationships">⇄ <span>Relationships</span></button>
+        <button data-view="resources">♟ <span>Resources & Costs</span></button>
+        <button data-view="resourceSheet">▦ <span>Resource Sheet</span></button>
+        <button data-view="resourceProfiles">▥ <span>Resource Profiles</span></button>
+        <button data-view="bim">◫ <span>BIM / 4D Links</span></button>
+        <button data-view="bimModel">◉ <span>BIM Model / 4D Viewer</span></button>
+        <button data-view="tutorial">? <span>Tutorial</span></button>
+        <button data-view="calendars">▣ <span>Calendars</span></button>
+        <button data-view="codes"># <span>Codes & UDFs</span></button>
+        <button data-view="analysis">⚠ <span>Schedule Analysis</span></button>
+        <button data-view="layouts">▧ <span>Layouts & Filters</span></button>
+        <button data-view="diagnostics">⌁ <span>Logic Diagnostics</span></button>
+        <button data-view="progressEvm">✓ <span>Progress & EVM</span></button>
+        <button data-view="history">◷ <span>History & Scenarios</span></button>
+        <button data-view="workspace">▣ <span>Project Workspace</span></button>
+        <button data-view="baselines">▱ <span>Baselines</span></button>
+        <button data-view="compare">Δ <span>Schedule Compare</span></button>
+        <button data-view="raw">⌗ <span>Canonical Tables</span></button>
+        <button data-view="editor">✎ <span>Schedule Editor</span></button><button data-view="settings">⚙ <span>Settings</span></button>
+      </nav>
+      <div class="sidebar-foot"><span id="fileStatus">No file loaded</span><span id="offlineStatus">Browser-only processing</span></div>
+    </aside>
+    <main class="main">
+      <section class="toolbar">
+        <div><h1 id="viewTitle">Dashboard</h1><div id="crumb" class="crumb">Open a schedule to begin</div></div>
+        <div class="toolbar-actions"><input id="globalSearch" type="search" placeholder="Search activities…" /><button id="exportBtn" disabled>Export CSV</button></div>
+      </section>
+      <section id="view" class="view"><div class="welcome"><div class="hero-icon">PC</div><h2>Unified Schedule Studio</h2><p>Open a Primavera P6 XER or Microsoft Project XML file. Edit one canonical schedule, calculate CPM, manage baselines/resources/BIM, and save in either format. All processing stays in this browser.</p><button id="welcomeOpen" class="primary large">Open schedule file</button><div class="feature-grid"><span>Activities + Gantt</span><span>Logic & Float</span><span>Resources & Costs</span><span>Resource Sheet</span><span>Histograms & Curves</span><span>Calendar Inspector</span><span>Health Checks</span><span>Schedule Comparison</span><span>Canonical Tables</span><span>XER + MSP XML Export</span><span>Undo / Redo</span><span>CPM Scheduling</span></div></div></section>
+    </main>
+  </div>
+  <dialog id="modal"><form method="dialog"><button class="modal-close">×</button></form><div id="modalBody"></div></dialog>
+  <div id="toast" class="toast"></div>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

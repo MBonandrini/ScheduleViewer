@@ -1,0 +1,1 @@
+export class AuditLog{constructor(){this.items=[]}add(action,details={}){const e={id:`a-${Date.now()}-${Math.random().toString(36).slice(2,5)}`,at:new Date().toISOString(),action,details};this.items.unshift(e);if(this.items.length>500)this.items.length=500;return e}export(){return JSON.stringify({schema:'uss-audit-v1',items:this.items},null,2)}clear(){this.items=[]}}

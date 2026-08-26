@@ -1,0 +1,6 @@
+/** Stable row ordering for deterministic exports, without mutating the working model. */
+const KEY_FIELDS={PROJECT:['proj_id'],PROJWBS:['proj_id','parent_wbs_id','seq_num','wbs_id'],TASK:['proj_id','wbs_id','task_code','task_id'],TASKPRED:['proj_id','task_id','pred_task_id','pred_type','task_pred_id'],RSRC:['rsrc_id'],TASKRSRC:['task_id','rsrc_id','taskrsrc_id'],CALENDAR:['clndr_id'],UDFTYPE:['table_name','udf_type_label','udf_type_id'],UDFVALUE:['udf_type_id','fk_id']};
+export function stableRows(name,rows){const keys=KEY_FIELDS[name]||[];if(!keys.length)return [...rows];return [...rows].sort((a,b)=>{for(const k of keys){const av=String(a[k]??''),bv=String(b[k]??'');const c=av.localeCompare(bv,undefined,{numeric:true,sensitivity:'base'});if(c)return c}return 0})}
+export function stableTableEntries(model){return [...model.tables.entries()].map(([name,t])=>[name,{...t,rows:stableRows(name,t.rows)}]);}
+export function semanticFingerprint(model){const normalized=stableTableEntries(model).map(([name,t])=>[name,[...t.fields],t.rows.map(r=>t.fields.map(f=>String(r[f]??'')))]);return fnv1a(JSON.stringify(normalized))}
+function fnv1a(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return (h>>>0).toString(16).padStart(8,'0')}

@@ -1,0 +1,9 @@
+{
+  "name": "Unified Schedule Studio",
+  "short_name": "Schedule Studio",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#eef3f8",
+  "theme_color": "#0f4c81",
+  "description": "Local-first Primavera P6 XER and Microsoft Project XML schedule editor, CPM, BIM and project-controls utility."
+}

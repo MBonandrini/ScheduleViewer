@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><div id="result">START</div><script type="module">
+import {parseScheduleText,exportMSPXML,exportXER} from './src/format-adapters.js';
+try{
+ const [xr,mr]=await Promise.all([fetch('./sample/sample-project.xer'),fetch('./sample/sample-project.xml')]);
+ const [xt,mt]=await Promise.all([xr.text(),mr.text()]);
+ const xm=parseScheduleText(xt,'sample.xer'), mm=parseScheduleText(mt,'sample.xml');
+ const xo=exportXER(mm), mo=exportMSPXML(xm,xm.table('PROJECT')[0].proj_id);
+ document.querySelector('#result').textContent=`PASS XER:${xm.table('TASK').length} XML:${mm.table('TASK').length} XOUT:${xo.includes('%T\tTASK')} MOUT:${mo.includes('<Tasks>')}`;
+}catch(e){document.querySelector('#result').textContent='FAIL '+e.stack}
+</script>

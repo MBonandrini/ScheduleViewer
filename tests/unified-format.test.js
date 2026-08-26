@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { parseXER } from '../src/parser.js';
+import { detectScheduleFormat, exportMSPXML, exportXER, conversionAudit, formatLabel } from '../src/format-adapters.js';
+const sample=fs.readFileSync(new URL('../sample/sample-project.xer',import.meta.url),'utf8');
+const model=parseXER(sample);model.sourceFormat='xer';
+test('format detector recognizes XER and MSP XML',()=>{assert.equal(detectScheduleFormat(sample,'a.xer'),'xer');assert.equal(detectScheduleFormat('<?xml version="1.0"?><Project></Project>','a.xml'),'mspxml')});
+test('unified XER export preserves standard XER markers',()=>{const x=exportXER(model);assert.match(x,/^ERMHDR\t/);assert.match(x,/%T\tTASK/);assert.match(x,/%E/)});
+test('MSP XML export emits Project, Tasks, Resources and Assignments',()=>{const x=exportMSPXML(model,model.table('PROJECT')[0].proj_id);assert.match(x,/<Project xmlns="http:\/\/schemas\.microsoft\.com\/project">/);assert.match(x,/<Tasks>/);assert.match(x,/<Resources>/);assert.match(x,/<Assignments>/);assert.match(x,/<PredecessorLink>/)});
+test('MSP XML export creates summary tasks from P6 WBS',()=>{const x=exportMSPXML(model,model.table('PROJECT')[0].proj_id);assert.match(x,/<Summary>1<\/Summary>/);assert.match(x,/<Summary>0<\/Summary>/)});
+test('conversion audit flags target-specific fidelity risks',()=>{const a=conversionAudit(model,'mspxml');assert.equal(a.target,'mspxml');assert.ok(Array.isArray(a.warnings))});
+test('format labels are user friendly',()=>{assert.match(formatLabel('xer'),/Primavera/);assert.match(formatLabel('mspxml'),/Microsoft Project/)});
+test('UI exposes both save targets and dual-format picker',()=>{const h=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.match(h,/Save as XER/);assert.match(h,/Save as MSP XML/);assert.match(h,/\.xer,\.xml/)});
+test('format adapter is a separate module from the scheduling engine',()=>{const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');assert.match(app,/format-adapters\.js/);assert.doesNotMatch(fs.readFileSync(new URL('../src/cpm.js',import.meta.url),'utf8'),/DOMParser|Microsoft Project XML/)});

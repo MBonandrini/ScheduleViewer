@@ -1,0 +1,11 @@
+{
+  "modelKey": "DEMO-MEP",
+  "name": "Demo MEP Federated Model",
+  "revision": "R01",
+  "sourceFile": "Demo-MEP.nwd",
+  "objects": [
+    {"guid":"MEP-GUID-0001","name":"Cable Tray 450mm - L03-A","category":"Cable Tray","level":"L03","system":"Electrical Containment","sourceFile":"Electrical.rvt","path":"L03/Electrical/Containment"},
+    {"guid":"MEP-GUID-0002","name":"Cable Tray 450mm - L03-B","category":"Cable Tray","level":"L03","system":"Electrical Containment","sourceFile":"Electrical.rvt","path":"L03/Electrical/Containment"},
+    {"guid":"MEP-GUID-0003","name":"AHU-03","category":"Mechanical Equipment","level":"Roof","system":"Ventilation","sourceFile":"Mechanical.rvt","path":"Roof/Mechanical/AHU"}
+  ]
+}

@@ -1,0 +1,61 @@
+ERMHDR	22.12	2026-08-23	Project	Admin	Primavera P6
+%T	PROJECT
+%F	proj_id	proj_short_name	proj_name	last_recalc_date
+%R	1	DEMO-P6	Demonstration Project	2026-08-15 17:00
+%T	PROJWBS
+%F	wbs_id	proj_id	parent_wbs_id	seq_num	wbs_short_name	wbs_name
+%R	10	1		1	DEMO	Demonstration Project
+%R	11	1	10	2	CIV	Civil Works
+%R	12	1	10	3	MEP	MEP Works
+%T	CALENDAR
+%F	clndr_id	clndr_name	clndr_type	day_hr_cnt	week_hr_cnt	clndr_data
+%R	100	5 Day / 8 Hour	CA_Project	8	40	(1||)(2||(s|08:00|f|12:00)(s|13:00|f|17:00))(3||(s|08:00|f|12:00)(s|13:00|f|17:00))(4||(s|08:00|f|12:00)(s|13:00|f|17:00))(5||(s|08:00|f|12:00)(s|13:00|f|17:00))(6||(s|08:00|f|12:00)(s|13:00|f|17:00))(7||)
+%T	TASK
+%F	task_id	proj_id	wbs_id	clndr_id	task_code	task_name	status_code	task_type	target_drtn_hr_cnt	remain_drtn_hr_cnt	target_start_date	target_end_date	early_start_date	early_end_date	act_start_date	act_end_date	total_float_hr_cnt	free_float_hr_cnt	complete_pct_type	phys_complete_pct	cstr_type	cstr_date
+%R	1000	1	11	100	A1000	Project Start	TK_Complete	TT_StartMile	0	0	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	0	0	CP_Phys	100		
+%R	1010	1	11	100	A1010	Excavation	TK_Complete	TT_Task	80	0	2026-08-03 08:00	2026-08-14 17:00	2026-08-03 08:00	2026-08-14 17:00	2026-08-03 08:00	2026-08-14 17:00	0	0	CP_Phys	100		
+%R	1020	1	11	100	A1020	Foundations	TK_Active	TT_Task	120	64	2026-08-17 08:00	2026-09-04 17:00	2026-08-17 08:00	2026-09-04 17:00	2026-08-17 08:00		0	0	CP_Phys	45		
+%R	1030	1	12	100	A1030	Electrical Rough-In	TK_NotStart	TT_Task	160	160	2026-09-07 08:00	2026-10-02 17:00	2026-09-07 08:00	2026-10-02 17:00			16	8	CP_Phys	0		
+%R	1040	1	12	100	A1040	Mechanical Install	TK_NotStart	TT_Task	400	400	2026-09-07 08:00	2026-11-13 17:00	2026-09-07 08:00	2026-11-13 17:00			400	120	CP_Phys	0	CS_MSO	2026-09-07 08:00
+%R	1050	1	12	100	A1050	Commissioning	TK_NotStart	TT_Task	80	80	2026-10-05 08:00	2026-10-16 17:00	2026-10-05 08:00	2026-10-16 17:00			-16	0	CP_Phys	0		
+%R	1060	1	12	100	A1060	Project Finish	TK_NotStart	TT_FinMile	0	0	2026-10-16 17:00	2026-10-16 17:00	2026-10-16 17:00	2026-10-16 17:00			-16	0	CP_Phys	0		
+%T	TASKPRED
+%F	task_pred_id	proj_id	task_id	pred_task_id	pred_type	lag_hr_cnt
+%R	1	1	1010	1000	PR_FS	0
+%R	2	1	1020	1010	PR_FS	0
+%R	3	1	1030	1020	PR_FS	8
+%R	4	1	1040	1020	PR_FS	-8
+%R	5	1	1050	1030	PR_FS	0
+%R	6	1	1060	1050	PR_FS	0
+%T	RSRC
+%F	rsrc_id	rsrc_name	rsrc_type
+%R	200	Civil Crew	RT_Labor
+%R	201	Electrical Crew	RT_Labor
+%R	202	Mechanical Crew	RT_Labor
+%T	TASKRSRC
+%F	taskrsrc_id	task_id	rsrc_id	role_id	target_qty	act_reg_qty	remain_qty	target_cost	act_reg_cost
+%R	1	1010	200		800	800	0	24000	24000
+%R	2	1020	200		1200	560	640	36000	16800
+%R	3	1030	201		1600	0	1600	56000	0
+%R	4	1040	202		2400	0	2400	84000	0
+%T	ACTVTYPE
+%F	actv_code_type_id	actv_code_type
+%R	300	Area
+%T	ACTVCODE
+%F	actv_code_id	actv_code_type_id	short_name	actv_code_name
+%R	310	300	CIVIL	Civil Area
+%R	311	300	MEP	MEP Area
+%T	TASKACTV
+%F	task_id	actv_code_id
+%R	1010	310
+%R	1020	310
+%R	1030	311
+%R	1040	311
+%R	1050	311
+%T	UDFTYPE
+%F	udf_type_id	udf_type_label
+%R	400	Planner Note
+%T	UDFVALUE
+%F	udf_type_id	fk_id	udf_text
+%R	400	1040	Awaiting vendor access confirmation
+%E

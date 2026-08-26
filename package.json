@@ -1,0 +1,12 @@
+{
+  "name": "unified-schedule-studio",
+  "version": "4.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "serve": "python3 -m http.server 8080",
+    "check": "node scripts/check-modules.mjs",
+    "verify": "npm run check && npm test"
+  }
+}
