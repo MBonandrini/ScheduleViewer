@@ -1,0 +1,41 @@
+Ribbon
+
+SCHEDULE STUDIO
+
+Schedule
+├── Import Schedule
+├── Save Schedule
+└── Load Baseline
+
+Calculate
+├── F9 Calculate
+└── Diagnostics
+
+Views
+├── Gantt
+├── Histogram / S-Curve
+├── Network
+├── Extended Data
+├── Home
+└── Settings
+
+Intelligence
+├── Store Revision
+├── Compare Revisions
+├── Analyse Schedule
+├── Why Date Moved
+├── Time Machine
+└── Forecast Intelligence
+
+Reports
+├── Lookahead
+├── Narrative
+├── Report Pack
+└── Search
+
+Repository
+├── Backup
+└── Restore
+
+Quality
+└── Run Self Tests
