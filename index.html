@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0f4c81" />
-  <title>Unified Schedule Studio</title>
+  <title>Unified Schedule Studio v5</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -42,6 +42,11 @@
         <button data-view="diagnostics">⌁ <span>Logic Diagnostics</span></button>
         <button data-view="progressEvm">✓ <span>Progress & EVM</span></button>
         <button data-view="history">◷ <span>History & Scenarios</span></button>
+        <button data-view="intelligence">⌁ <span>Forensic Intelligence</span></button>
+        <button data-view="health">◆ <span>Health & Risk Radar</span></button>
+        <button data-view="trends">↗ <span>Trends & Forecast</span></button>
+        <button data-view="reporting">▥ <span>Dashboards & Reports</span></button>
+        <button data-view="searchAll">⌕ <span>Global Search</span></button>
         <button data-view="workspace">▣ <span>Project Workspace</span></button>
         <button data-view="baselines">▱ <span>Baselines</span></button>
         <button data-view="compare">Δ <span>Schedule Compare</span></button>
@@ -55,7 +60,7 @@
         <div><h1 id="viewTitle">Dashboard</h1><div id="crumb" class="crumb">Open a schedule to begin</div></div>
         <div class="toolbar-actions"><input id="globalSearch" type="search" placeholder="Search activities…" /><button id="exportBtn" disabled>Export CSV</button></div>
       </section>
-      <section id="view" class="view"><div class="welcome"><div class="hero-icon">PC</div><h2>Unified Schedule Studio</h2><p>Open a Primavera P6 XER or Microsoft Project XML file. Edit one canonical schedule, calculate CPM, manage baselines/resources/BIM, and save in either format. All processing stays in this browser.</p><button id="welcomeOpen" class="primary large">Open schedule file</button><div class="feature-grid"><span>Activities + Gantt</span><span>Logic & Float</span><span>Resources & Costs</span><span>Resource Sheet</span><span>Histograms & Curves</span><span>Calendar Inspector</span><span>Health Checks</span><span>Schedule Comparison</span><span>Canonical Tables</span><span>XER + MSP XML Export</span><span>Undo / Redo</span><span>CPM Scheduling</span></div></div></section>
+      <section id="view" class="view"><div class="welcome"><div class="hero-icon">PC</div><h2>Unified Schedule Studio</h2><p>Open a Primavera P6 XER or Microsoft Project XML file. Edit and calculate the schedule, retain revision history, investigate what changed and why, analyse critical paths/health/resources, manage baselines and BIM, and save in either format. All processing stays in this browser.</p><button id="welcomeOpen" class="primary large">Open schedule file</button><div class="feature-grid"><span>Activities + Gantt</span><span>Logic & Float</span><span>Resources & Costs</span><span>Resource Sheet</span><span>Histograms & Curves</span><span>Calendar Inspector</span><span>Health Checks</span><span>Schedule Comparison</span><span>Canonical Tables</span><span>XER + MSP XML Export</span><span>Undo / Redo</span><span>CPM Scheduling</span></div></div></section>
     </main>
   </div>
   <dialog id="modal"><form method="dialog"><button class="modal-close">×</button></form><div id="modalBody"></div></dialog>

@@ -72,3 +72,13 @@ The main remaining reliability task is organizational golden-file parity, not an
 - 10k–100k activity schedules
 
 For each reference, compare the application's calculated Early/Late Start/Finish, Total/Free Float, project finish and leveling results against the approved vendor result.
+
+
+## Final verification (2026-09-08)
+
+- Edition: **Recommended Hardened Edition**
+- Automated Node tests: **139/139 passing**
+- JavaScript syntax/import gate: **67 JS files parsed; all relative imports resolved**
+- HTML asset/ID validation: no duplicate IDs; no missing local index/service-worker assets
+- Production CPM stress: 50,000 activities / 49,999 relationships: cycles 0, results 50,000, cycle 221.8 ms, CPM 2729.2 ms
+- Additional production CPM stress: 100,000 activities / 99,999 relationships: cycles 0, results 100,000, cycle 430.3 ms, CPM 5866.9 ms

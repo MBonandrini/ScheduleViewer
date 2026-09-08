@@ -1,2 +1,3 @@
+import { verifyChecksum } from './package-integrity.js';
 export function serializeProjectPackage(pkg){return JSON.stringify(pkg,null,2)}
-export function parseProjectPackage(text){const p=JSON.parse(text);if(p.schema!=='unified-schedule-project')throw new Error('Not a Unified Schedule Studio project package');return p}
+export function parseProjectPackage(text){const p=JSON.parse(text);if(p.schema!=='unified-schedule-project')throw new Error('Not a Unified Schedule Studio project package');if(!Number.isInteger(p.version)||p.version<1||p.version>2)throw new Error(`Unsupported project package version: ${p.version}`);const check=verifyChecksum(p);if(!check.ok)throw new Error('Project package checksum failed. The file may be corrupted or incomplete.');if(!Array.isArray(p.tables))throw new Error('Project package does not contain a valid tables collection.');return p}
