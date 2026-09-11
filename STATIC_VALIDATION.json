@@ -1,0 +1,30 @@
+{
+  "duplicate_ids": [],
+  "missing_html_assets": [],
+  "css_brace_balance": 0,
+  "service_worker_missing_assets": [],
+  "menu_summaries": [
+    "File",
+    "Edit",
+    "View",
+    "Project",
+    "Enterprise",
+    "Tools",
+    "Reports",
+    "Help"
+  ],
+  "module_tabs": [
+    "Projects",
+    "Activities",
+    "WBS",
+    "Resources",
+    "Analysis",
+    "Reports",
+    "Issues",
+    "Risks",
+    "Documents",
+    "Dashboard"
+  ],
+  "js_files": 53,
+  "test_files": 16
+}

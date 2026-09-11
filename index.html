@@ -3,66 +3,85 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#0f4c81" />
-  <title>Unified Schedule Studio v5</title>
+  <meta name="theme-color" content="#dfe9f4" />
+  <title>Schedule Studio Professional v6.0</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body>
-  <header class="topbar">
-    <div class="brand"><div class="brand-mark">PC</div><div><strong>Unified Schedule Studio</strong><small>P6 XER + Microsoft Project XML • local-first project controls</small></div></div>
-    <div class="top-actions">
-      <label class="project-wrap">Project<select id="projectSelect" disabled><option>No schedule loaded</option></select></label>
-      <button id="openBtn" class="primary">Open Schedule</button><button id="saveXerBtn" disabled>Save as XER</button><button id="saveMspBtn" disabled>Save as MSP XML</button><button id="savePackageBtn" disabled>Project Package</button><button id="openPackageBtn">Open Package</button><input id="packageInput" type="file" accept=".ussproj,.json,application/json" hidden /><button id="calcBtn" disabled>Schedule (F9)</button><button id="undoBtn" disabled title="Undo">↶</button><button id="redoBtn" disabled title="Redo">↷</button>
-      <input id="fileInput" type="file" accept=".xer,.xml,text/plain,application/xml" hidden />
-      <button id="compareBtn">Compare Schedule</button>
-      <input id="compareInput" type="file" accept=".xer,.xml,text/plain,application/xml" hidden />
-      <input id="baselineInput" type="file" accept=".xer,.xml,text/plain,application/xml" multiple hidden />
-      <button id="themeBtn" title="Toggle dark mode">◐</button>
-    </div>
+<body class="p6-desktop">
+  <header class="p6-titlebar">
+    <div class="p6-product"><span class="p6-mark">SS</span><strong>Schedule Studio Professional</strong><span id="titleProject">Single-User Project Controls Workbench</span></div>
+    <div class="p6-user"><span>Local Planner</span><span class="dot">•</span><span>Single User</span><span class="dot">•</span><span>Browser Local</span></div>
   </header>
-  <div id="dropOverlay" class="drop-overlay">Drop a P6 .XER or Microsoft Project .XML schedule here</div>
-  <div class="workspace">
-    <aside class="sidebar">
-      <nav id="nav">
-        <button data-view="dashboard" class="active">▦ <span>Dashboard</span></button>
-        <button data-view="activities">▤ <span>Activities</span></button>
-        <button data-view="wbs">⌘ <span>WBS</span></button>
-        <button data-view="relationships">⇄ <span>Relationships</span></button>
-        <button data-view="resources">♟ <span>Resources & Costs</span></button>
-        <button data-view="resourceSheet">▦ <span>Resource Sheet</span></button>
-        <button data-view="resourceProfiles">▥ <span>Resource Profiles</span></button>
-        <button data-view="bim">◫ <span>BIM / 4D Links</span></button>
-        <button data-view="bimModel">◉ <span>BIM Model / 4D Viewer</span></button>
-        <button data-view="tutorial">? <span>Tutorial</span></button>
-        <button data-view="calendars">▣ <span>Calendars</span></button>
-        <button data-view="codes"># <span>Codes & UDFs</span></button>
-        <button data-view="analysis">⚠ <span>Schedule Analysis</span></button>
-        <button data-view="layouts">▧ <span>Layouts & Filters</span></button>
-        <button data-view="diagnostics">⌁ <span>Logic Diagnostics</span></button>
-        <button data-view="progressEvm">✓ <span>Progress & EVM</span></button>
-        <button data-view="history">◷ <span>History & Scenarios</span></button>
-        <button data-view="intelligence">⌁ <span>Forensic Intelligence</span></button>
-        <button data-view="health">◆ <span>Health & Risk Radar</span></button>
-        <button data-view="trends">↗ <span>Trends & Forecast</span></button>
-        <button data-view="reporting">▥ <span>Dashboards & Reports</span></button>
-        <button data-view="searchAll">⌕ <span>Global Search</span></button>
-        <button data-view="workspace">▣ <span>Project Workspace</span></button>
-        <button data-view="baselines">▱ <span>Baselines</span></button>
-        <button data-view="compare">Δ <span>Schedule Compare</span></button>
-        <button data-view="raw">⌗ <span>Canonical Tables</span></button>
-        <button data-view="editor">✎ <span>Schedule Editor</span></button><button data-view="settings">⚙ <span>Settings</span></button>
-      </nav>
-      <div class="sidebar-foot"><span id="fileStatus">No file loaded</span><span id="offlineStatus">Browser-only processing</span></div>
-    </aside>
-    <main class="main">
-      <section class="toolbar">
-        <div><h1 id="viewTitle">Dashboard</h1><div id="crumb" class="crumb">Open a schedule to begin</div></div>
-        <div class="toolbar-actions"><input id="globalSearch" type="search" placeholder="Search activities…" /><button id="exportBtn" disabled>Export CSV</button></div>
-      </section>
-      <section id="view" class="view"><div class="welcome"><div class="hero-icon">PC</div><h2>Unified Schedule Studio</h2><p>Open a Primavera P6 XER or Microsoft Project XML file. Edit and calculate the schedule, retain revision history, investigate what changed and why, analyse critical paths/health/resources, manage baselines and BIM, and save in either format. All processing stays in this browser.</p><button id="welcomeOpen" class="primary large">Open schedule file</button><div class="feature-grid"><span>Activities + Gantt</span><span>Logic & Float</span><span>Resources & Costs</span><span>Resource Sheet</span><span>Histograms & Curves</span><span>Calendar Inspector</span><span>Health Checks</span><span>Schedule Comparison</span><span>Canonical Tables</span><span>XER + MSP XML Export</span><span>Undo / Redo</span><span>CPM Scheduling</span></div></div></section>
-    </main>
+
+  <nav class="p6-menubar" id="menuBar" aria-label="Application menu">
+    <details><summary>File</summary><div class="p6-menu">
+      <button data-command="open">Open Schedule…</button><button data-command="saveXer">Save as XER</button><button data-command="saveMsp">Save as MSP XML</button><hr><button data-command="openPackage">Open Project Package…</button><button data-command="savePackage">Save Project Package</button><hr><button data-command="export">Export Current View CSV</button><button data-command="print">Print Current View</button>
+    </div></details>
+    <details><summary>Edit</summary><div class="p6-menu">
+      <button data-command="undo">Undo</button><button data-command="redo">Redo</button><hr><button data-command="addActivity">Add Activity</button><button data-command="deleteActivity">Delete Activity</button><hr><button data-view="editor">Schedule Editor</button>
+    </div></details>
+    <details><summary>View</summary><div class="p6-menu p6-menu-wide">
+      <button data-view="dashboard">Project Dashboard</button><button data-view="eps">EPS / Projects</button><button data-view="activities">Activities</button><button data-view="wbs">WBS</button><button data-view="relationships">Relationships</button><button data-view="resources">Resources</button><button data-view="resourceSheet">Resource Assignments</button><button data-view="resourceProfiles">Resource Profiles</button><button data-view="calendars">Calendars</button><button data-view="codes">Activity Codes & UDFs</button><button data-view="baselines">Baselines</button><button data-view="bimModel">BIM / 4D</button><button data-view="raw">Canonical / Raw Tables</button>
+    </div></details>
+    <details><summary>Project</summary><div class="p6-menu">
+      <button data-command="schedule">Schedule (F9)</button><button data-view="progressEvm">Update Progress / EVM</button><button data-command="levelResources">Level Resources</button><button data-view="baselines">Maintain Baselines</button><button data-view="layouts">Layouts, Group & Sort, Filters</button><button data-view="workspace">Project Workspace</button><button data-view="settings">Project Preferences</button>
+    </div></details>
+    <details><summary>Enterprise</summary><div class="p6-menu">
+      <button data-view="eps">Enterprise Project Structure</button><button data-view="wbs">Work Breakdown Structure</button><button data-table="OBS">OBS</button><button data-view="resources">Resources</button><button data-table="ROLES">Roles</button><button data-view="calendars">Calendars</button><button data-view="codes">Activity Codes / UDFs</button><button data-table="ACCOUNT">Cost Accounts</button><button data-table="RSRCCURV">Resource Curves</button>
+    </div></details>
+    <details><summary>Tools</summary><div class="p6-menu p6-menu-wide">
+      <button data-view="analysis">Schedule Analysis</button><button data-command="levelResources">Level Resources</button><button data-view="progressEvm">Apply / Update Actuals</button><button data-view="editor">Global Change / Schedule Editor</button><button data-view="diagnostics">Trace Logic / Float Paths</button><button data-view="intelligence">Forensic Intelligence</button><button data-view="health">Schedule Health & Risk Radar</button><button data-view="trends">Trends & Forecast</button><button data-view="compare">Compare Revisions</button><button data-view="history">History & Scenarios</button><button data-view="searchAll">Global Search</button><button data-view="bim">BIM Links</button>
+    </div></details>
+    <details><summary>Reports</summary><div class="p6-menu">
+      <button data-view="reporting">Dashboards & Reports</button><button data-view="resourceProfiles">Histogram / S-Curve</button><button data-view="progressEvm">EVM & Productivity</button><button data-view="analysis">Schedule Health Report</button><button data-view="compare">Comparison Report</button><button data-command="export">Export Current View</button>
+    </div></details>
+    <details><summary>Help</summary><div class="p6-menu"><button data-view="tutorial">Tutorial</button><button data-command="about">About Schedule Studio</button></div></details>
+  </nav>
+
+  <div class="p6-commandbar" id="p6Toolbar" aria-label="Command toolbar">
+    <div class="p6-tool-group"><button id="openBtn" class="tool primary" title="Open Schedule"><span>📂</span><small>Open</small></button><button id="saveXerBtn" class="tool" disabled title="Save XER"><span>💾</span><small>XER</small></button><button id="saveMspBtn" class="tool" disabled title="Save MSP XML"><span>🗎</span><small>MSP XML</small></button></div>
+    <div class="p6-tool-sep"></div>
+    <div class="p6-tool-group"><button id="calcBtn" class="tool important" disabled title="Schedule (F9)"><span>▶</span><small>F9</small></button><button id="undoBtn" class="tool icon-only" disabled title="Undo">↶</button><button id="redoBtn" class="tool icon-only" disabled title="Redo">↷</button></div>
+    <div class="p6-tool-sep"></div>
+    <div class="p6-tool-group"><button id="addActivityBtn" class="tool" disabled title="Add Activity"><span>＋</span><small>Activity</small></button><button id="deleteActivityBtn" class="tool" disabled title="Delete Activity"><span>✕</span><small>Delete</small></button><button id="layoutBtn" class="tool" title="Layouts, Group & Sort"><span>▤</span><small>Layout</small></button><button id="filterBtn" class="tool" title="Filters"><span>▽</span><small>Filter</small></button></div>
+    <div class="p6-tool-sep"></div>
+    <div class="p6-tool-group"><button id="baselineToolBtn" class="tool" title="Baselines"><span>═</span><small>Baseline</small></button><button id="compareBtn" class="tool" title="Compare Revisions"><span>Δ</span><small>Compare</small></button><button id="traceToolBtn" class="tool" title="Trace Logic"><span>⇢</span><small>Trace</small></button><button id="resourceToolBtn" class="tool" title="Resource Profiles"><span>▥</span><small>Resources</small></button></div>
+    <div class="p6-tool-sep"></div>
+    <div class="p6-tool-group p6-project-selector"><label>Project <select id="projectSelect" disabled><option>No schedule loaded</option></select></label></div>
+    <div class="p6-tool-group p6-zoom"><label>Gantt <select id="ganttZoom"><option value="1">Fit</option><option value="1.5">150%</option><option value="2">200%</option><option value="4">400%</option></select></label></div>
+    <div class="p6-toolbar-spacer"></div>
+    <button id="themeBtn" class="tool icon-only" title="Toggle theme">◐</button>
+    <button id="savePackageBtn" hidden disabled></button><button id="openPackageBtn" hidden></button>
+    <input id="fileInput" type="file" accept=".xer,.xml,text/plain,application/xml" hidden />
+    <input id="compareInput" type="file" accept=".xer,.xml,text/plain,application/xml" hidden />
+    <input id="baselineInput" type="file" accept=".xer,.xml,text/plain,application/xml" multiple hidden />
+    <input id="packageInput" type="file" accept=".ussproj,.json,application/json" hidden />
   </div>
+
+  <nav id="nav" class="p6-module-tabs" aria-label="Primary modules">
+    <button data-view="eps"><span>Projects</span></button>
+    <button data-view="activities" class="active"><span>Activities</span></button>
+    <button data-view="wbs"><span>WBS</span></button>
+    <button data-view="resources"><span>Resources</span></button>
+    <button data-view="analysis"><span>Analysis</span></button>
+    <button data-view="reporting"><span>Reports</span></button>
+    <button data-table="ISSUE" data-label="Issues"><span>Issues</span></button>
+    <button data-table="RISK" data-label="Risks"><span>Risks</span></button>
+    <button data-table="WP" data-label="Documents / Work Products"><span>Documents</span></button>
+    <button data-view="dashboard"><span>Dashboard</span></button>
+  </nav>
+
+  <div id="dropOverlay" class="drop-overlay">Drop a P6 .XER or Microsoft Project .XML schedule here</div>
+  <main class="p6-main">
+    <section class="p6-viewbar">
+      <div><h1 id="viewTitle">Activities</h1><div id="crumb" class="crumb">Open a schedule to begin</div></div>
+      <div class="p6-view-actions"><input id="globalSearch" type="search" placeholder="Find activity…" /><button id="exportBtn" disabled>Export</button></div>
+    </section>
+    <section id="view" class="view"><div class="welcome"><div class="hero-icon">SS</div><h2>Schedule Studio Professional</h2><p>A single-user Primavera-style schedule intelligence, editing, forensic analysis and reporting workbench. Open a P6 XER or Microsoft Project XML schedule to begin.</p><button id="welcomeOpen" class="primary large">Open schedule file</button><div class="feature-grid"><span>Activities + Gantt</span><span>WBS & Logic</span><span>Resources</span><span>Baselines</span><span>Critical Paths</span><span>Schedule Health</span><span>Forensic Compare</span><span>Progress & EVM</span></div></div></section>
+  </main>
+
+  <footer class="p6-statusbar"><span id="fileStatus">No file loaded</span><span id="statusDataDate">Data Date: —</span><span id="statusBaseline">Baseline: —</span><span id="offlineStatus">Local browser database</span><span>User: Local Planner</span></footer>
   <dialog id="modal"><form method="dialog"><button class="modal-close">×</button></form><div id="modalBody"></div></dialog>
   <div id="toast" class="toast"></div>
   <script type="module" src="./src/app.js"></script>

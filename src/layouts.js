@@ -1,5 +1,5 @@
-const DEFAULT_COLUMNS=['task_code','task_name','status_code','target_start_date','target_end_date','remain_drtn_hr_cnt','total_float_hr_cnt'];
-export function defaultLayout(){return {id:'default',name:'Standard',columns:[...DEFAULT_COLUMNS],groupBy:'wbs_id',sort:[{field:'task_code',dir:1}],filters:[],rowHeight:'compact',timescale:'week',barStyle:'standard'}}
+const DEFAULT_COLUMNS=['task_code','task_name','target_drtn_hr_cnt','remain_drtn_hr_cnt','early_start_date','early_end_date','phys_complete_pct','total_float_hr_cnt'];
+export function defaultLayout(){return {id:'default',name:'Classic Schedule Layout',columns:[...DEFAULT_COLUMNS],groupBy:'wbs_id',sort:[{field:'task_code',dir:1}],filters:[],rowHeight:'compact',timescale:'week',barStyle:'standard'}}
 export function loadLayouts(key='uss-layouts'){try{const x=JSON.parse(localStorage.getItem(key)||'[]');return x.length?x:[defaultLayout()]}catch{return [defaultLayout()]}}
 export function saveLayouts(layouts,key='uss-layouts'){localStorage.setItem(key,JSON.stringify(layouts))}
 export function upsertLayout(layouts,layout){const i=layouts.findIndex(x=>x.id===layout.id);if(i>=0)layouts[i]=structuredClone(layout);else layouts.push(structuredClone(layout));return layouts}

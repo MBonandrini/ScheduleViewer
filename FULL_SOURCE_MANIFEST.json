@@ -1,0 +1,10 @@
+{
+  "version": "5.2.0",
+  "files": 91,
+  "js_files": 69,
+  "tests_passed": 144,
+  "duplicate_ids": [],
+  "missing_html_assets": [],
+  "missing_sw_assets": [],
+  "css_brace_balance": 0
+}
