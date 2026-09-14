@@ -27,6 +27,17 @@ export function addTask(model,projId,defaults={}){
   const t=ensureTable(model,'TASK',fields); const task_id=nextNumericId(t.rows,'task_id',1); const row=Object.fromEntries(t.fields.map(f=>[f,'']));
   Object.assign(row,{task_id,proj_id:String(projId),status_code:'TK_NotStart',task_type:'TT_Task',target_drtn_hr_cnt:'8',remain_drtn_hr_cnt:'8',complete_pct_type:'CP_Phys',phys_complete_pct:'0'},defaults); t.rows.push(row); touch(model); return row;
 }
+
+export function cloneTask(model,taskId,{taskCode=null,taskName=null,wbsId=null,includeAssignments=true,includeCodes=true,includeUdfs=true,includeMemos=true}={}){
+  const src=model.find('TASK','task_id',String(taskId));if(!src)throw new Error('Activity not found');
+  const defaults={...src};delete defaults.task_id;const copy=addTask(model,src.proj_id,{...defaults,task_code:taskCode||`${src.task_code||'ACT'}-COPY`,task_name:taskName||src.task_name,wbs_id:wbsId||src.wbs_id,act_start_date:'',act_end_date:'',restart_date:'',reend_date:''});
+  if(includeAssignments){const t=model.tables.get('TASKRSRC');if(t){const max=()=>String(Math.max(0,...t.rows.map(r=>Number(r.taskrsrc_id)||0))+1);for(const r of [...t.rows].filter(r=>String(r.task_id)===String(taskId))){t.rows.push({...r,taskrsrc_id:max(),task_id:copy.task_id})}}}
+  if(includeCodes){const t=model.tables.get('TASKACTV');if(t)for(const r of [...t.rows].filter(r=>String(r.task_id)===String(taskId)))t.rows.push({...r,task_id:copy.task_id});}
+  if(includeMemos){const t=model.tables.get('TASKMEMO');if(t)for(const r of [...t.rows].filter(r=>String(r.task_id)===String(taskId)))t.rows.push({...r,task_id:copy.task_id});}
+  if(includeUdfs){const taskUdfIds=new Set((model.table('UDFTYPE')||[]).filter(u=>String(u.table_name||'').toUpperCase()==='TASK').map(u=>String(u.udf_type_id)));const t=model.tables.get('UDFVALUE');if(t)for(const r of [...t.rows].filter(r=>String(r.fk_id)===String(taskId)&&taskUdfIds.has(String(r.udf_type_id))))t.rows.push({...r,fk_id:copy.task_id});}
+  touch(model);return copy;
+}
+
 export function deleteTask(model,taskId){
   const id=String(taskId); const t=model.tables.get('TASK'); if(!t)return;
   t.rows=t.rows.filter(r=>r.task_id!==id);
@@ -124,7 +135,7 @@ export function addRelationship(model,projId,predTaskId,taskId,type='PR_FS',lagH
   const t=ensureTable(model,'TASKPRED',['task_pred_id','proj_id','task_id','pred_task_id','pred_type','lag_hr_cnt']);
   const pred=model.find('TASK','task_id',String(predTaskId)),succ=model.find('TASK','task_id',String(taskId));
   if(!pred||!succ)throw new Error('Both predecessor and successor activities must exist.');
-  if(pred.proj_id!==String(projId)||succ.proj_id!==String(projId))throw new Error('Relationship activities must belong to the selected project.');
+  if(succ.proj_id!==String(projId))throw new Error('Successor activity must belong to the selected project.'); // predecessor may be in another loaded project (external relationship)
   if(String(predTaskId)===String(taskId))throw new Error('An activity cannot be related to itself.');
   if(!['PR_FS','PR_SS','PR_FF','PR_SF'].includes(String(type)))throw new Error('Unsupported relationship type.');
   if(!Number.isFinite(Number(lagHours)))throw new Error('Relationship lag must be a number of hours.');
@@ -135,7 +146,7 @@ export function updateRelationship(model,id,patch){const r=model.find('TASKPRED'
 export function deleteRelationship(model,id){const t=model.tables.get('TASKPRED'); if(t)t.rows=t.rows.filter(r=>r.task_pred_id!==String(id)); touch(model);}
 
 export function addResourceAssignment(model,taskId,rsrcId,values={}){
-  const t=ensureTable(model,'TASKRSRC',['taskrsrc_id','task_id','rsrc_id','role_id','target_qty','act_reg_qty','remain_qty','target_cost','act_reg_cost','remain_cost']);
+  const t=ensureTable(model,'TASKRSRC',['taskrsrc_id','task_id','rsrc_id','role_id','curv_id','target_qty','act_reg_qty','remain_qty','target_qty_per_hr','target_cost','act_reg_cost','remain_cost']);
   const row={taskrsrc_id:nextNumericId(t.rows,'taskrsrc_id',1),task_id:String(taskId),rsrc_id:String(rsrcId),role_id:'',target_qty:'0',act_reg_qty:'0',remain_qty:'0',target_cost:'0',act_reg_cost:'0',remain_cost:'0',...values}; t.rows.push(row); touch(model); return row;
 }
 export function updateResourceAssignment(model,id,patch){const r=model.find('TASKRSRC','taskrsrc_id',String(id)); if(!r)throw new Error('Resource assignment not found'); Object.assign(r,patch); touch(model); return r;}

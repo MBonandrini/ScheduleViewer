@@ -1,0 +1,104 @@
+[
+  {
+    "file": "P3379-8.xer",
+    "projectId": "397",
+    "tables": 21,
+    "rows": 56373,
+    "activities": 3815,
+    "wbs": 782,
+    "relationships": 6609,
+    "resources": 7,
+    "resourceRoots": 2,
+    "resourceAssignments": 912,
+    "profileBuckets": {
+      "day": 832,
+      "week": 126,
+      "month": 32,
+      "quarter": 13
+    },
+    "calendars": 18,
+    "decodedCalendars": 18,
+    "calendarExceptions": 1916,
+    "activityCodeTypes": 31,
+    "activityCodes": 1020,
+    "activityCodeAssignments": 40331,
+    "udfTypes": 3,
+    "udfValues": 2805,
+    "friendlyRelationshipLabels": 6609,
+    "cycles": 0,
+    "cpm": {
+      "status": "ok",
+      "finish": "2027-12-14T17:00:00.000Z",
+      "warnings": 0
+    },
+    "roundTripCountDiffTables": []
+  },
+  {
+    "file": "NEWPROJ-1.xer",
+    "projectId": "984",
+    "tables": 16,
+    "rows": 1088,
+    "activities": 412,
+    "wbs": 68,
+    "relationships": 278,
+    "resources": 2,
+    "resourceRoots": 1,
+    "resourceAssignments": 291,
+    "profileBuckets": {
+      "day": 460,
+      "week": 67,
+      "month": 17,
+      "quarter": 6
+    },
+    "calendars": 2,
+    "decodedCalendars": 2,
+    "calendarExceptions": 145,
+    "activityCodeTypes": 0,
+    "activityCodes": 0,
+    "activityCodeAssignments": 0,
+    "udfTypes": 0,
+    "udfValues": 0,
+    "friendlyRelationshipLabels": 278,
+    "cycles": 0,
+    "cpm": {
+      "status": "ok",
+      "finish": "2026-04-17T17:00:00.000Z",
+      "warnings": 0
+    },
+    "roundTripCountDiffTables": []
+  },
+  {
+    "file": "P3347-5.xer",
+    "projectId": "507",
+    "tables": 17,
+    "rows": 3510,
+    "activities": 860,
+    "wbs": 453,
+    "relationships": 1223,
+    "resources": 8,
+    "resourceRoots": 1,
+    "resourceAssignments": 131,
+    "profileBuckets": {
+      "day": 0,
+      "week": 0,
+      "month": 0,
+      "quarter": 0
+    },
+    "calendars": 3,
+    "decodedCalendars": 3,
+    "calendarExceptions": 225,
+    "activityCodeTypes": 6,
+    "activityCodes": 11,
+    "activityCodeAssignments": 562,
+    "udfTypes": 4,
+    "udfValues": 221,
+    "friendlyRelationshipLabels": 1223,
+    "cycles": 0,
+    "cpm": {
+      "status": "ok",
+      "finish": "2026-12-23T08:00:00.000Z",
+      "warnings": 0
+    },
+    "roundTripCountDiffTables": []
+  }
+]

@@ -32,7 +32,7 @@ test('desktop shell is viewport-bound and activity panes manage their own scroll
 
 test('service worker precaches the v6 UI label module',()=>{
   const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  assert.match(sw,/unified-schedule-studio-v6\.0/);
+  assert.match(sw,/unified-schedule-studio-v6\.2/);
   assert.match(sw,/\.\/src\/ui-labels\.js/);
 });
 

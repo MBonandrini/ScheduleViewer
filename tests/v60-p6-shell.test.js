@@ -31,7 +31,7 @@ test('activity workspace uses layout strip split table/gantt and bottom inspecto
 });
 
 test('default activity layout mirrors common P6 activity columns',()=>{
-  assert.deepEqual(defaultLayout().columns,['task_code','task_name','target_drtn_hr_cnt','remain_drtn_hr_cnt','early_start_date','early_end_date','phys_complete_pct','total_float_hr_cnt']);
+  assert.deepEqual(defaultLayout().columns,['task_code','task_name','wbs_id','target_drtn_hr_cnt','remain_drtn_hr_cnt','early_start_date','early_end_date','phys_complete_pct','total_float_hr_cnt']);
   assert.equal(defaultLayout().groupBy,'wbs_id');
 });
 
@@ -46,8 +46,8 @@ test('gantt has P6-style summary bars squared relationship lines and zoom',()=>{
 });
 
 test('service worker and package version are v6',()=>{
-  assert.match(fs.readFileSync(path.join(root,'sw.js'),'utf8'),/unified-schedule-studio-v6\.0/);
-  assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version,'6.0.0');
+  assert.match(fs.readFileSync(path.join(root,'sw.js'),'utf8'),/unified-schedule-studio-v6\.2/);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version,'6.2.0');
 });
 
 test('activity grid and Gantt use a draggable splitter with synchronized vertical scrolling',()=>{
