@@ -519,75 +519,37 @@ async function saveCurrentSchedule({forceFolderRoot=false}={}){
 /**
  * Open one schedule from the local device.
  *
- * There are deliberately two paths:
- *  - File System Access API (Chromium-family browsers): gives us a real file
- *    handle, so Ctrl+S can write back to the same file after permission.
- *  - Standard <input type=file> fallback (Firefox/Safari and older browsers):
- *    the file remains local and is read only after the user selects it.
+ * v6.3.4 deliberately uses the page's permanent native <input type="file">
+ * rather than showOpenFilePicker() or a dynamically-created input.  This is
+ * the most broadly compatible path on GitHub Pages, including Firefox.
  *
- * Keeping this in one command handler means Welcome -> Open, File -> Open,
- * Ctrl+O and the toolbar folder icon all execute exactly the same workflow.
+ * The three visible Open controls are HTML <label for="fileInput"> controls,
+ * so a mouse click opens the operating-system file chooser natively even
+ * before this function is involved. Ctrl+O comes through here and clicks the
+ * same permanent input synchronously while the keyboard user-activation is
+ * still active.
  */
 function openScheduleFromDevice(){
  closeP6Menus();
-
- if(typeof globalThis.showOpenFilePicker==='function'){
-   globalThis.showOpenFilePicker({
-     id:'schedule-studio-open-schedule',
-     multiple:false,
-     types:[{
-       description:'Primavera P6 XER or Microsoft Project XML',
-       accept:{
-         'text/plain':['.xer'],
-         'application/xml':['.xml']
-       }
-     }]
-   }).then(async handles=>{
-     const handle=handles?.[0];
-     if(!handle)return;
-     const file=await handle.getFile();
-     await loadFile(file,false,{fileHandle:handle,parentHandle:null,relativePath:''});
-   }).catch(err=>{
-     if(err?.name!=='AbortError'){
-       console.error('Open schedule picker failed',err);
-       openScheduleWithInputFallback();
-     }
-   });
+ const input=$('#fileInput');
+ if(!input){
+   alert('The schedule file chooser is unavailable. Reload the page and try again.');
    return;
  }
-
- openScheduleWithInputFallback();
-}
-
-function openScheduleWithInputFallback(){
- // Create a fresh input for every invocation. This avoids stale-value and
- // hidden-input picker quirks seen in Firefox/Safari and allows selecting the
- // same schedule repeatedly without a page refresh.
- const input=document.createElement('input');
- input.type='file';
- input.accept='.xer,.xml,text/plain,application/xml,text/xml';
- input.setAttribute('aria-label','Open P6 XER or Microsoft Project XML schedule');
- input.style.position='fixed';
- input.style.left='-10000px';
- input.style.top='0';
- document.body.appendChild(input);
- let cleaned=false;
- const cleanup=()=>{if(cleaned)return;cleaned=true;input.remove();};
- input.addEventListener('change',async()=>{
-   const file=input.files?.[0]||null;
-   cleanup();
-   if(file)await loadFile(file,false);
- },{once:true});
- // If the picker is cancelled, focus returns to the page. Keep cleanup
- // deferred so a legitimate change event wins the race.
- window.addEventListener('focus',()=>setTimeout(()=>{if(!input.files?.length)cleanup()},250),{once:true});
- try{input.click()}catch(err){cleanup();alert(`Could not open the local file picker: ${err.message}`)}
+ // Reset first so the same XER/XML can be selected twice in succession.
+ input.value='';
+ try{
+   input.click();
+ }catch(err){
+   console.error('Could not open schedule file chooser',err);
+   alert(`Could not open the local file chooser: ${err.message}`);
+ }
 }
 
 function executeCommand(id){
  const meta=commandById(id);if(!meta)return;
  const enabled=commandEnabled(meta,{hasModel:!!state.model,hasSelection:!!state.selectedTaskId});if(!enabled)return toast(`${meta.label} is not available in the current context`);
- const handlers={open:openScheduleFromDevice,save:saveCurrentSchedule,saveXer:saveXER,saveMsp:saveMSP,openPackage:()=>$('#packageInput').click(),savePackage:saveProjectPackage,export:exportCurrent,print:()=>window.print(),undo:doUndo,redo:doRedo,copyActivity:copySelectedActivity,pasteActivity,find:focusFind,addActivity:addActivityFromToolbar,deleteActivity:deleteActivityFromToolbar,relationships:()=>showRelationshipEditor(),assignResource:()=>showResourceEditor(),columns:()=>showColumnsDialog(),groupSort:()=>setView('layouts'),filter:()=>setView('layouts'),zoomIn:()=>zoomGantt(1),zoomOut:()=>zoomGantt(-1),schedule:runSchedule,scheduleOptions:()=>showScheduleOptionsDialog(),levelResources:levelResourcesNow,levelOptions:()=>showScheduleOptionsDialog({leveling:true}),updateProgress:()=>setView('progressEvm'),baselines:()=>setView('baselines'),traceLogic:()=>{state.selectedFloatTarget=state.selectedTaskId;setView('diagnostics')},globalChange:()=>setView('editor'),resourceProfiles:()=>setView('resourceProfiles'),compare:()=>$('#compareInput').click(),settings:()=>setView('settings'),calculationAudit:showCalculationAudit,about:()=>alert('Schedule Studio Professional v6.3.3\nSingle-user P6 20.x-style project-controls workbench.\nAll schedule processing remains local in this browser.')};
+ const handlers={open:openScheduleFromDevice,save:saveCurrentSchedule,saveXer:saveXER,saveMsp:saveMSP,openPackage:()=>$('#packageInput').click(),savePackage:saveProjectPackage,export:exportCurrent,print:()=>window.print(),undo:doUndo,redo:doRedo,copyActivity:copySelectedActivity,pasteActivity,find:focusFind,addActivity:addActivityFromToolbar,deleteActivity:deleteActivityFromToolbar,relationships:()=>showRelationshipEditor(),assignResource:()=>showResourceEditor(),columns:()=>showColumnsDialog(),groupSort:()=>setView('layouts'),filter:()=>setView('layouts'),zoomIn:()=>zoomGantt(1),zoomOut:()=>zoomGantt(-1),schedule:runSchedule,scheduleOptions:()=>showScheduleOptionsDialog(),levelResources:levelResourcesNow,levelOptions:()=>showScheduleOptionsDialog({leveling:true}),updateProgress:()=>setView('progressEvm'),baselines:()=>setView('baselines'),traceLogic:()=>{state.selectedFloatTarget=state.selectedTaskId;setView('diagnostics')},globalChange:()=>setView('editor'),resourceProfiles:()=>setView('resourceProfiles'),compare:()=>$('#compareInput').click(),settings:()=>setView('settings'),calculationAudit:showCalculationAudit,about:()=>alert('Schedule Studio Professional v6.3.4\nSingle-user P6 20.x-style project-controls workbench.\nAll schedule processing remains local in this browser.')};
  if(handlers[id])return handlers[id]();
  if(meta.prepared)return toast(`${meta.label}: command surface prepared; detailed workflow will be completed against the supplied P6 reference files.`);
  toast(`${meta.label}: command handler is not yet assigned.`);
@@ -724,7 +686,23 @@ function deleteActivityFromToolbar(){if(!state.model||!state.selectedTaskId)retu
 function levelResourcesNow(){if(!state.model)return;const prior=state.settings.resourceLevelingEnabled;state.settings.resourceLevelingEnabled=true;persistSettings();toast('Resource leveling enabled — calculating schedule');try{runSchedule()}finally{state.settings.resourceLevelingEnabled=prior;persistSettings()}}
 function dispatchMenuCommand(command){executeCommand(command)}
 
-$('#welcomeOpen').onclick=()=>executeCommand('open');
+// Open controls are native <label for="fileInput"> elements.  The label's
+// default browser action opens the chooser directly; no JavaScript click
+// indirection is required for mouse/touch use.
+for(const control of [$('#welcomeOpen'),$('#openBtn'),$('#menuOpenSchedule')].filter(Boolean)){
+ control.addEventListener('keydown',event=>{
+   if(event.key==='Enter'||event.key===' '){event.preventDefault();openScheduleFromDevice();}
+ });
+}
+$('#fileInput').addEventListener('change',async event=>{
+ const input=event.currentTarget;
+ const file=input.files?.[0]||null;
+ // Clear after taking the File reference so re-selecting the same path emits
+ // another change event on all major browsers.
+ input.value='';
+ closeP6Menus();
+ if(file)await loadFile(file,false);
+});
 $('#projectFolderInput').onchange=async e=>{
  const files=[...(e.target.files||[])];e.target.value='';if(!files.length)return;
  try{state.projectFolderHandle=createSessionProjectFolder(files);state.projectFolderTree=null;state.projectFolderExpanded={__root__:true};state.projectFolderPersistence='session';if(state.view!=='eps')setView('eps');else renderEPS();toast('Local Projects folder linked for this browser session — files stay on this device');}

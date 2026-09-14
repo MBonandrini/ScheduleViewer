@@ -365,3 +365,87 @@ body.p6-desktop{display:grid;grid-template-rows:var(--p6-title-h) var(--p6-menu-
 }
 .dark .gantt-wbs-spacer{background:#202d37;border-bottom-color:#3b4c59}
 .gantt-wbs-spacer .gantt-grid{position:absolute;inset:0}
+
+/* v6.3.4 — native file-open controls and visible revision marker */
+.version-badge{
+  display:inline-flex;
+  align-items:center;
+  margin-left:6px;
+  padding:1px 6px;
+  border:1px solid #9fb0bd;
+  border-radius:999px;
+  background:#eef4f9;
+  color:#34566f;
+  font-size:10px;
+  font-weight:700;
+  line-height:16px;
+  vertical-align:middle;
+}
+.dark .version-badge{background:#253a4a;color:#dfeaf2;border-color:#53697a}
+.welcome-version{font-size:11px;transform:translateY(-1px)}
+
+/* Labels are used intentionally so the browser itself opens the file chooser.
+   This avoids Firefox/GitHub Pages user-activation quirks from indirect clicks. */
+.p6-file-open-control,
+.p6-menu-file-open{
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.p6-commandbar label.tool{
+  height:44px;
+  min-width:46px;
+  padding:3px 7px;
+  border:1px solid transparent;
+  border-radius:2px;
+  background:transparent;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:1px;
+  color:#22313e;
+}
+.dark .p6-commandbar label.tool{color:#e6edf4}
+.p6-commandbar label.tool:hover,
+.p6-commandbar label.tool:focus-visible{
+  background:rgba(255,255,255,.65);
+  border-color:#a4b3c0;
+  outline:none;
+}
+.dark .p6-commandbar label.tool:hover,
+.dark .p6-commandbar label.tool:focus-visible{background:#32495c;border-color:#53697a}
+.p6-commandbar label.tool>span{font-size:17px;line-height:17px}
+.p6-commandbar label.tool>small{font-size:9px;line-height:11px}
+
+.p6-menu .p6-menu-file-open{
+  display:flex;
+  width:100%;
+  align-items:center;
+  gap:16px;
+  justify-content:space-between;
+  text-align:left;
+  padding:6px 22px 6px 9px;
+  font-size:12px;
+  break-inside:avoid;
+  color:var(--text);
+}
+.p6-menu .p6-menu-file-open:hover,
+.p6-menu .p6-menu-file-open:focus-visible{background:#d9e9f7;outline:none}
+.dark .p6-menu .p6-menu-file-open:hover,
+.dark .p6-menu .p6-menu-file-open:focus-visible{background:#2b4961}
+.p6-menu .p6-menu-file-open kbd{margin-left:auto;font:10px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted)}
+
+.welcome .welcome-open-control{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--blue);
+  border-radius:6px;
+  padding:11px 18px;
+  background:var(--blue);
+  color:#fff;
+  font-weight:650;
+}
+.welcome .welcome-open-control:hover,
+.welcome .welcome-open-control:focus-visible{filter:brightness(1.05);outline:2px solid color-mix(in srgb,var(--blue) 35%,transparent);outline-offset:2px}

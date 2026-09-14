@@ -4,19 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#dfe9f4" />
-  <title>Schedule Studio Professional v6.3.3</title>
+  <title>Schedule Studio Professional v6.3.4</title>
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=6.3.4" />
 </head>
 <body class="p6-desktop">
   <header class="p6-titlebar">
-    <div class="p6-product"><span class="p6-mark">SS</span><strong>Schedule Studio Professional</strong><span id="titleProject">Single-User Project Controls Workbench</span></div>
+    <div class="p6-product"><span class="p6-mark">SS</span><strong>Schedule Studio Professional <span class="version-badge">v6.3.4</span></strong><span id="titleProject">Single-User Project Controls Workbench</span></div>
     <div class="p6-user"><span>Local Planner</span><span class="dot">•</span><span>Single User</span><span class="dot">•</span><span>Browser Local</span></div>
   </header>
 
   <nav class="p6-menubar" id="menuBar" aria-label="Application menu">
     <details><summary>File</summary><div class="p6-menu">
-      <button data-command="open">Open Schedule… <kbd>Ctrl+O</kbd></button><button data-command="save">Save Schedule <kbd>Ctrl+S</kbd></button><button data-command="saveXer">Save as XER</button><button data-command="saveMsp">Save as MSP XML</button><hr><button data-command="openPackage">Open Project Package…</button><button data-command="savePackage">Save Project Package</button><hr><button data-command="export">Export Current View CSV</button><button data-command="print">Print Current View</button>
+      <label for="fileInput" id="menuOpenSchedule" class="p6-menu-file-open" role="button" tabindex="0">Open Schedule… <kbd>Ctrl+O</kbd></label><button data-command="save">Save Schedule <kbd>Ctrl+S</kbd></button><button data-command="saveXer">Save as XER</button><button data-command="saveMsp">Save as MSP XML</button><hr><button data-command="openPackage">Open Project Package…</button><button data-command="savePackage">Save Project Package</button><hr><button data-command="export">Export Current View CSV</button><button data-command="print">Print Current View</button>
     </div></details>
     <details><summary>Edit</summary><div class="p6-menu">
       <button data-command="undo">Undo <kbd>Ctrl+Z</kbd></button><button data-command="redo">Redo <kbd>Ctrl+Y</kbd></button><hr><button data-command="copyActivity">Copy Activity <kbd>Ctrl+C</kbd></button><button data-command="pasteActivity">Paste Activity <kbd>Ctrl+V</kbd></button><button data-command="find">Find <kbd>Ctrl+F</kbd></button><hr><button data-command="addActivity">Add Activity <kbd>Insert</kbd></button><button data-command="deleteActivity">Delete Activity <kbd>Delete</kbd></button><button data-command="relationships">Relationships…</button><button data-command="assignResource">Assign Resources…</button><hr><button data-command="globalChange">Schedule Editor / Global Change</button>
@@ -40,7 +40,7 @@
   </nav>
 
   <div class="p6-commandbar" id="p6Toolbar" aria-label="Command toolbar">
-    <div class="p6-tool-group"><button id="openBtn" data-command="open" class="tool primary" title="Open Schedule"><span>📂</span><small>Open</small></button><button id="saveBtn" data-command="save" class="tool" disabled title="Save current schedule (Ctrl+S)"><span>💾</span><small>Save</small></button><button id="saveXerBtn" data-command="saveXer" class="tool" disabled title="Download XER"><span>⇩</span><small>XER</small></button><button id="saveMspBtn" data-command="saveMsp" class="tool" disabled title="Save MSP XML"><span>🗎</span><small>MSP XML</small></button></div>
+    <div class="p6-tool-group"><label for="fileInput" id="openBtn" class="tool primary p6-file-open-control" role="button" tabindex="0" title="Open Schedule"><span>📂</span><small>Open</small></label><button id="saveBtn" data-command="save" class="tool" disabled title="Save current schedule (Ctrl+S)"><span>💾</span><small>Save</small></button><button id="saveXerBtn" data-command="saveXer" class="tool" disabled title="Download XER"><span>⇩</span><small>XER</small></button><button id="saveMspBtn" data-command="saveMsp" class="tool" disabled title="Save MSP XML"><span>🗎</span><small>MSP XML</small></button></div>
     <div class="p6-tool-sep"></div>
     <div class="p6-tool-group"><button id="calcBtn" data-command="schedule" class="tool important" disabled title="Schedule (F9)"><span>▶</span><small>F9</small></button><button id="scheduleOptionsBtn" data-command="scheduleOptions" class="tool icon-only" disabled title="Schedule Options">⚙</button><button id="levelBtn" data-command="levelResources" class="tool" disabled title="Level Resources"><span>≋</span><small>Level</small></button><button id="progressBtn" data-command="updateProgress" class="tool" disabled title="Update Progress"><span>✓</span><small>Update</small></button><button id="undoBtn" data-command="undo" class="tool icon-only" disabled title="Undo">↶</button><button id="redoBtn" data-command="redo" class="tool icon-only" disabled title="Redo">↷</button></div>
     <div class="p6-tool-sep"></div>
@@ -79,12 +79,12 @@
       <div><h1 id="viewTitle">Activities</h1><div id="crumb" class="crumb">Open a schedule to begin</div></div>
       <div class="p6-view-actions"><input id="globalSearch" type="search" placeholder="Find activity…" /><button id="exportBtn" disabled>Export</button></div>
     </section>
-    <section id="view" class="view"><div class="welcome"><div class="hero-icon">SS</div><h2>Schedule Studio Professional</h2><p>A single-user Primavera-style schedule intelligence, editing, forensic analysis and reporting workbench. Open a P6 XER or Microsoft Project XML schedule to begin.</p><button id="welcomeOpen" class="primary large">Open schedule file</button><div class="feature-grid"><span>Activities + Gantt</span><span>WBS & Logic</span><span>Resources</span><span>Baselines</span><span>Critical Paths</span><span>Schedule Health</span><span>Forensic Compare</span><span>Progress & EVM</span></div></div></section>
+    <section id="view" class="view"><div class="welcome"><div class="hero-icon">SS</div><h2>Schedule Studio Professional <span class="version-badge welcome-version">v6.3.4</span></h2><p>A single-user Primavera-style schedule intelligence, editing, forensic analysis and reporting workbench. Open a P6 XER or Microsoft Project XML schedule to begin.</p><label for="fileInput" id="welcomeOpen" class="primary large p6-file-open-control welcome-open-control" role="button" tabindex="0">Open schedule file</label><div class="feature-grid"><span>Activities + Gantt</span><span>WBS & Logic</span><span>Resources</span><span>Baselines</span><span>Critical Paths</span><span>Schedule Health</span><span>Forensic Compare</span><span>Progress & EVM</span></div></div></section>
   </main>
 
   <footer class="p6-statusbar"><span id="fileStatus">No file loaded</span><span id="statusDataDate">Data Date: —</span><span id="statusBaseline">Baseline: —</span><span id="offlineStatus">Local browser database</span><span>User: Local Planner</span></footer>
   <dialog id="modal"><form method="dialog"><button class="modal-close">×</button></form><div id="modalBody"></div></dialog>
   <div id="toast" class="toast"></div>
-  <script type="module" src="./src/app.js"></script>
+  <script type="module" src="./src/app.js?v=6.3.4"></script>
 </body>
 </html>
