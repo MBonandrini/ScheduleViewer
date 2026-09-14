@@ -1,0 +1,3 @@
+export function verifiedAIContext({dashboard=null,health=null,comparison=null,dateMove=null,forecast=null,lookahead=[]}={}){
+  return {schema:'uss-verified-ai-context',version:1,generatedAt:new Date().toISOString(),rules:['Use only the verified deterministic results supplied in this object.','Do not invent causes, schedule dates, resource values or probabilities.','Preserve confidence labels and caveats.'],dashboard,health:health?{score:health.score,rating:health.rating,counts:health.counts,metrics:health.metrics}:null,comparison:comparison?{summary:comparison.summary,topChanges:(comparison.changes||[]).filter(c=>['Critical','Material'].includes(c.criticality)).slice(0,50)}:null,dateMove,forecast,lookahead:lookahead.slice(0,100)};
+}

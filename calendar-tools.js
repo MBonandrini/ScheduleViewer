@@ -1,0 +1,4 @@
+import { parseCalendarData } from './semantic.js';
+export function calendarVisual(model){return model.table('CALENDAR').map(c=>({id:c.clndr_id,name:c.clndr_name||c.clndr_id,type:c.clndr_type||'',hours:Number(c.day_hr_cnt||8),parsed:parseCalendarData(c.clndr_data||'')}))}
+export function recurringHolidayDates(year,month,weekday,nth){const d=new Date(year,month,1);let count=0;while(d.getMonth()===month){if(d.getDay()===weekday&&++count===nth)return d.toISOString().slice(0,10);d.setDate(d.getDate()+1)}return null}
+export function validateCalendarShifts(periods){const s=[...(periods||[])].sort((a,b)=>a[0]-b[0]);for(let i=0;i<s.length;i++){if(s[i][1]<=s[i][0])return {ok:false,message:'Shift finish must be after start'};if(i&&s[i][0]<s[i-1][1])return {ok:false,message:'Shifts overlap'}}return {ok:true}}

@@ -1,32 +1,23 @@
-# Unified Schedule Studio v5.2 — Professional Layout
+# Navisworks Web Bundle Exporter
 
-Full GitHub Pages source release. This package contains the entire application, not only the v5.2 layout deltas.
+This is a separate **C# Navisworks plugin** used only to prepare a local BIM workspace for the GitHub-hosted Project Controls Viewer.
 
-## v5.2 layout corrections
+## Runtime architecture
 
-- Sidebar is full-height and independently scrollable; navigation no longer spills into the content canvas.
-- Navigation is reorganised into professional planner-oriented groups.
-- Activities display WBS description + WBS code rather than raw internal `wbs_id`.
-- Calendar labels use calendar name + ID.
-- Grouped Activity table and Gantt now render matching WBS/group rows to preserve vertical alignment.
-- Undated activities retain an empty aligned Gantt row.
-- Dashboard information hierarchy, spacing, command bar, cards and planner-attention panel were tightened for business-laptop use.
-- Responsive sidebar behavior is retained for narrower screens.
+- The GitHub Pages application never opens NWD/NWC directly.
+- Navisworks remains the authoring/review tool.
+- This plugin exports **stable metadata** (`model-metadata.json`) and a `manifest.json`.
+- Geometry is exported locally using **Navisworks Output → Export Scene → FBX**, then converted locally to `model.glb` with the converter of your choice.
+- The browser opens the resulting local `model.glb` and metadata together.
 
-## Run locally
+## Build
 
-```bash
-npm install
-npm run verify
-npm run serve
-```
+1. Install Visual Studio with .NET Framework 4.8 targeting pack.
+2. Install the matching Navisworks Manage/Simulate SDK/API.
+3. Define the MSBuild property `NAVISWORKS_API` to the folder containing `Autodesk.Navisworks.Api.dll`.
+4. Build Release.
+5. Copy the compiled DLL into the Navisworks Plugins folder for your version.
 
-No build step is required for GitHub Pages.
+## Notes
 
-## Deploy
-
-Upload the contents of this directory to a GitHub Pages repository and publish from the repository root (or the configured Pages branch).
-
-## Important
-
-All schedule/model processing remains browser-side/local-first. Validate calculated schedules against your approved Primavera P6 / Microsoft Project golden files before contractual use.
+The Autodesk API surface varies slightly between releases. The exporter intentionally uses reflection for stable object identity where API versions expose different members. Validate against your target Navisworks release before production deployment.

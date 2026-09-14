@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>ProjectControls.NavisworksExporter</AssemblyName>
+    <RootNamespace>ProjectControls.NavisworksExporter</RootNamespace>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Set NAVISWORKS_API to your local Navisworks installation directory. -->
+    <Reference Include="Autodesk.Navisworks.Api"><HintPath>$(NAVISWORKS_API)\Autodesk.Navisworks.Api.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+</Project>

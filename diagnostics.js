@@ -1,0 +1,8 @@
+import { taskRows,predRows,activityView } from './semantic.js';
+import { num } from './parser.js';
+export function explainActivity(model,projId,taskId,calc=null){
+ const t=model.find('TASK','task_id',String(taskId));if(!t)return null;const a=activityView(model,t);const incoming=predRows(model,projId).filter(r=>String(r.task_id)===String(taskId));
+ const candidates=incoming.map(r=>{const p=model.find('TASK','task_id',r.pred_task_id);return {predId:p?.task_code||r.pred_task_id,predName:p?.task_name||'',type:r.pred_type,lagHours:num(r.lag_hr_cnt),predFinish:p?.early_end_date||p?.act_end_date||p?.target_end_date,predStart:p?.early_start_date||p?.act_start_date||p?.target_start_date}});
+ return {taskId:a.id,name:a.name,earlyStart:t.early_start_date||t.target_start_date,earlyFinish:t.early_end_date||t.target_end_date,lateStart:t.late_start_date,lateFinish:t.late_end_date,totalFloat:num(t.total_float_hr_cnt),calendar:a.calendarName,constraints:[a.primaryConstraint&&`${a.primaryConstraint} ${a.primaryConstraintDate||''}`,a.secondaryConstraint&&`${a.secondaryConstraint} ${a.secondaryConstraintDate||''}`].filter(Boolean),incoming:candidates,calculationWarnings:calc?.warnings||[]};
+}
+export function driverText(diag){if(!diag)return 'No activity selected.';if(!diag.incoming.length)return 'No predecessor relationship constrains this activity; project/data-date/constraint rules govern its start.';const r=[...diag.incoming].sort((a,b)=>String(b.predFinish||b.predStart).localeCompare(String(a.predFinish||a.predStart)))[0];return `${r.predId}${r.predName?` — ${r.predName}`:''} via ${r.type||'FS'} ${r.lagHours>=0?'+':''}${r.lagHours}h is the strongest visible predecessor candidate. Calendar: ${diag.calendar}.`}
