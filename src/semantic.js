@@ -67,14 +67,17 @@ export function taskFinish(t) { return p6Date(pick(t,'act_end_date','reend_date'
 
 export function buildWBSTree(model, projId) {
   const rows = wbsRows(model, projId);
-  const nodes = new Map(rows.map(r => [r.wbs_id, {...r, children:[]} ]));
+  // P6 exports IDs as text, but imported/edited models can contain numeric values.
+  // Normalize every key so parent-child hierarchy never degrades into false roots.
+  const nodes = new Map(rows.map(r => [String(r.wbs_id??''), {...r, children:[]} ]));
   const roots=[];
   for (const n of nodes.values()) {
-    const p = nodes.get(n.parent_wbs_id);
-    if (p && p !== n) p.children.push(n); else roots.push(n);
+    const id=String(n.wbs_id??''), parentId=String(n.parent_wbs_id??'');
+    const p = parentId ? nodes.get(parentId) : null;
+    if (p && String(p.wbs_id??'') !== id) p.children.push(n); else roots.push(n);
   }
-  const sort = a => { a.children.sort((x,y)=>num(x.seq_num)-num(y.seq_num)); a.children.forEach(sort); };
-  roots.sort((x,y)=>num(x.seq_num)-num(y.seq_num)).forEach(sort);
+  const sort = a => { a.children.sort((x,y)=>num(x.seq_num)-num(y.seq_num)||String(x.wbs_short_name||x.wbs_name||'').localeCompare(String(y.wbs_short_name||y.wbs_name||''),undefined,{numeric:true,sensitivity:'base'})); a.children.forEach(sort); };
+  roots.sort((x,y)=>num(x.seq_num)-num(y.seq_num)||String(x.wbs_short_name||x.wbs_name||'').localeCompare(String(y.wbs_short_name||y.wbs_name||''),undefined,{numeric:true,sensitivity:'base'})).forEach(sort);
   return roots;
 }
 
@@ -91,25 +94,42 @@ export function resourceAssignments(model, projId) {
 export function parseCalendarData(raw='') {
   const result = { days: [], exceptions: [], exceptionPeriods: {}, raw };
   const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const markers = [...raw.matchAll(/\(([1-7])\|\|/g)];
+  // Native P6 XER calendar strings normally encode weekdays as (0||1()(...)) through
+  // (0||7()(...)). Older fixtures/exports may use the shorter (1||...) form.
+  let markers=[...raw.matchAll(/\(0\|\|([1-7])\(\)\(/g)].map(m=>({m,dayNo:Number(m[1])}));
+  if(!markers.length)markers=[...raw.matchAll(/\(([1-7])\|\|/g)].map(m=>({m,dayNo:Number(m[1])}));
   for (let j=0;j<markers.length;j++) {
-    const m=markers[j], dayNo=Number(m[1]);
+    const {m,dayNo}=markers[j];
     const start=m.index + m[0].length;
-    const end=j+1<markers.length ? markers[j+1].index : raw.length;
+    const next=markers[j+1]?.m?.index;
+    const view=raw.indexOf('(0||VIEW',start),exceptions=raw.indexOf('(0||Exceptions',start);
+    const candidates=[next,view,exceptions].filter(x=>Number.isFinite(x)&&x>=start);
+    const end=candidates.length?Math.min(...candidates):raw.length;
     const seg=raw.slice(start,end);
     const times=[...seg.matchAll(/s\|([^|()]+)\|f\|([^|()]+)/g)].map(x=>({start:x[1],finish:x[2]}));
     result.days.push({day:dayNames[dayNo-1],periods:times});
   }
-  // P6 calendar strings vary by release. Capture ISO-date exception tokens and, when
-  // shift periods occur in the same local segment, retain them as dated working periods.
-  const exMatches=[...raw.matchAll(/d\|(\d{4}-\d{2}-\d{2})([^d]*?)(?=d\|\d{4}-\d{2}-\d{2}|$)/g)];
-  for(const m of exMatches){
-    const date=m[1],seg=m[2]||'';
+  for(const name of dayNames)if(!result.days.some(x=>x.day===name))result.days.push({day:name,periods:[]});
+  result.days.sort((a,b)=>dayNames.indexOf(a.day)-dayNames.indexOf(b.day));
+  // P6 calendar strings vary by release. Exception dates can be ISO text or
+  // Excel/OLE-style serial day numbers with a 1899-12-30 base.
+  const addException=(token,seg='')=>{
+    let date=token;
+    if(/^\d+$/.test(token)){
+      const d=new Date(1899,11,30);d.setDate(d.getDate()+Number(token));
+      date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;
     const times=[...seg.matchAll(/s\|([^|()]+)\|f\|([^|()]+)/g)].map(x=>({start:x[1],finish:x[2]}));
-    result.exceptions.push(date);
+    if(!result.exceptions.includes(date))result.exceptions.push(date);
     result.exceptionPeriods[date]=times;
-  }
-  // Backward-compatible fallback for simpler d|date forms.
-  if(!result.exceptions.length){for (const m of raw.matchAll(/d\|(\d{4}-\d{2}-\d{2})/g)){result.exceptions.push(m[1]);result.exceptionPeriods[m[1]]=[]}}
+  };
+  const exStart=raw.indexOf('(0||Exceptions');
+  const exRaw=exStart>=0?raw.slice(exStart):raw;
+  const exMatches=[...exRaw.matchAll(/d\|(\d{4}-\d{2}-\d{2}|\d+)([\s\S]*?)(?=\(0\|\|\d+\(d\||d\|(?:\d{4}-\d{2}-\d{2}|\d+)|$)/g)];
+  for(const m of exMatches)addException(m[1],m[2]||'');
+  // Fallback for compact exception strings.
+  if(!exMatches.length){for(const m of exRaw.matchAll(/d\|(\d{4}-\d{2}-\d{2}|\d+)/g))addException(m[1],'');}
+  result.exceptions.sort();
   return result;
 }
