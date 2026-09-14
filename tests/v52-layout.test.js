@@ -32,13 +32,15 @@ test('desktop shell is viewport-bound and activity panes manage their own scroll
 
 test('service worker precaches the v6 UI label module',()=>{
   const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  assert.match(sw,/unified-schedule-studio-v6\.2/);
+  assert.match(sw,/unified-schedule-studio-v6\.3/);
   assert.match(sw,/\.\/src\/ui-labels\.js/);
 });
 
-test('activities render grouped Gantt labels via the same grouping function',()=>{
+test('activities and Gantt share one row model for grouping and vertical order',()=>{
   const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8');
-  assert.match(app,/groupLabel:t=>groupDisplayLabel\(state\.model,layout\.groupBy,t\)/);
+  assert.match(app,/buildActivityRowModel\(state\.model,state\.projId,tasks/);
+  assert.match(app,/renderGantt\([^;]+rowModel/);
   const gantt=fs.readFileSync(path.join(root,'src/gantt.js'),'utf8');
+  assert.match(gantt,/if\(rowModel\?\.length\)/);
   assert.match(gantt,/gantt-group-row/);
 });

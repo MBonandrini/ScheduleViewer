@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#dfe9f4" />
-  <title>Schedule Studio Professional v6.2</title>
+  <title>Schedule Studio Professional v6.3</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -22,13 +22,13 @@
       <button data-command="undo">Undo <kbd>Ctrl+Z</kbd></button><button data-command="redo">Redo <kbd>Ctrl+Y</kbd></button><hr><button data-command="copyActivity">Copy Activity <kbd>Ctrl+C</kbd></button><button data-command="pasteActivity">Paste Activity <kbd>Ctrl+V</kbd></button><button data-command="find">Find <kbd>Ctrl+F</kbd></button><hr><button data-command="addActivity">Add Activity <kbd>Insert</kbd></button><button data-command="deleteActivity">Delete Activity <kbd>Delete</kbd></button><button data-command="relationships">Relationships…</button><button data-command="assignResource">Assign Resources…</button><hr><button data-command="globalChange">Schedule Editor / Global Change</button>
     </div></details>
     <details><summary>View</summary><div class="p6-menu p6-menu-wide">
-      <button data-view="dashboard">Project Dashboard</button><button data-view="eps">EPS / Projects</button><button data-view="activities">Activities</button><hr><button data-command="columns">Columns…</button><button data-command="groupSort">Group and Sort…</button><button data-command="filter">Filters…</button><button data-command="zoomIn">Zoom In</button><button data-command="zoomOut">Zoom Out</button><hr><button data-view="wbs">WBS</button><button data-view="relationships">Relationships</button><button data-view="resources">Resources</button><button data-view="resourceSheet">Resource Assignments</button><button data-view="resourceProfiles">Resource Profiles</button><button data-view="calendars">Calendars</button><button data-view="codes">Activity Codes & UDFs</button><button data-view="baselines">Baselines</button><button data-view="bimModel">BIM / 4D</button><button data-view="raw">Canonical / Raw Tables</button>
+      <button data-view="dashboard">Project Dashboard</button><button data-view="eps">Projects / Schedule Folder</button><button data-view="activities">Activities</button><hr><button data-command="columns">Columns…</button><button data-command="groupSort">Group and Sort…</button><button data-command="filter">Filters…</button><button data-command="zoomIn">Zoom In</button><button data-command="zoomOut">Zoom Out</button><hr><button data-view="wbs">WBS</button><button data-view="relationships">Relationships</button><button data-view="resources">Resources & Costs</button><button data-view="resourceSheet">Resource Dictionary</button><button data-view="resourceProfiles">Histograms / S-Curves</button><button data-view="calendars">Calendars</button><button data-view="codes">Activity Codes & UDFs</button><button data-view="baselines">Baselines</button><button data-view="bimModel">BIM / 4D</button><button data-view="raw">Canonical / Raw Tables</button>
     </div></details>
     <details><summary>Project</summary><div class="p6-menu">
       <button data-command="schedule">Schedule <kbd>F9</kbd></button><button data-command="scheduleOptions">Schedule Options…</button><button data-command="calculationAudit">Imported P6 vs Calculated…</button><hr><button data-command="updateProgress">Update Progress / EVM</button><button data-command="levelResources">Level Resources</button><button data-command="levelOptions">Leveling Options…</button><button data-view="baselines">Maintain Baselines</button><button data-view="layouts">Layouts, Group & Sort, Filters</button><button data-view="workspace">Project Workspace</button><button data-view="settings">Project Preferences</button>
     </div></details>
     <details><summary>Enterprise</summary><div class="p6-menu">
-      <button data-view="eps">Enterprise Project Structure</button><button data-view="wbs">Work Breakdown Structure</button><button data-table="OBS">OBS</button><button data-view="resources">Resources</button><button data-table="ROLES">Roles</button><button data-view="calendars">Calendars</button><button data-view="codes">Activity Codes / UDFs</button><button data-table="ACCOUNT">Cost Accounts</button><button data-table="RSRCCURV">Resource Curves</button>
+      <button data-view="eps">Projects / Schedule Folder</button><button data-view="wbs">Work Breakdown Structure</button><button data-table="OBS">OBS</button><button data-view="resourceSheet">Resource Dictionary</button><button data-view="resources">Resource Assignments & Costs</button><button data-table="ROLES">Roles</button><button data-view="calendars">Calendars</button><button data-view="codes">Activity Codes / UDFs</button><button data-table="ACCOUNT">Cost Accounts</button><button data-table="RSRCCURV">Resource Curves</button>
     </div></details>
     <details><summary>Tools</summary><div class="p6-menu p6-menu-wide">
       <button data-view="analysis">Schedule Analysis</button><button data-command="scheduleOptions">Schedule Options…</button><button data-command="levelResources">Level Resources</button><button data-command="levelOptions">Leveling Options…</button><button data-command="updateProgress">Apply / Update Actuals</button><button data-command="globalChange">Global Change / Schedule Editor</button><button data-command="traceLogic">Trace Logic / Float Paths</button><button data-view="diagnostics">Logic Diagnostics</button><button data-view="intelligence">Forensic Intelligence</button><button data-view="health">Schedule Health & Risk Radar</button><button data-view="trends">Trends & Forecast</button><button data-view="compare">Compare Revisions</button><button data-view="history">History & Scenarios</button><button data-view="searchAll">Global Search</button><button data-view="bim">BIM Links</button>
@@ -40,7 +40,7 @@
   </nav>
 
   <div class="p6-commandbar" id="p6Toolbar" aria-label="Command toolbar">
-    <div class="p6-tool-group"><button id="openBtn" data-command="open" class="tool primary" title="Open Schedule"><span>📂</span><small>Open</small></button><button id="saveXerBtn" data-command="saveXer" class="tool" disabled title="Save XER"><span>💾</span><small>XER</small></button><button id="saveMspBtn" data-command="saveMsp" class="tool" disabled title="Save MSP XML"><span>🗎</span><small>MSP XML</small></button></div>
+    <div class="p6-tool-group"><button id="openBtn" data-command="open" class="tool primary" title="Open Schedule"><span>📂</span><small>Open</small></button><button id="saveBtn" data-command="save" class="tool" disabled title="Save current schedule (Ctrl+S)"><span>💾</span><small>Save</small></button><button id="saveXerBtn" data-command="saveXer" class="tool" disabled title="Download XER"><span>⇩</span><small>XER</small></button><button id="saveMspBtn" data-command="saveMsp" class="tool" disabled title="Save MSP XML"><span>🗎</span><small>MSP XML</small></button></div>
     <div class="p6-tool-sep"></div>
     <div class="p6-tool-group"><button id="calcBtn" data-command="schedule" class="tool important" disabled title="Schedule (F9)"><span>▶</span><small>F9</small></button><button id="scheduleOptionsBtn" data-command="scheduleOptions" class="tool icon-only" disabled title="Schedule Options">⚙</button><button id="levelBtn" data-command="levelResources" class="tool" disabled title="Level Resources"><span>≋</span><small>Level</small></button><button id="progressBtn" data-command="updateProgress" class="tool" disabled title="Update Progress"><span>✓</span><small>Update</small></button><button id="undoBtn" data-command="undo" class="tool icon-only" disabled title="Undo">↶</button><button id="redoBtn" data-command="redo" class="tool icon-only" disabled title="Redo">↷</button></div>
     <div class="p6-tool-sep"></div>
@@ -63,7 +63,7 @@
     <button data-view="eps"><span>Projects</span></button>
     <button data-view="activities" class="active"><span>Activities</span></button>
     <button data-view="wbs"><span>WBS</span></button>
-    <button data-view="resources"><span>Resources</span></button>
+    <button data-view="resourceProfiles"><span>Resources</span></button>
     <button data-view="analysis"><span>Analysis</span></button>
     <button data-view="reporting"><span>Reports</span></button>
     <button data-table="ISSUE" data-label="Issues"><span>Issues</span></button>

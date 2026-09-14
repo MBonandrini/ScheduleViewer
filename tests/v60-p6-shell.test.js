@@ -46,8 +46,8 @@ test('gantt has P6-style summary bars squared relationship lines and zoom',()=>{
 });
 
 test('service worker and package version are v6',()=>{
-  assert.match(fs.readFileSync(path.join(root,'sw.js'),'utf8'),/unified-schedule-studio-v6\.2/);
-  assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version,'6.2.0');
+  assert.match(fs.readFileSync(path.join(root,'sw.js'),'utf8'),/unified-schedule-studio-v6\.3/);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version,'6.3.0');
 });
 
 test('activity grid and Gantt use a draggable splitter with synchronized vertical scrolling',()=>{
@@ -64,8 +64,10 @@ test('activity inspector exposes core P6-style detail tabs',()=>{
   assert.match(app,/riskMini\(/);
 });
 
-test('EPS / Projects view includes a project-level Gantt',()=>{
-  assert.match(app,/function projectGanttHTML/);
-  assert.match(app,/p6-project-gantt/);
-  assert.match(css,/\.p6-project-gantt-row/);
+test('Projects view is a persistent local folder tree rather than traditional EPS',()=>{
+  assert.match(app,/chooseProjectFolder/);
+  assert.match(app,/scanProjectFolder/);
+  assert.match(app,/projectFolderTreeHTML/);
+  assert.match(app,/saveCurrentSchedule/);
+  assert.match(css,/\.project-folder-tree/);
 });

@@ -1,0 +1,131 @@
+[
+  {
+    "file": "P3379-8.xer",
+    "projectId": "397",
+    "tables": 21,
+    "rows": 56373,
+    "activities": 3815,
+    "wbs": 782,
+    "wbsRoots": 1,
+    "wbsTreeNodes": 782,
+    "activityRows": 3815,
+    "uniqueActivityRows": 3815,
+    "wbsLayoutRows": 668,
+    "hierarchyErrors": 0,
+    "relationships": 6609,
+    "friendlyRelationshipLabels": 6609,
+    "resources": 7,
+    "resourceRoots": 2,
+    "resourceAssignments": 912,
+    "profileBuckets": {
+      "day": 832,
+      "week": 126,
+      "month": 32,
+      "quarter": 13
+    },
+    "weeklyCumulativeForecast": 46227.624999999985,
+    "calendars": 18,
+    "decodedCalendars": 18,
+    "calendarExceptions": 1916,
+    "cycles": 0,
+    "cpm": {
+      "status": "ok",
+      "finish": "2027-12-14T17:00:00.000Z",
+      "warnings": 0,
+      "results": 0
+    },
+    "roundTripCountDiffTables": [],
+    "directEdit": {
+      "status": "ok",
+      "requiresSchedule": true,
+      "earlyDatesPreserved": true,
+      "duration": 120
+    }
+  },
+  {
+    "file": "NEWPROJ-1.xer",
+    "projectId": "984",
+    "tables": 16,
+    "rows": 1088,
+    "activities": 412,
+    "wbs": 68,
+    "wbsRoots": 1,
+    "wbsTreeNodes": 68,
+    "activityRows": 412,
+    "uniqueActivityRows": 412,
+    "wbsLayoutRows": 67,
+    "hierarchyErrors": 0,
+    "relationships": 278,
+    "friendlyRelationshipLabels": 278,
+    "resources": 2,
+    "resourceRoots": 1,
+    "resourceAssignments": 291,
+    "profileBuckets": {
+      "day": 460,
+      "week": 67,
+      "month": 17,
+      "quarter": 6
+    },
+    "weeklyCumulativeForecast": 49489.38000000003,
+    "calendars": 2,
+    "decodedCalendars": 2,
+    "calendarExceptions": 145,
+    "cycles": 0,
+    "cpm": {
+      "status": "ok",
+      "finish": "2026-04-17T17:00:00.000Z",
+      "warnings": 0,
+      "results": 0
+    },
+    "roundTripCountDiffTables": [],
+    "directEdit": {
+      "status": "ok",
+      "requiresSchedule": true,
+      "earlyDatesPreserved": true,
+      "duration": 8
+    }
+  },
+  {
+    "file": "P3347-5.xer",
+    "projectId": "507",
+    "tables": 17,
+    "rows": 3510,
+    "activities": 860,
+    "wbs": 453,
+    "wbsRoots": 1,
+    "wbsTreeNodes": 453,
+    "activityRows": 860,
+    "uniqueActivityRows": 860,
+    "wbsLayoutRows": 451,
+    "hierarchyErrors": 0,
+    "relationships": 1223,
+    "friendlyRelationshipLabels": 1223,
+    "resources": 8,
+    "resourceRoots": 1,
+    "resourceAssignments": 131,
+    "profileBuckets": {
+      "day": 0,
+      "week": 0,
+      "month": 0,
+      "quarter": 0
+    },
+    "weeklyCumulativeForecast": 0,
+    "calendars": 3,
+    "decodedCalendars": 3,
+    "calendarExceptions": 225,
+    "cycles": 0,
+    "cpm": {
+      "status": "ok",
+      "finish": "2026-12-23T08:00:00.000Z",
+      "warnings": 0,
+      "results": 0
+    },
+    "roundTripCountDiffTables": [],
+    "directEdit": {
+      "status": "ok",
+      "requiresSchedule": true,
+      "earlyDatesPreserved": true,
+      "duration": 112
+    }
+  }
+]
