@@ -1,0 +1,9 @@
+{
+  "duplicate_html_ids": [],
+  "missing_html_assets": [],
+  "missing_service_worker_assets": [],
+  "css_brace_imbalance": 0,
+  "service_worker_cache": "unified-schedule-studio-v6.3.2",
+  "project_folder_input_present": true,
+  "file_input_present": true
+}
