@@ -57,14 +57,14 @@ import { addActivityCodeType, updateActivityCodeType, addActivityCode, updateAct
 import { issueGraphicData, severityBarHTML } from './analysis-graphics.js';
 import { buildActivityRowModel, visibleActivityTasks } from './activity-layout.js';
 import { datetimeLocalValue, p6FromDateInput, editableActivityDates, applyActivityPlanningEdit, constraintOptions, constraintLabel } from './activity-editing.js';
-import { chooseProjectFolder, loadProjectFolderHandle, clearProjectFolderHandle, folderPermission, scanProjectFolder, flattenScheduleFiles, fileFromTreeNode, writeFileHandle, writeScheduleToDirectory, buildSessionFolderTree, projectFolderSessionInfo, projectFolderCapabilities } from './project-folder.js';
+import { chooseProjectFolder, loadProjectFolderHandle, clearProjectFolderHandle, folderPermission, scanProjectFolder, flattenScheduleFiles, fileFromTreeNode, writeFileHandle, writeScheduleToDirectory, createSessionProjectFolder, projectFolderStorageMode } from './project-folder.js';
 import { setMenuOpen, closeMenus, toggleExclusiveMenu } from './menu-controller.js';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const logger=new DiagnosticLogger({level:'INFO',maxEntries:3000});
 const savedSettings=(()=>{try{return JSON.parse(localStorage.getItem('p6-xer-scheduling-settings')||'{}')}catch{return {}}})();
 const initialScheduleSettings=normalizeSchedulingOptions({compatibilityProfile:'p6v20',...savedSettings});
-const state={model:null,compareModel:null,projId:null,compareProjId:null,view:'activities',selectedTaskId:null,selectedWbsId:null,selectedRelationshipId:null,selectedCalendarId:null,selectedCodeTypeId:null,selectedCodeId:null,selectedUdfTypeId:null,search:'',analysisRule:'All',settings:{hoursPerDay:8,longDurationDays:44,highFloatDays:44,lagDays:0,criticalFloatThresholdHours:0,nearCriticalThresholdHours:80,materialDateChangeDays:5,materialFloatChangeDays:10,materialLagChangeDays:2,lookaheadWeeks:6,maxImportFileMB:500,stalledThresholdPercent:90,stalledPeriods:3,nominatedMilestones:'',...initialScheduleSettings},sort:{field:'task_code',dir:1},history:null,dirty:false,lastCalc:null,fileName:'schedule.xer',resourceBucket:'week',resourceMode:'units',selectedResourceId:'',selectedResourceAssignmentId:'',resourceExpanded:{},resourceProfile:{includeDescendants:true,resourceType:'',roleId:'',wbsId:'',status:'',codeTypeId:'',codeValueId:'',startDate:'',finishDate:'',compression:100,series:{budget:true,actual:true,remaining:true,forecast:true}},wbsExpanded:{},wbsClipboard:null,bimModels:[],bimModelKey:'',bimObjectSearch:'',bimScene:null,bimViewer:null,bimSimDate:new Date().toISOString().slice(0,10),bimVisibleMode:'all',bimPicked:[],baselines:[],primaryBaselineId:null,selectedBaselineId:null,showBaselineBars:true,sourceFormat:'xer',layouts:loadLayouts(),activeLayoutId:'default',filterGroup:{mode:'AND',rules:[]},revisionSnapshots:[],revisionRepository:[],selectedRevisionA:'',selectedRevisionB:'',forensicComparison:null,dateMoveResult:null,selectedTrendTask:'',scenarios:[],audit:new AuditLog(),workspaceId:null,autosaveEnabled:true,selectedFloatTarget:null,lastConversionAudit:null,bimSets:[],bimRules:[],lastImportDiagnostic:null,ganttZoom:1,activityClipboard:null,importedCalculationSnapshots:{},lastCalculationDiscrepancies:[],activityWbsExpanded:{},activeActivityDetailTab:'general',needsRecalc:false,projectFolderHandle:null,projectFolderTree:null,projectFolderExpanded:{},projectFileHandle:null,projectFileDirectoryHandle:null,projectFilePath:'',projectFolderStatus:'idle',projectFolderMode:'none'};
+const state={model:null,compareModel:null,projId:null,compareProjId:null,view:'activities',selectedTaskId:null,selectedWbsId:null,selectedRelationshipId:null,selectedCalendarId:null,selectedCodeTypeId:null,selectedCodeId:null,selectedUdfTypeId:null,search:'',analysisRule:'All',settings:{hoursPerDay:8,longDurationDays:44,highFloatDays:44,lagDays:0,criticalFloatThresholdHours:0,nearCriticalThresholdHours:80,materialDateChangeDays:5,materialFloatChangeDays:10,materialLagChangeDays:2,lookaheadWeeks:6,maxImportFileMB:500,stalledThresholdPercent:90,stalledPeriods:3,nominatedMilestones:'',...initialScheduleSettings},sort:{field:'task_code',dir:1},history:null,dirty:false,lastCalc:null,fileName:'schedule.xer',resourceBucket:'week',resourceMode:'units',selectedResourceId:'',selectedResourceAssignmentId:'',resourceExpanded:{},resourceProfile:{includeDescendants:true,resourceType:'',roleId:'',wbsId:'',status:'',codeTypeId:'',codeValueId:'',startDate:'',finishDate:'',compression:100,series:{budget:true,actual:true,remaining:true,forecast:true}},wbsExpanded:{},wbsClipboard:null,bimModels:[],bimModelKey:'',bimObjectSearch:'',bimScene:null,bimViewer:null,bimSimDate:new Date().toISOString().slice(0,10),bimVisibleMode:'all',bimPicked:[],baselines:[],primaryBaselineId:null,selectedBaselineId:null,showBaselineBars:true,sourceFormat:'xer',layouts:loadLayouts(),activeLayoutId:'default',filterGroup:{mode:'AND',rules:[]},revisionSnapshots:[],revisionRepository:[],selectedRevisionA:'',selectedRevisionB:'',forensicComparison:null,dateMoveResult:null,selectedTrendTask:'',scenarios:[],audit:new AuditLog(),workspaceId:null,autosaveEnabled:true,selectedFloatTarget:null,lastConversionAudit:null,bimSets:[],bimRules:[],lastImportDiagnostic:null,ganttZoom:1,activityClipboard:null,importedCalculationSnapshots:{},lastCalculationDiscrepancies:[],activityWbsExpanded:{},activeActivityDetailTab:'general',needsRecalc:false,projectFolderHandle:null,projectFolderTree:null,projectFolderExpanded:{},projectFileHandle:null,projectFileDirectoryHandle:null,projectFilePath:'',projectFolderStatus:'idle',projectFolderPersistence:'none'};
 function persistSettings(){try{localStorage.setItem('p6-xer-scheduling-settings',JSON.stringify(state.settings))}catch{}}
 const titles={dashboard:'Dashboard',eps:'Projects',activities:'Activities',wbs:'Work Breakdown Structure',relationships:'Relationships',resources:'Resources & Costs',resourceSheet:'Resource Sheet',resourceProfiles:'Resource Histograms & Curves',bim:'BIM / 4D Links',bimModel:'BIM Model / 4D Viewer',tutorial:'Tutorial',calendars:'Calendars',codes:'Codes & UDFs',analysis:'Schedule Analysis',baselines:'Baselines',compare:'Schedule Compare',raw:'Raw Schedule Tables',editor:'Schedule Editor',settings:'Settings',layouts:'Layouts & Filters',diagnostics:'Logic Diagnostics & Float Paths',progressEvm:'Progress, EVM & Productivity',history:'Revision History & Scenarios',workspace:'Project Workspace',intelligence:'Forensic Intelligence',health:'Schedule Health & Risk Radar',trends:'Trends & Forecast Intelligence',reporting:'Dashboards & Reports',searchAll:'Global Search'};
 
@@ -100,26 +100,14 @@ function render(){crumb();if(!state.model && !['settings','tutorial','bimModel',
 function projectFolderNodeByPath(path,node=state.projectFolderTree){if(!node)return null;if(node.path===path)return node;for(const c of node.children||[]){const x=projectFolderNodeByPath(path,c);if(x)return x}return null}
 function persistProjectFolderUi(){try{localStorage.setItem('schedule-studio-project-folder-ui',JSON.stringify(state.projectFolderExpanded))}catch{}}
 function projectFolderTreeHTML(node,depth=0){if(!node)return '<div class="empty">No project folder is connected.</div>';if(node.kind==='file')return `<div class="project-file-row ${state.projectFilePath===node.path?'active':''}" data-project-file="${escapeHtml(node.path)}" style="--project-depth:${depth}"><span class="project-file-icon">${node.extension==='xer'?'X':'M'}</span><span class="project-file-name"><b>${escapeHtml(node.name)}</b><small>${escapeHtml(node.extension.toUpperCase())} schedule • ${escapeHtml(node.path)}</small></span><button class="mini project-open-file" data-project-file-open="${escapeHtml(node.path)}">Open</button></div>`;const key=node.path||'__root__',expanded=state.projectFolderExpanded[key]!==false;return `<div class="project-folder-node"><div class="project-folder-row" data-project-folder="${escapeHtml(key)}" style="--project-depth:${depth}"><button class="project-folder-toggle" data-project-folder-toggle="${escapeHtml(key)}">${expanded?'▾':'▸'}</button><span class="project-folder-icon">▰</span><b>${escapeHtml(node.name||'Project Folder')}</b><small>${(node.children||[]).length} item${(node.children||[]).length===1?'':'s'}</small></div>${expanded?`<div class="project-folder-children">${(node.children||[]).map(c=>projectFolderTreeHTML(c,depth+1)).join('')}</div>`:''}</div>`}
-async function refreshProjectFolderTree({requestPermission=false}={}){const host=$('#projectFolderTree');if(!host)return;try{
- if(state.projectFolderMode==='session-files'&&state.projectFolderTree){const files=flattenScheduleFiles(state.projectFolderTree);host.innerHTML=projectFolderTreeHTML(state.projectFolderTree);const count=$('#projectFolderCount');if(count)count.textContent=`${files.length} schedule file${files.length===1?'':'s'} • session only`;bindProjectFolderTree();return}
- if(!state.projectFolderHandle)state.projectFolderHandle=await loadProjectFolderHandle();
- if(!state.projectFolderHandle){state.projectFolderMode='none';host.innerHTML='<div class="empty">Choose the folder that contains your XER/XML schedules. If this browser cannot remember folders persistently, Schedule Studio will keep the folder for the current session only.</div>';return}
- state.projectFolderMode=projectFolderSessionInfo().mode||'persistent';
- const perm=await folderPermission(state.projectFolderHandle,{write:true,request:requestPermission});state.projectFolderStatus=perm;
- if(perm!=='granted'){host.innerHTML=`<div class="project-folder-permission"><b>${escapeHtml(state.projectFolderHandle.name)}</b><p>The folder handle is available, but the browser needs permission before it can read or save schedules${state.projectFolderMode==='persistent'?' after a restart':''}.</p><button id="projectReconnect" class="primary">Reconnect Folder</button></div>`;$('#projectReconnect').onclick=()=>refreshProjectFolderTree({requestPermission:true});return}
- host.innerHTML='<div class="empty compact">Scanning project folder…</div>';state.projectFolderTree=await scanProjectFolder(state.projectFolderHandle);if(state.view!=='eps')return;const files=flattenScheduleFiles(state.projectFolderTree);host.innerHTML=projectFolderTreeHTML(state.projectFolderTree);const count=$('#projectFolderCount');if(count)count.textContent=`${files.length} schedule file${files.length===1?'':'s'}${state.projectFolderMode==='persistent'?' • persistent':' • session only'}`;bindProjectFolderTree()
- }catch(e){host.innerHTML=`<div class="empty"><b>Could not read project folder.</b><br>${escapeHtml(e.message)}</div>`}}
-function bindProjectFolderTree(){$$('[data-project-folder-toggle]').forEach(b=>b.onclick=e=>{e.stopPropagation();const key=b.dataset.projectFolderToggle;state.projectFolderExpanded[key]=state.projectFolderExpanded[key]===false?true:false;persistProjectFolderUi();$('#projectFolderTree').innerHTML=projectFolderTreeHTML(state.projectFolderTree);bindProjectFolderTree()});$$('[data-project-file-open]').forEach(b=>b.onclick=async e=>{e.stopPropagation();const node=projectFolderNodeByPath(b.dataset.projectFileOpen);if(!node)return;try{const file=await fileFromTreeNode(node);await loadFile(file,false,{fileHandle:node.handle||null,parentHandle:node.parentHandle||null,relativePath:node.path});setView('activities')}catch(err){alert(`Could not open schedule: ${err.message}`)}})}
+async function refreshProjectFolderTree({requestPermission=false}={}){const host=$('#projectFolderTree');if(!host)return;try{if(!state.projectFolderHandle)state.projectFolderHandle=await loadProjectFolderHandle();state.projectFolderPersistence=projectFolderStorageMode();if(!state.projectFolderHandle){host.innerHTML='<div class="empty">Choose the folder that contains your XER/XML schedules. Where persistent folder handles are unavailable, the Projects tree remains available for this browser session.</div>';return}const perm=await folderPermission(state.projectFolderHandle,{write:false,request:requestPermission});state.projectFolderStatus=perm;if(perm!=='granted'){host.innerHTML=`<div class="project-folder-permission"><b>${escapeHtml(state.projectFolderHandle.name)}</b><p>The folder reference is available, but the browser needs read permission before it can show linked schedules after a restart. Write permission is requested only when you save back to the folder.</p><button id="projectReconnect" class="primary">Reconnect Folder</button></div>`;$('#projectReconnect').onclick=()=>refreshProjectFolderTree({requestPermission:true});return}host.innerHTML='<div class="empty compact">Scanning project folder…</div>';state.projectFolderTree=await scanProjectFolder(state.projectFolderHandle);state.projectFolderPersistence=projectFolderStorageMode();if(state.view!=='eps')return;const files=flattenScheduleFiles(state.projectFolderTree);host.innerHTML=projectFolderTreeHTML(state.projectFolderTree);const count=$('#projectFolderCount');if(count)count.textContent=`${files.length} schedule file${files.length===1?'':'s'} • ${state.projectFolderPersistence==='persistent'?'remembered by browser':'session only'}`;bindProjectFolderTree()}catch(e){host.innerHTML=`<div class="empty"><b>Could not read project folder.</b><br>${escapeHtml(e.message)}</div>`}}
+function bindProjectFolderTree(){$$('[data-project-folder-toggle]').forEach(b=>b.onclick=e=>{e.stopPropagation();const key=b.dataset.projectFolderToggle;state.projectFolderExpanded[key]=state.projectFolderExpanded[key]===false?true:false;persistProjectFolderUi();$('#projectFolderTree').innerHTML=projectFolderTreeHTML(state.projectFolderTree);bindProjectFolderTree()});$$('[data-project-file-open]').forEach(b=>b.onclick=async e=>{e.stopPropagation();const node=projectFolderNodeByPath(b.dataset.projectFileOpen);if(!node)return;try{const file=await fileFromTreeNode(node);await loadFile(file,false,{fileHandle:node.handle,parentHandle:node.parentHandle,relativePath:node.path});setView('activities')}catch(err){alert(`Could not open schedule: ${err.message}`)}})}
 async function renderEPS(){
- const caps=projectFolderCapabilities(),mode=state.projectFolderMode||projectFolderSessionInfo().mode||'none';
- const sessionOnly=mode==='session-files'||mode==='session-handle';
- const folderName=state.projectFolderHandle?.name||state.projectFolderTree?.name||'No folder selected';
- const modeLabel=mode==='persistent'?'Persistent workspace':sessionOnly?'Session workspace':'No workspace selected';
- $('#view').innerHTML=`<div class="project-library"><div class="panel project-library-head"><div class="panel-head"><div><h3>Projects</h3><span>User-selected local schedule folder • XER and Microsoft Project XML</span></div><div class="button-row"><button id="projectChooseFolder" class="primary">Select Project Folder…</button><button id="projectRefreshFolder">Refresh</button><button id="projectSaveHere" ${state.model?'':'disabled'}>Save Current to Folder</button><button id="projectClearFolder">Forget Folder</button></div></div><div class="project-library-summary"><span id="projectFolderName">${escapeHtml(folderName)}</span><span id="projectFolderCount">—</span><span class="${sessionOnly?'warning-text':''}">${escapeHtml(modeLabel)}</span><span>${state.projectFilePath?`Open: ${escapeHtml(state.projectFilePath)}`:'No schedule opened from project folder'}</span></div></div><div class="panel project-folder-panel"><div id="projectFolderTree" class="project-folder-tree"><div class="empty compact">Loading project folder…</div></div></div><div class="panel project-folder-help"><div class="panel-body"><b>How Projects works</b><p>Projects replaces EPS for the single-user edition. On browsers that support persistent File System Access handles, the selected folder can be remembered between sessions. If persistence is unavailable, Schedule Studio automatically uses a session-only folder tree and asks you to select it again next time.</p><p><b>File → Open</b>, the toolbar <b>Open</b> button and <b>Ctrl+O</b> always open an individual XER/XML directly and do not depend on Projects.</p><p>${caps.directoryPicker?'<b>Direct folder access:</b> supported by this browser.':'<b>Direct folder persistence:</b> unavailable in this browser; folder selection uses session-only files and direct write-back is unavailable.'}</p></div></div></div>`;
+ $('#view').innerHTML=`<div class="project-library"><div class="panel project-library-head"><div class="panel-head"><div><h3>Projects</h3><span>Linked local schedule folder • XER and Microsoft Project XML • file contents read only when opened</span></div><div class="button-row"><button id="projectChooseFolder" class="primary">Link Project Folder…</button><button id="projectRefreshFolder">Refresh</button><button id="projectSaveHere" ${(state.model&&state.projectFolderHandle?.getFileHandle)?'':'disabled'}>Save Current to Folder</button><button id="projectClearFolder">Forget Folder</button></div></div><div class="project-library-summary"><span id="projectFolderName">${escapeHtml(state.projectFolderHandle?.name||'No folder selected')}</span><span id="projectFolderCount">—</span><span>${state.projectFolderPersistence==='session'?'Session-only folder':state.projectFolderPersistence==='persistent'?'Persistent folder':'Folder mode pending'}</span><span>${state.projectFilePath?`Open: ${escapeHtml(state.projectFilePath)}`:'No schedule opened from project folder'}</span></div></div><div class="panel project-folder-panel"><div id="projectFolderTree" class="project-folder-tree"><div class="empty compact">Loading saved project folder…</div></div></div><div class="panel project-folder-help"><div class="panel-body"><b>How Projects works</b><p>This replaces EPS for the single-user edition. Link one local folder containing your project folders and XER/XML schedules. Schedule Studio scans names/paths for the tree but does not read or parse schedule file contents until you open that schedule. Nothing is uploaded to a server. Supported browsers remember the folder handle locally; browsers without persistent directory handles keep local file references for this browser session only.</p><p><b>Ctrl+S</b> writes back to the schedule file when it was opened from this tree. If a schedule was opened from File → Open, Ctrl+S writes back when the browser supplied a writable file handle; otherwise Save as XER/XML downloads a revised copy. Session-only project folders are read-only.</p></div></div></div>`;
  try{state.projectFolderExpanded={...JSON.parse(localStorage.getItem('schedule-studio-project-folder-ui')||'{}'),...state.projectFolderExpanded}}catch{}
- $('#projectChooseFolder').onclick=async()=>{try{if(projectFolderCapabilities().directoryPicker){state.projectFolderHandle=await chooseProjectFolder();state.projectFolderMode=projectFolderSessionInfo().mode||'session-handle';state.projectFolderTree=null;state.projectFolderExpanded={__root__:true};await renderEPS();}else{const input=$('#projectFolderInput');input.value='';if(typeof input.showPicker==='function')input.showPicker();else input.click();}}catch(e){if(e.name!=='AbortError')alert(e.message)}};
+ $('#projectChooseFolder').onclick=async()=>{try{if(!globalThis.showDirectoryPicker){const input=$('#projectFolderInput');input.value='';try{if(typeof input.showPicker==='function')input.showPicker();else input.click()}catch{input.click()}return}state.projectFolderHandle=await chooseProjectFolder();state.projectFolderTree=null;state.projectFolderExpanded={__root__:true};state.projectFolderPersistence=projectFolderStorageMode();$('#projectFolderName').textContent=state.projectFolderHandle.name;await refreshProjectFolderTree()}catch(e){if(e.name!=='AbortError'){const input=$('#projectFolderInput');if(input){input.value='';input.click()}else alert(e.message)}}};
  $('#projectRefreshFolder').onclick=()=>refreshProjectFolderTree();
- $('#projectClearFolder').onclick=async()=>{if(!confirm('Forget the selected project folder? No schedule files will be deleted.'))return;await clearProjectFolderHandle();state.projectFolderHandle=null;state.projectFolderTree=null;state.projectFolderMode='none';state.projectFileHandle=null;state.projectFileDirectoryHandle=null;state.projectFilePath='';const input=$('#projectFolderInput');if(input)input.value='';renderEPS()};
+ $('#projectClearFolder').onclick=async()=>{if(!confirm('Forget the selected project folder? No schedule files will be deleted.'))return;await clearProjectFolderHandle();state.projectFolderHandle=null;state.projectFolderTree=null;state.projectFolderPersistence='none';state.projectFileHandle=null;state.projectFileDirectoryHandle=null;state.projectFilePath='';renderEPS()};
  $('#projectSaveHere').onclick=()=>saveCurrentSchedule({forceFolderRoot:true});
  await refreshProjectFolderTree();
 }
@@ -490,15 +478,19 @@ async function saveCurrentSchedule({forceFolderRoot=false}={}){
  const before=semanticFingerprint(state.model),text=isXml?exportMSPXML(state.model,state.projId):exportXER(state.model),ext=isXml?'.xml':'.xer';
  let fileName=(state.fileName||`schedule${ext}`).replace(/\.(xer|xml)$/i,ext);
  try{
-   if(forceFolderRoot&&state.projectFolderMode==='session-files'){if(isXml)saveMSP();else saveXER();toast('Session-only project folder cannot be written directly; downloaded the schedule instead.');return}
    if(forceFolderRoot){
      if(!state.projectFolderHandle)state.projectFolderHandle=await loadProjectFolderHandle();
-     if(!state.projectFolderHandle)state.projectFolderHandle=await chooseProjectFolder();
+     if(!state.projectFolderHandle){
+       if(globalThis.showDirectoryPicker)state.projectFolderHandle=await chooseProjectFolder();
+       else{if(isXml)saveMSP();else saveXER();return;}
+     }
+     if(!state.projectFolderHandle?.getFileHandle){if(isXml)saveMSP();else saveXER();toast('Projects folder is session-only — downloaded a revised copy instead');return;}
      const perm=await folderPermission(state.projectFolderHandle,{write:true,request:true});
      if(perm!=='granted')throw new Error('Write permission was not granted for the Projects folder.');
      const h=await writeScheduleToDirectory(state.projectFolderHandle,fileName,text);
      state.projectFileHandle=h;state.projectFileDirectoryHandle=state.projectFolderHandle;state.projectFilePath=fileName;
    }else if(state.projectFileHandle){
+     if(!state.projectFileHandle?.createWritable){if(isXml)saveMSP();else saveXER();toast('Open schedule is read-only in this browser — downloaded a revised copy instead');return;}
      const permissionHandle=state.projectFileDirectoryHandle||state.projectFileHandle;
      const perm=await folderPermission(permissionHandle,{write:true,request:true});
      if(perm!=='granted')throw new Error('Write permission was not granted for the open schedule file.');
@@ -506,6 +498,7 @@ async function saveCurrentSchedule({forceFolderRoot=false}={}){
    }else{
      if(!state.projectFolderHandle)state.projectFolderHandle=await loadProjectFolderHandle();
      if(state.projectFolderHandle){
+       if(!state.projectFolderHandle?.getFileHandle){if(isXml)saveMSP();else saveXER();toast('Projects folder is session-only — downloaded a revised copy instead');return;}
        const perm=await folderPermission(state.projectFolderHandle,{write:true,request:true});
        if(perm==='granted'){
          const h=await writeScheduleToDirectory(state.projectFolderHandle,fileName,text);
@@ -523,38 +516,78 @@ async function saveCurrentSchedule({forceFolderRoot=false}={}){
  }catch(e){console.error(e);alert(`Could not save schedule: ${e.message}`)}
 }
 
-async function openScheduleFileDialog(){
- const input=$('#fileInput');
- if(!input)return alert('The schedule file picker is unavailable. Reload the page and try again.');
- input.value='';
- // Prefer the File System Access picker where available. It is completely
- // independent of the Projects workspace and can provide a writable handle.
+/**
+ * Open one schedule from the local device.
+ *
+ * There are deliberately two paths:
+ *  - File System Access API (Chromium-family browsers): gives us a real file
+ *    handle, so Ctrl+S can write back to the same file after permission.
+ *  - Standard <input type=file> fallback (Firefox/Safari and older browsers):
+ *    the file remains local and is read only after the user selects it.
+ *
+ * Keeping this in one command handler means Welcome -> Open, File -> Open,
+ * Ctrl+O and the toolbar folder icon all execute exactly the same workflow.
+ */
+function openScheduleFromDevice(){
+ closeP6Menus();
+
  if(typeof globalThis.showOpenFilePicker==='function'){
-  try{
-   const handles=await globalThis.showOpenFilePicker({id:'schedule-studio-open-schedule',multiple:false,types:[{description:'Schedule files',accept:{'text/plain':['.xer'],'application/xml':['.xml'],'text/xml':['.xml']}}]});
-   const handle=handles?.[0];
-   if(!handle)return;
-   const file=await handle.getFile();
-   await loadFile(file,false,{fileHandle:handle,relativePath:''});
+   globalThis.showOpenFilePicker({
+     id:'schedule-studio-open-schedule',
+     multiple:false,
+     types:[{
+       description:'Primavera P6 XER or Microsoft Project XML',
+       accept:{
+         'text/plain':['.xer'],
+         'application/xml':['.xml']
+       }
+     }]
+   }).then(async handles=>{
+     const handle=handles?.[0];
+     if(!handle)return;
+     const file=await handle.getFile();
+     await loadFile(file,false,{fileHandle:handle,parentHandle:null,relativePath:''});
+   }).catch(err=>{
+     if(err?.name!=='AbortError'){
+       console.error('Open schedule picker failed',err);
+       openScheduleWithInputFallback();
+     }
+   });
    return;
-  }catch(e){
-   if(e?.name==='AbortError')return;
-   console.warn('Native schedule picker failed; falling back to file input.',e);
-  }
  }
- try{
-  if(typeof input.showPicker==='function')input.showPicker();
-  else input.click();
- }catch(e){
-  console.warn('showPicker failed; using click fallback.',e);
-  input.click();
- }
+
+ openScheduleWithInputFallback();
+}
+
+function openScheduleWithInputFallback(){
+ // Create a fresh input for every invocation. This avoids stale-value and
+ // hidden-input picker quirks seen in Firefox/Safari and allows selecting the
+ // same schedule repeatedly without a page refresh.
+ const input=document.createElement('input');
+ input.type='file';
+ input.accept='.xer,.xml,text/plain,application/xml,text/xml';
+ input.setAttribute('aria-label','Open P6 XER or Microsoft Project XML schedule');
+ input.style.position='fixed';
+ input.style.left='-10000px';
+ input.style.top='0';
+ document.body.appendChild(input);
+ let cleaned=false;
+ const cleanup=()=>{if(cleaned)return;cleaned=true;input.remove();};
+ input.addEventListener('change',async()=>{
+   const file=input.files?.[0]||null;
+   cleanup();
+   if(file)await loadFile(file,false);
+ },{once:true});
+ // If the picker is cancelled, focus returns to the page. Keep cleanup
+ // deferred so a legitimate change event wins the race.
+ window.addEventListener('focus',()=>setTimeout(()=>{if(!input.files?.length)cleanup()},250),{once:true});
+ try{input.click()}catch(err){cleanup();alert(`Could not open the local file picker: ${err.message}`)}
 }
 
 function executeCommand(id){
  const meta=commandById(id);if(!meta)return;
  const enabled=commandEnabled(meta,{hasModel:!!state.model,hasSelection:!!state.selectedTaskId});if(!enabled)return toast(`${meta.label} is not available in the current context`);
- const handlers={open:openScheduleFileDialog,save:saveCurrentSchedule,saveXer:saveXER,saveMsp:saveMSP,openPackage:()=>$('#packageInput').click(),savePackage:saveProjectPackage,export:exportCurrent,print:()=>window.print(),undo:doUndo,redo:doRedo,copyActivity:copySelectedActivity,pasteActivity,find:focusFind,addActivity:addActivityFromToolbar,deleteActivity:deleteActivityFromToolbar,relationships:()=>showRelationshipEditor(),assignResource:()=>showResourceEditor(),columns:()=>showColumnsDialog(),groupSort:()=>setView('layouts'),filter:()=>setView('layouts'),zoomIn:()=>zoomGantt(1),zoomOut:()=>zoomGantt(-1),schedule:runSchedule,scheduleOptions:()=>showScheduleOptionsDialog(),levelResources:levelResourcesNow,levelOptions:()=>showScheduleOptionsDialog({leveling:true}),updateProgress:()=>setView('progressEvm'),baselines:()=>setView('baselines'),traceLogic:()=>{state.selectedFloatTarget=state.selectedTaskId;setView('diagnostics')},globalChange:()=>setView('editor'),resourceProfiles:()=>setView('resourceProfiles'),compare:()=>$('#compareInput').click(),settings:()=>setView('settings'),calculationAudit:showCalculationAudit,about:()=>alert('Schedule Studio Professional v6.3.2\nSingle-user P6 20.x-style project-controls workbench.\nAll schedule processing remains local in this browser.')};
+ const handlers={open:openScheduleFromDevice,save:saveCurrentSchedule,saveXer:saveXER,saveMsp:saveMSP,openPackage:()=>$('#packageInput').click(),savePackage:saveProjectPackage,export:exportCurrent,print:()=>window.print(),undo:doUndo,redo:doRedo,copyActivity:copySelectedActivity,pasteActivity,find:focusFind,addActivity:addActivityFromToolbar,deleteActivity:deleteActivityFromToolbar,relationships:()=>showRelationshipEditor(),assignResource:()=>showResourceEditor(),columns:()=>showColumnsDialog(),groupSort:()=>setView('layouts'),filter:()=>setView('layouts'),zoomIn:()=>zoomGantt(1),zoomOut:()=>zoomGantt(-1),schedule:runSchedule,scheduleOptions:()=>showScheduleOptionsDialog(),levelResources:levelResourcesNow,levelOptions:()=>showScheduleOptionsDialog({leveling:true}),updateProgress:()=>setView('progressEvm'),baselines:()=>setView('baselines'),traceLogic:()=>{state.selectedFloatTarget=state.selectedTaskId;setView('diagnostics')},globalChange:()=>setView('editor'),resourceProfiles:()=>setView('resourceProfiles'),compare:()=>$('#compareInput').click(),settings:()=>setView('settings'),calculationAudit:showCalculationAudit,about:()=>alert('Schedule Studio Professional v6.3.3\nSingle-user P6 20.x-style project-controls workbench.\nAll schedule processing remains local in this browser.')};
  if(handlers[id])return handlers[id]();
  if(meta.prepared)return toast(`${meta.label}: command surface prepared; detailed workflow will be completed against the supplied P6 reference files.`);
  toast(`${meta.label}: command handler is not yet assigned.`);
@@ -692,8 +725,11 @@ function levelResourcesNow(){if(!state.model)return;const prior=state.settings.r
 function dispatchMenuCommand(command){executeCommand(command)}
 
 $('#welcomeOpen').onclick=()=>executeCommand('open');
-$('#fileInput').onchange=async e=>{const file=e.target.files?.[0];try{if(file)await loadFile(file,false,{relativePath:''})}finally{e.target.value=''}};
-$('#projectFolderInput').onchange=e=>{const files=[...(e.target.files||[])];if(!files.length)return;state.projectFolderHandle=null;state.projectFolderTree=buildSessionFolderTree(files);state.projectFolderMode='session-files';state.projectFolderStatus='session';state.projectFolderExpanded={__root__:true};if(state.view==='eps')renderEPS();toast(`Session project folder loaded • ${flattenScheduleFiles(state.projectFolderTree).length} schedule file(s)`)};
+$('#projectFolderInput').onchange=async e=>{
+ const files=[...(e.target.files||[])];e.target.value='';if(!files.length)return;
+ try{state.projectFolderHandle=createSessionProjectFolder(files);state.projectFolderTree=null;state.projectFolderExpanded={__root__:true};state.projectFolderPersistence='session';if(state.view!=='eps')setView('eps');else renderEPS();toast('Local Projects folder linked for this browser session — files stay on this device');}
+ catch(err){alert(`Could not open project folder: ${err.message}`)}
+};
 $('#compareInput').onchange=e=>e.target.files[0]&&loadFile(e.target.files[0],true);
 $('#baselineInput').onchange=e=>e.target.files.length&&loadBaselines([...e.target.files]);
 $('#packageInput').onchange=e=>e.target.files[0]&&openProjectPackage(e.target.files[0]);

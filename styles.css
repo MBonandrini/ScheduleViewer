@@ -350,3 +350,18 @@ body.p6-desktop{display:grid;grid-template-rows:var(--p6-title-h) var(--p6-menu-
 /* v6.3.1: top-level menus are exclusively controlled by app.js. */
 .p6-menubar > details:not([open]) > .p6-menu{display:none!important}
 .p6-menubar > details[open] > .p6-menu{display:block}
+
+/* v6.3.3 — WBS hierarchy rows in Activities/Gantt.
+   WBS belongs to the left hierarchy/grid; the time chart is reserved for
+   activities and milestones. A transparent spacer preserves exact row sync. */
+.gantt-wbs-spacer{
+  position:relative;
+  height:var(--row)!important;
+  min-height:var(--row)!important;
+  max-height:var(--row)!important;
+  box-sizing:border-box;
+  border-bottom:1px solid #cbd2d8;
+  background:#f4f6f8;
+}
+.dark .gantt-wbs-spacer{background:#202d37;border-bottom-color:#3b4c59}
+.gantt-wbs-spacer .gantt-grid{position:absolute;inset:0}

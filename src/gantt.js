@@ -41,9 +41,19 @@ export function renderGantt(container,tasks,{hoursPerDay=8,selectedTaskId='',onS
   if(rowModel?.length){
     for(const row of rowModel){
       if(row.kind==='activity'){activityRow(row.task);continue;}
-      const s=row.start,f=row.finish,summary=s&&f?`<i class="summary-bar" style="left:${pos(s)}%;width:${Math.max(.4,pos(f)-pos(s))}%"></i>`:'';
+      const s=row.start,f=row.finish;
       const depth=Math.max(0,Number(row.depth)||0),label=row.code?`${row.code} — ${row.label||''}`:(row.label||row.value||'Group');
-      rows.push(`<div class="gantt-group-row ${row.kind==='wbs'?'wbs-group-row':''}" data-row-key="${escapeHtml(row.key||'')}" style="--group-depth:${depth}">${summary}<span class="gantt-group-label">${escapeHtml(label)}</span></div>`);
+      if(row.kind==='wbs'){
+        // WBS rows are hierarchy separators, not schedule activities. Keep the
+        // row so it stays vertically aligned with the Activities grid, but do
+        // not paint a yellow band or a summary/activity bar across the Gantt.
+        // This mirrors the Schedule AI Toolkit/P6-style hierarchy treatment:
+        // activity and milestone bars alone occupy the time chart.
+        rows.push(`<div class="gantt-wbs-spacer" data-row-key="${escapeHtml(row.key||'')}" style="--group-depth:${depth}" aria-label="${escapeHtml(label)}"><div class="gantt-grid"></div></div>`);
+      }else{
+        const summary=s&&f?`<i class="summary-bar" style="left:${pos(s)}%;width:${Math.max(.4,pos(f)-pos(s))}%"></i>`:'';
+        rows.push(`<div class="gantt-group-row" data-row-key="${escapeHtml(row.key||'')}" style="--group-depth:${depth}">${summary}<span class="gantt-group-label">${escapeHtml(label)}</span></div>`);
+      }
     }
   }else{
     let lastGroup=Symbol('start');
