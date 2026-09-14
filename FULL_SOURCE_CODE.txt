@@ -1,3 +1,5 @@
+
+
 ====================================================================================================
 FILE: .github/workflows/pages.yml
 ====================================================================================================
@@ -29,23 +31,11 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-====================================================================================================
-FILE: EDITION_COMPARISON.md
-====================================================================================================
-# Web Edition Comparison
 
-| Area | v5.0 Integrated | v5.1 Hardened |
-|---|---|---|
-| Master forensic/intelligence layer | Yes | Yes |
-| Stable Activity-ID forensic matching | Basic/internal-ID compatible | **Hardened semantic identity** |
-| Relationship comparison | Record-oriented | **Semantic predecessor/successor identity** |
-| Unknown XER table comparison | Generic | **Row-order resistant where stable IDs exist** |
-| Project/repository checksum validation | Basic package integrity | **Checksum verification and duplicate revision protection** |
-| Hostile/malformed import guards | Standard preflight | **NUL, extreme lines/fields and line-length guards** |
-| Diagnostic logging | Standard | **Structured, bounded and secret-redacted** |
-| Automated tests | 131 | 139 |
+====================================================================================================
+FILE: .nojekyll
+====================================================================================================
 
-For production use, v5.1 is the recommended edition. v5.0 is retained as a comparison point showing the integrated feature set before the hardening refinements.
 
 ====================================================================================================
 FILE: FULL_SOURCE_MANIFEST.json
@@ -60,488 +50,6 @@ FILE: FULL_SOURCE_MANIFEST.json
   "missing_sw_assets": [],
   "css_brace_balance": 0
 }
-
-====================================================================================================
-FILE: LAYOUT_REVIEW.md
-====================================================================================================
-# Unified Schedule Studio v5.2 — Professional Layout Review
-
-## 1. Sidebar visibility defect
-
-### Problem
-The navigation list was taller than the sidebar but the `nav` element itself was not scrollable. On shorter screens the later navigation buttons overflowed outside the dark sidebar and appeared over the light application background.
-
-### Correction
-- The application shell now uses `100dvh` and a fixed-height working area below the top command bar.
-- The sidebar remains fully painted for the entire application viewport.
-- The navigation list is the scrolling region (`overflow-y:auto`).
-- The file/browser status footer stays pinned at the bottom of the sidebar.
-- Navigation is divided into task-oriented sections: Plan, Analyse, Progress & Resources, Compare & Report, Models & Data, Workspace.
-- The legacy early-collapse rules are overridden. Labels remain visible until the genuinely narrow 980px breakpoint, after which the sidebar becomes a compact icon rail.
-
-## 2. Activities grouped by WBS
-
-### Problem
-The Activities viewer grouped rows by the internal P6 `wbs_id`, which is useful to the database but is not the description a planner expects to read.
-
-### Correction
-- WBS grouping now displays **WBS Description · WBS Code**.
-- The WBS column uses the same planner-facing representation rather than the raw internal identifier.
-- Calendar grouping/columns similarly prefer the calendar name while retaining its identifier.
-- Layout settings now label the option as **WBS Description** rather than exposing `wbs_id` to ordinary users.
-
-### Gantt alignment correction
-The previous grouped Activities table inserted WBS group-header rows on the left, while the Gantt on the right rendered activity rows only. After each WBS group the vertical row alignment could drift.
-
-v5.2 adds matching Gantt group rows and also retains an empty Gantt row for activities with invalid/missing dates. The table and Gantt therefore maintain a one-to-one visual row structure.
-
-## 3. Dashboard / application-shell redesign
-
-The layout was reviewed using current enterprise information-design principles: reduce command clutter, group functions by user task, maintain strong hierarchy, keep high-frequency information visible first, and reserve colour for meaning.
-
-### Global command bar
-Commands are grouped into:
-- Project selection
-- File/schedule actions
-- Schedule calculation
-- Undo/redo
-- Secondary package/compare/theme actions
-
-The command bar no longer wraps unpredictably. On constrained widths it scrolls horizontally rather than increasing its height and breaking the workspace geometry.
-
-### Dashboard hierarchy
-The dashboard now reads top-to-bottom as:
-1. Current project identity and key dates
-2. Four decision-oriented KPI cards
-3. Project Snapshot and Planner Attention panels
-4. Full-project schedule timeline
-
-The primary KPIs are:
-- Forecast Completion
-- Baseline Variance
-- Critical / ≤0 Float
-- Logic Density
-
-Schedule Health is presented as a status pill next to the project heading, while the Planner Attention panel surfaces the highest-volume schedule-health findings.
-
-### Visual system
-- Consistent 8–16px spacing rhythm
-- Softer panel borders and shadows
-- 10px panel radius
-- Tabular numerics for schedule metrics
-- Focus-visible states for keyboard navigation
-- Semantic status colours for healthy / warning / risk states
-- Reduced unnecessary decorative colour
-- More consistent responsive behaviour for standard business laptops
-
-## Remaining design principle
-The application deliberately remains information-dense. It is a project-controls workstation, not a marketing dashboard. The objective is to make dense schedule information easier to scan without hiding underlying records or reducing analytical transparency.
-
-====================================================================================================
-FILE: P6_COMMAND_MATRIX.md
-====================================================================================================
-# P6 Command Matrix — v6.1 Functional Command Layer
-
-This matrix records the current single-user Primavera P6 20.x-style command surface. All active commands are routed through one command dispatcher so menu, toolbar and keyboard behavior stay consistent.
-
-| Area | Command | Shortcut | Status | Current behavior |
-|---|---|---:|---|---|
-| File | Open Schedule | Ctrl+O | Functional | File dialog for XER/MSP XML with import diagnostics |
-| File | Save Schedule | Ctrl+S | Functional | Saves in current source format via browser download |
-| File | Save as XER | — | Functional | Integrity + conversion audit before XER export |
-| File | Save as MSP XML | — | Functional | Integrity + conversion audit before XML export |
-| File | Open/Save Project Package | — | Functional | Local portable project package |
-| File | Export Current View | — | Functional | CSV export appropriate to active view |
-| File | Print | Ctrl+P | Functional | Browser print of active view |
-| Edit | Undo / Redo | Ctrl+Z / Ctrl+Y | Functional | Model snapshot history |
-| Edit | Copy / Paste Activity | Ctrl+C / Ctrl+V | Functional | Copies activity plus assignments/codes/UDFs/notebooks; actual dates cleared on pasted activity |
-| Edit | Find | Ctrl+F | Functional | Focuses global activity find/search |
-| Edit | Add / Delete Activity | Insert / Delete | Functional | Cascade-safe activity CRUD |
-| Edit | Relationships | — | Functional | FS/SS/FF/SF + lag; predecessor may be in another loaded project |
-| Edit | Assign Resources | — | Functional | Assignment editor for units and costs |
-| View | Columns | — | Functional | Opens layout definition / column manager |
-| View | Group & Sort | — | Functional | Opens layout/group/sort manager |
-| View | Filters | — | Functional | Opens P6-style filter manager |
-| View | Zoom In / Out | Ctrl++ / Ctrl+- | Functional | Gantt zoom |
-| Project | Schedule | F9 | Functional | CPM engine using P6 20.x compatibility defaults |
-| Project | Schedule Options | — | Functional | P6-style options dialog: OOS, lag calendar, expected finish, suspend/resume, float, external logic, leveling |
-| Project | Imported P6 vs Calculated | — | Functional | Preserves imported dates/float and reports calculation differences after F9 |
-| Project | Update Progress / EVM | — | Functional | Progress update workflow + validation + EVM |
-| Project | Level Resources | — | Functional | Finite-capacity leveling pass followed by recalculation |
-| Project | Leveling Options | — | Functional | Opens resource-leveling section in Schedule Options |
-| Project | Maintain Baselines | — | Functional | Project/Primary/Secondary/Tertiary baseline roles |
-| Tools | Trace Logic / Float Paths | — | Functional | Calculation diagnostics and multiple float paths |
-| Tools | Global Change / Schedule Editor | — | Functional | Structured schedule/table editor |
-| Tools | Compare Revisions | — | Functional | Current vs previous schedule comparison |
-| Resources | Resource Profiles | — | Functional | Histogram/S-curve/resource profiles |
-
-## Prepared command IDs
-
-The central registry also reserves stable IDs for future completion against the supplied P6 reference workflow: New Project, Close Project, Cut Activity, Find & Replace, Activity Steps, Expenses, Risks and Issues. Existing Risks/Issues/Steps data can already be viewed/edited through the canonical/raw and inspector surfaces; the prepared IDs allow P6-equivalent dedicated commands to be added without changing the command architecture.
-
-====================================================================================================
-FILE: P6_GOLDEN_VALIDATION_PLAN.md
-====================================================================================================
-# P6 20.x Golden-File Validation Plan
-
-The product target is Primavera P6 Professional 20.x behavior for a single user. Development continues without real files, but production parity will be qualified when the user supplies representative P6 schedules.
-
-## Inputs requested when available
-
-1. A representative P6 20.x XER containing WBS, multiple calendars, milestones, constraints, progress, resources, costs, activity codes and UDFs.
-2. A later revision of the same schedule.
-3. A contractual/approved baseline if available.
-4. A difficult schedule with out-of-sequence progress, negative float, Expected Finish, suspend/resume, external relationships or unusual calendars.
-5. A short recording or written sequence of the user's normal P6 update workflow.
-
-## Golden comparisons
-
-For the same Data Date and calculation options compare, activity by activity:
-
-- Early Start / Early Finish
-- Late Start / Late Finish
-- Total Float / Free Float
-- Remaining Start / Remaining Finish
-- Expected Finish behavior
-- Suspend / Resume behavior
-- Retained Logic / Progress Override / Actual Dates
-- FS / SS / FF / SF relationships and signed lag
-- Relationship lag calendar selection
-- Multiple activity calendars and exceptions
-- Primary/secondary constraints
-- External relationships
-- Longest/driving path
-- Multiple float paths
-- Resource-leveling results and priority ordering
-
-Discrepancies remain visible through the Imported P6 vs Schedule Studio Calculation report. They are never silently described as Oracle-equivalent.
-
-====================================================================================================
-FILE: P6_STYLE_FEATURE_MATRIX.md
-====================================================================================================
-# P6-style Single-User Feature Matrix
-
-| Area | v6.0 status | Notes |
-|---|---|---|
-| Desktop menu/toolbar/module navigation | Included | P6-inspired dense desktop structure |
-| EPS / Projects | Included | Project table plus project-level Gantt |
-| Activities | Included | Split grid/Gantt and bottom inspector |
-| WBS | Included | Hierarchy editing, move, clone, reassign activities |
-| Relationships | Included | FS/SS/FF/SF and lag |
-| Gantt relationship lines | Included | Squared connectors, capped for performance |
-| Baseline bars | Included | Multiple baseline roles supported |
-| Data Date line | Included | Blue scheduling/status line |
-| Activity Inspector | Included | General/Status/Dates/Logic/Resources/Expenses/Codes/Constraints/Notes/Steps/Risks/Trace/Raw |
-| Layouts / Filters / Group & Sort | Included | Saved layouts and filter engine |
-| Resource Sheet | Included | Excel-friendly assignment view |
-| Histograms / S-curves | Included | Daily/weekly/monthly units/cost |
-| Resource Leveling | Included | Independent finite-capacity approximation |
-| Calendars | Included | Viewer/editor, shifts and exceptions |
-| Activity Codes / UDFs | Included | XER-native tables |
-| OBS | Included | Canonical/raw table when present |
-| Roles | Included | Canonical/raw table when present |
-| Cost Accounts | Included | Canonical/raw table when present |
-| Resource Curves | Included | Used by analysis/leveling where available |
-| Risks | Included | Source XER risk tables / activity-linked inspector |
-| Issues | Included when present | Generic canonical/raw view |
-| Work Products / Documents | Included when present | WP table view |
-| Schedule F9 | Included | Independent CPM engine |
-| Expected Finish / Suspend / Resume / OOS options | Included | Configurable scheduling settings |
-| Progress update | Included | Progress CSV + validation + EVM/productivity |
-| Compare revisions | Included | Stable Activity-ID/semantic relationship matching |
-| Critical/near-critical/float paths | Included | Deterministic analysis |
-| Why Did My Date Move? | Included | Evidence/confidence-based attribution |
-| DCMA-style / enhanced health | Included | Transparent formulas and drill-down |
-| Forecast trends / stability | Included | Revision repository based |
-| Dashboards / reports / lookahead / narrative | Included | Deterministic evidence-driven reporting |
-| BIM / 4D | Included | Local model workflow; not cloud dependent |
-| XER / MSP XML import-export | Included | Cross-format canonical model |
-| Local packages / backup | Included | Browser-local single-user project packaging |
-| User administration/security profiles | Omitted | Intentionally unnecessary for one user |
-| Team usage by user / access rights | Omitted | Single-user design |
-| Enterprise server database admin | Omitted | Local browser workspace |
-| Concurrent multi-user editing | Omitted | Single-user design |
-| Oracle proprietary scheduling parity | Not claimed | Independent calculation engine; golden-file validation recommended |
-
-====================================================================================================
-FILE: P6_STYLE_FEATURE_MATRIX_V63.md
-====================================================================================================
-# P6-style feature matrix — v6.3
-
-| Area | v6.3 behaviour | Status |
-|---|---|---|
-| Menubar | P6-style top menus, outside-click/other-menu dismissal | Implemented |
-| Toolbar | Shared command registry for menu, toolbar and keyboard | Implemented |
-| Projects | User-selected persistent folder tree for XER/XML schedules | Implemented (Chromium File System Access API) |
-| Activities | Editable table, true hierarchical WBS grouping, shared Gantt row model | Implemented |
-| Gantt | Current/baseline/actual/progress/critical/milestones/links/WBS summaries | Implemented |
-| Activity Start/Finish/% | Direct planning edits; duration recalculated; F9 still required | Implemented |
-| Activity Details | General/Status/Dates/Relationships/Resources/Codes/Constraints editable | Implemented |
-| Relationships | Friendly names + neighborhood graphic | Implemented |
-| Resource Dictionary | Hierarchical resource tree + CRUD/rates | Implemented |
-| Assignments & Costs | Assignment CRUD, units/costs/curves/roles | Implemented |
-| Resource Profiles | Extensive filters, time intervals, units/cost, series, compression | Implemented |
-| Resource Audit Table | Always visible; TSV copy to Excel + CSV | Implemented |
-| Calendars | Workweek/exception editing and project calendar view | Implemented |
-| Activity Codes/UDFs | Dictionary and task assignment editing | Implemented |
-| Baselines | P6-like Primary/Secondary/Tertiary roles + historical baselines | Implemented |
-| F9 Scheduling | Independent CPM with configurable P6-style options | Implemented; not Oracle code |
-| Imported vs Calculated | Preserves imported P6 evidence and reports discrepancies | Implemented |
-| Multi-project logic | Loaded-project external relationships supported | Implemented/expanding |
-| Multi-user/security | Not included by design | Excluded |
-
-====================================================================================================
-FILE: README.md
-====================================================================================================
-# Schedule Studio Professional v6.3 — P6 Hierarchy, Projects Folder & Resource Audit
-
-Full GitHub Pages source release for the single-user, browser-based Primavera P6 20.x-style schedule workbench.
-
-## v6.3 highlights
-
-- P6-style menu bar now dismisses on outside click or when another menu is opened.
-- Activities and Gantt share one exact row model; selecting an activity no longer causes bar reflow or vertical drift.
-- WBS grouping follows the true `parent_wbs_id` hierarchy and supports expand/collapse.
-- Projects replaces the traditional EPS with a persistent user-selected local folder tree containing XER/XML schedules.
-- Ctrl+S can write back to an opened schedule file or the selected Projects folder where browser permission allows.
-- Start, Finish and % Complete are directly editable planning inputs; duration is recalculated, but F9 remains authoritative for network dates and float.
-- Activity Details provide editable P6-style General, Status, Dates, Relationships, Resources, Codes and Constraints tabs.
-- Resource Profiles provide detailed Histogram and S-Curve auditing by resource, WBS, activity code, status, date range, period, units/cost and Planned/Actual/Remaining/Forecast series.
-- The time-phased audit table is always visible below the charts and can be copied as tab-separated data directly into Excel.
-
-## Run locally
-
-```bash
-npm run verify
-python3 -m http.server 8080
-```
-
-Open `http://localhost:8080` in a current Chrome or Edge browser. Folder access uses the File System Access API and therefore requires a secure context; localhost and GitHub Pages satisfy that requirement in supported Chromium browsers.
-
-## Deploy
-
-No build step is required. Upload the contents of this directory to a static HTTPS host such as GitHub Pages.
-
-## Validation
-
-See:
-
-- `TEST_REPORT_V63.md`
-- `REAL_XER_VALIDATION_V63.md`
-- `P6_STYLE_FEATURE_MATRIX_V63.md`
-- `RELEASE_NOTES_V63.md`
-
-All schedule/model processing remains browser-side/local-first. For contractual use, continue validating calculated schedules against approved Primavera P6 golden schedules.
-
-====================================================================================================
-FILE: README_V6.md
-====================================================================================================
-# Schedule Studio Professional v6.0 — P6-style Single-User Edition
-
-A local-first browser project-controls workstation for Primavera P6 XER and Microsoft Project XML schedules. v6.0 reorganises the application into a dense desktop scheduling workflow inspired by professional Primavera usage while retaining the existing deterministic scheduling, forensic, resource, EVM, comparison, BIM and reporting engines.
-
-## Main desktop structure
-
-1. Application title/status bar
-2. File / Edit / View / Project / Enterprise / Tools / Reports / Help menu bar
-3. Compact command toolbar
-4. Primary module tabs
-5. Layout/filter strip
-6. Activity table + synchronized Gantt
-7. Bottom Activity Inspector
-8. Project status bar
-
-There is no long scrolling left navigation in v6.0.
-
-## Single-user design
-
-The application is deliberately single-user and local-first. It omits user administration, security profiles, team utilisation by user, workflow approvals, server database administration and concurrent editing. Project/schedule data remains local to the browser unless the user explicitly exports a file or package.
-
-## Activities workspace
-
-The Activities view includes:
-
-- WBS-grouped activity table using WBS descriptions/codes rather than internal WBS IDs
-- Activity ID / Activity Name / Original Duration / Remaining Duration / Start / Finish / % Complete / Total Float default layout
-- synchronized vertical scrolling between table and Gantt
-- draggable table/Gantt splitter
-- baseline, actual, progress and current bars
-- red critical bars and milestone symbols
-- blue Data Date line
-- black WBS summary bars
-- squared relationship connectors
-- Gantt zoom
-- Layout / Filter / Group & Sort controls
-- bottom Activity Inspector
-
-Activity Inspector tabs include General, Status, Dates, Relationships, Resources, Expenses, Codes, Constraints, Notebooks, Steps, Risks, Trace Logic and Raw Data.
-
-## Major P6-like functional areas exposed
-
-- Projects / EPS
-- Activities
-- WBS
-- Relationships
-- Resources and assignments
-- Roles
-- OBS
-- Calendars
-- Activity Codes and UDFs
-- Cost Accounts
-- Resource Curves
-- Issues / Risks / Work Products where the source XER contains them
-- Baselines
-- Schedule (F9)
-- Resource Leveling
-- Progress / EVM
-- Layouts / Filters / Group & Sort
-- Schedule Editor / Global Change-style editing workspace
-- Logic diagnostics / Trace Logic / Float Paths
-- Schedule comparison
-- Forensic intelligence
-- Schedule health / risk radar
-- Trends / forecast intelligence
-- Histograms / S-curves
-- Reporting / narrative / lookahead
-- BIM / 4D links and local viewer
-- Project packages / local workspace
-
-## GitHub Pages
-
-Upload the contents of this folder to the root of a GitHub Pages repository. No backend is required.
-
-## Testing
-
-Run:
-
-```bash
-npm run verify
-```
-
-This performs module/import validation and the complete automated test suite.
-
-====================================================================================================
-FILE: README_V61.md
-====================================================================================================
-# Schedule Studio Professional v6.1
-
-Single-user Primavera P6 20.x-style scheduling, editing, analysis and forensic project-controls workbench.
-
-## Main v6.1 change
-
-The P6-style menus, toolbar and keyboard shortcuts now use one central command architecture rather than separate UI-only handlers. Day-one planner commands are functional from each supported command surface.
-
-P6 Professional 20.x is the default scheduling compatibility profile. Calculation behavior remains configurable through Schedule Options and Advanced Settings.
-
-After F9, the application can compare its calculated ES/EF/LS/LF/float against the values originally imported from P6. Imported values are preserved as evidence rather than silently treated as identical to the independent engine result.
-
-See `P6_COMMAND_MATRIX.md` and `P6_GOLDEN_VALIDATION_PLAN.md`.
-
-====================================================================================================
-FILE: README_V62.md
-====================================================================================================
-# Schedule Studio Professional v6.2 — P6 Editors & Resource Analytics
-
-Single-user browser-based Primavera P6-style scheduling, editing, analysis and forensic project-controls workbench. All schedule processing remains local in the browser and the application is suitable for GitHub Pages/static hosting.
-
-## v6.2 highlights
-
-- Dashboard baseline finish + variance comparison, with late variance highlighted red.
-- Activities use planner-facing WBS descriptions/codes rather than internal WBS IDs.
-- P6-style Activity Columns chooser and saved-layout integration.
-- Hardened Activity table/Gantt row-height alignment and synchronized scrolling.
-- Relationship workspace with friendly Finish-to-Start / Start-to-Start / Finish-to-Finish / Start-to-Finish terminology plus local logic preview.
-- Editable Resource Dictionary using native P6 `parent_rsrc_id` hierarchy.
-- Add/edit/delete/move resources, resource rates and assignment-aware delete safeguards.
-- Editable Resources & Costs assignment workspace.
-- Resource Histograms/S-curves with resource hierarchy, type, role, WBS, status, activity-code and date filters; day/week/month/quarter buckets; units/cost; series toggles; horizontal compression; CSV export and underlying data.
-- Weekly/monthly/quarterly resource periods align to true calendar boundaries.
-- Editable calendar workbench with standard workweek, project-date calendar display and clickable exceptions.
-- Native P6 numeric calendar exception dates are decoded correctly.
-- Editable Activity Code and Task UDF definitions/values/assignments.
-- Schedule Analysis graphics: severity distribution, WBS concentration and affected-activity timeline.
-- Persistent P6-style command toolbar retained.
-
-## Run
-
-Serve the folder from any static web server or GitHub Pages. For local development:
-
-```bash
-npm run serve
-```
-
-Then open `http://localhost:8080`.
-
-## Verify
-
-```bash
-npm run verify
-```
-
-This runs module syntax/import checks followed by the complete Node regression suite.
-
-## Important parity note
-
-The calculation engine is independent of Oracle Primavera P6. Imported P6 calculations remain available for comparison, and Schedule Studio surfaces calculation differences rather than silently claiming Oracle-equivalent results. The supplied real XER files were used as validation inputs but are not redistributed with this package.
-
-====================================================================================================
-FILE: README_V63.md
-====================================================================================================
-# Schedule Studio Professional v6.3
-
-Single-user, browser-based Primavera P6 20.x-style schedule workbench. All schedule parsing, editing, calculation and analysis remains local in the browser. GitHub Pages or another static HTTPS host can serve the application.
-
-## v6.3 focus
-
-- Persistent P6-style menu and toolbar command system.
-- Menus close when another menu is opened or the user clicks elsewhere.
-- Activities grid and Gantt use one shared display-row model.
-- WBS grouping follows `parent_wbs_id` recursively rather than treating WBS values as flat groups.
-- Selecting an activity only changes selection state and the detail inspector; it does not rebuild/reorder the Gantt.
-- Start, Finish and Activity % Complete are editable in the Activities columns. Start/Finish edits recompute planning duration against the activity calendar but do not overwrite calculated early/late dates until F9 is run.
-- P6-like editable activity detail tabs for General, Status, Dates, Relationships, Resources, Codes and Constraints.
-- Projects replaces EPS with a user-selected folder of XER/XML schedules. Chrome/Edge File System Access handles are stored in IndexedDB; Ctrl+S writes back when permission is available.
-- Resource Profiles provide Resource/WBS/Code/Status/date filters, daily/weekly/monthly/quarterly intervals, units/cost mode, Planned/Actual/Remaining/Forecast series and horizontal compression.
-- Time-phased resource audit data is always shown beneath the Histogram and S-Curve and can be copied as tab-separated data directly into Excel.
-
-## Projects folder
-
-Open **Projects** and select a project folder. The application scans subfolders recursively for `.xer` and `.xml` schedule files and renders them as a tree. The directory handle is stored locally in IndexedDB. Browser security can require the user to click **Reconnect Folder** after restarting the browser.
-
-For best results use current Chrome or Edge over HTTPS (GitHub Pages is suitable). No file is uploaded to a server by Schedule Studio.
-
-## Schedule editing
-
-Changing Start, Finish or % Complete creates/updates planning inputs. The UI displays an **F9 required** warning. F9 remains authoritative for early/late dates, float and network-driven dates. Imported P6 calculation values remain available for comparison with Schedule Studio's calculation.
-
-## Resource audit
-
-Resource Histograms and S-Curves share one filter state. The table below the graphics includes:
-
-- Period
-- Planned
-- Actual
-- Remaining
-- Forecast
-- Forecast vs Plan
-- Cumulative Planned
-- Cumulative Actual
-- Cumulative Forecast
-- Cumulative Forecast vs Plan
-
-Use **Copy Table for Excel** for tab-separated clipboard output or export CSV.
-
-## Run locally
-
-```bash
-python3 -m http.server 8080
-```
-
-Then open `http://localhost:8080` in Chrome/Edge. Folder access requires a secure context; localhost is treated as secure by modern Chromium browsers.
-
-## Validation
-
-See `TEST_REPORT_V63.md` and `REAL_XER_VALIDATION_V63.md`. Desktop Chromium could not be used as an automated visual harness in the build container because its system D-Bus dependency hangs; this is explicitly reported rather than counted as a passing visual test.
 
 ====================================================================================================
 FILE: REAL_XER_VALIDATION.json
@@ -650,29 +158,6 @@ FILE: REAL_XER_VALIDATION.json
     "roundTripCountDiffTables": []
   }
 ]
-
-====================================================================================================
-FILE: REAL_XER_VALIDATION.md
-====================================================================================================
-# Real XER Validation — v6.2
-
-The following user-supplied schedules were used as validation inputs. They are **not included in the release ZIP**.
-
-| XER | Activities | Relationships | WBS | Resources | Assignments | Calendars | Code Assignments | UDF Values | Cycles | Row-count Round Trip |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| P3379-8.xer | 3,815 | 6,609 | 782 | 7 | 912 | 18 | 40,331 | 2,805 | 0 | PASS |
-| NEWPROJ-1.xer | 412 | 278 | 68 | 2 | 291 | 2 | 0 | 0 | 0 | PASS |
-| P3347-5.xer | 860 | 1,223 | 453 | 8 | 131 | 3 | 562 | 221 | 0 | PASS |
-
-## Resource profile bucket checks
-
-- `P3379-8.xer`: 832 daily / 126 weekly / 32 monthly / 13 quarterly buckets.
-- `NEWPROJ-1.xer`: 460 daily / 67 weekly / 17 monthly / 6 quarterly buckets.
-- `P3347-5.xer`: resource assignments exist, but their exported budget/actual/remaining quantities and costs are all zero, so the profile correctly has no non-zero bars/curve points.
-
-All calendars in all three files decoded successfully. `P3379-8.xer` contained 1,916 decoded exception dates; `NEWPROJ-1.xer` contained 145; `P3347-5.xer` contained 225.
-
-The native resource hierarchy was also reconstructed, including examples such as `Suir Eng → Suir E&I` and `Ireland Building → MEP Services → Mechanical`.
 
 ====================================================================================================
 FILE: REAL_XER_VALIDATION_V63.json
@@ -808,162 +293,6 @@ FILE: REAL_XER_VALIDATION_V63.json
     }
   }
 ]
-
-====================================================================================================
-FILE: REAL_XER_VALIDATION_V63.md
-====================================================================================================
-# Real XER Validation — v6.3
-
-The three user-supplied schedules were used as golden real-world inputs. The XER files themselves are not included in the release package.
-
-| File | Activities | WBS | WBS roots | Hierarchy errors | Relationships | Resources | Assignments | Calendars | Cycles | XER round-trip |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| P3379-8.xer | 3,815 | 782 | 1 | 0 | 6,609 | 7 | 912 | 18 | 0 | PASS |
-| NEWPROJ-1.xer | 412 | 68 | 1 | 0 | 278 | 2 | 291 | 2 | 0 | PASS |
-| P3347-5.xer | 860 | 453 | 1 | 0 | 1,223 | 8 | 131 | 3 | 0 | PASS |
-
-## WBS / Activities alignment validation
-
-- **P3379-8.xer**: WBS tree reconstructed 782/782 WBS nodes; shared Activities/Gantt row model contained 3,815 activity rows with 3,815 unique activities; parent-child depth errors: **0**.
-- **NEWPROJ-1.xer**: WBS tree reconstructed 68/68 WBS nodes; shared Activities/Gantt row model contained 412 activity rows with 412 unique activities; parent-child depth errors: **0**.
-- **P3347-5.xer**: WBS tree reconstructed 453/453 WBS nodes; shared Activities/Gantt row model contained 860 activity rows with 860 unique activities; parent-child depth errors: **0**.
-
-The Activities view intentionally omits empty leaf WBS bands when they contain no visible activity and are not an ancestor of a visible activity. Parent/ancestor bands required to preserve hierarchy remain visible.
-
-## Resource profile validation
-
-- **P3379-8.xer**: 832 daily / 126 weekly / 32 monthly / 13 quarterly buckets. Resource roots: 2.
-- **NEWPROJ-1.xer**: 460 daily / 67 weekly / 17 monthly / 6 quarterly buckets. Resource roots: 1.
-- **P3347-5.xer**: 0 daily / 0 weekly / 0 monthly / 0 quarterly buckets. Resource roots: 1.
-
-P3347-5.xer contains resource assignment rows whose exported time-phased quantity/cost totals are zero, so zero histogram/S-curve buckets are expected rather than synthesized.
-
-## Calendars / relationships
-
-- **P3379-8.xer**: 18/18 calendars decoded; 1,916 exceptions; 6,609/6,609 relationships mapped to planner-friendly labels.
-- **NEWPROJ-1.xer**: 2/2 calendars decoded; 145 exceptions; 278/278 relationships mapped to planner-friendly labels.
-- **P3347-5.xer**: 3/3 calendars decoded; 225 exceptions; 1,223/1,223 relationships mapped to planner-friendly labels.
-
-## Direct edit / F9 separation
-
-- **P3379-8.xer**: direct planning edit **OK**; requires F9: `True`; imported/calculated early dates preserved before F9: `True`; working duration remained finite (120 h in the sampled activity).
-- **NEWPROJ-1.xer**: direct planning edit **OK**; requires F9: `True`; imported/calculated early dates preserved before F9: `True`; working duration remained finite (8 h in the sampled activity).
-- **P3347-5.xer**: direct planning edit **OK**; requires F9: `True`; imported/calculated early dates preserved before F9: `True`; working duration remained finite (112 h in the sampled activity).
-
-## CPM / round-trip
-
-- **P3379-8.xer**: cycles = 0; CPM preflight = **OK**; project finish = `2027-12-14T17:00:00.000Z`; warnings = 0; XER table row-count differences after serialize/reparse = 0.
-- **NEWPROJ-1.xer**: cycles = 0; CPM preflight = **OK**; project finish = `2026-04-17T17:00:00.000Z`; warnings = 0; XER table row-count differences after serialize/reparse = 0.
-- **P3347-5.xer**: cycles = 0; CPM preflight = **OK**; project finish = `2026-12-23T08:00:00.000Z`; warnings = 0; XER table row-count differences after serialize/reparse = 0.
-
-====================================================================================================
-FILE: RELEASE_NOTES_V6.md
-====================================================================================================
-# v6.0 Release Notes — P6-style Single-User Desktop
-
-## Main UX changes
-
-- Removed the long left sidebar.
-- Added desktop title bar, application menu, compact command toolbar, primary module tabs and bottom status bar.
-- Rebuilt Activities around the classic planning workflow: WBS/activity grid + Gantt + bottom Activity Inspector.
-- Added draggable activity-grid/Gantt splitter and synchronized vertical scrolling.
-- Added P6-inspired green normal bars, red critical bars, blue Data Date line, black WBS summary bars, baseline/progress/actual layers and squared relationship connectors.
-- Added Gantt zoom controls.
-- Reworked EPS/Projects into a project table plus high-level project Gantt.
-
-## Single-user P6-style tool exposure
-
-Menus and module tabs now expose Projects/EPS, Activities, WBS, Relationships, Resources, Roles, OBS, Calendars, Activity Codes/UDFs, Cost Accounts, Resource Curves, Risks, Issues, Work Products/Documents, Baselines, F9 Schedule, Resource Leveling, Progress/EVM, Layouts/Filters, Compare, Trace Logic, Forensic Intelligence, Health/Risk, Trends/Forecast, Reports, Search, BIM/4D and project packages.
-
-Multi-user administration, security profiles, team access control and server administration are intentionally excluded.
-
-## Activity Inspector
-
-General, Status, Dates, Relationships, Resources, Expenses, Codes, Constraints, Notebooks, Steps, Risks, Trace Logic and Raw Data.
-
-====================================================================================================
-FILE: RELEASE_NOTES_V61.md
-====================================================================================================
-# v6.1 Release Notes
-
-- P6 20.x is now the default compatibility target.
-- Added centralized P6 command registry.
-- Unified menu, toolbar and keyboard dispatch.
-- Added functional Ctrl+O, Ctrl+S, Ctrl+F, Ctrl+C/V, Insert/Delete, F9 and Gantt zoom shortcuts.
-- Added P6-style Schedule Options modal.
-- Added Resource Leveling Options command.
-- Added imported-P6-versus-calculated date/float discrepancy report.
-- Added activity copy/paste carrying assignments, codes, UDFs and notebooks while clearing actual dates.
-- Allowed external predecessor relationships to activities in another project already loaded in the model.
-- Added stable command IDs for planned P6 functions so future workflows can be integrated without redesigning the command layer.
-
-====================================================================================================
-FILE: RELEASE_NOTES_V62.md
-====================================================================================================
-# v6.2 Release Notes
-
-## Planner-facing improvements
-
-1. Dashboard uses the Primary baseline for Baseline Finish and Finish Variance. Positive/later variance is shown as a risk/red condition.
-2. Activities show WBS description/code, support field selection through Columns, and use matched grid/Gantt row heights.
-3. Relationships use friendly relationship names and provide a selected-logic mini Gantt.
-4. Resource Sheet is now a hierarchical Resource Dictionary with CRUD, parent movement, rates and assignment-aware deletion.
-5. Resources & Costs assignments are directly editable.
-6. Calendars have an editable standard workweek and project-range calendar view with date exceptions.
-7. Activity Codes and task UDF definitions/assignments are editable/addable.
-8. Schedule Analysis displays issue graphics for each selected rule.
-9. Resource Profiles now include comprehensive filtering, date clipping, true calendar buckets, units/cost modes, series toggles, compression and CSV export.
-10. P6 toolbar remains part of the persistent desktop shell.
-
-## Additional defect found during real-XER testing
-
-Native P6 calendars encode weekdays as `(0||1()...)` through `(0||7()...)`. The old decoder handled a shorter synthetic form more reliably than the real export structure. v6.2 now decodes the native structure and numeric/OLE-style calendar exception dates. This is covered by regression tests and the three real XER validation files.
-
-====================================================================================================
-FILE: RELEASE_NOTES_V63.md
-====================================================================================================
-# Release Notes — v6.3
-
-## P6 menu behaviour
-- File/Edit/View/Project/etc. menus close when the user clicks outside the menubar.
-- Opening another top-level menu closes the previously open menu.
-- Executing a menu command closes all menus.
-
-## Activities / Gantt
-- Rebuilt WBS grouping around true recursive `parent_wbs_id` hierarchy.
-- WBS identity is normalized across numeric/string IDs to prevent false roots.
-- Grid and Gantt consume the exact same row model.
-- Activity selection no longer rerenders or reorders Gantt bars.
-- Fixed row/header heights and stable scrollbar gutters improve vertical alignment.
-- Added inline Start, Finish and % Complete editing.
-- Planning date edits recalculate working duration using the activity calendar but require F9 for network calculation.
-- Bottom Activity Details now provides editable P6-style fields and dropdowns for WBS, Calendar, Status, Relationships, Resources, Codes and Constraints.
-
-## Projects replaces EPS
-- Added persistent user-selected schedule folder using the File System Access API.
-- Recursive tree view of folders and XER/XML files.
-- Directory handle stored in IndexedDB.
-- Open directly from the project tree.
-- Ctrl+S writes back to the opened file when permission is available.
-- Schedules opened outside the tree can save to the selected project-folder root.
-
-## Resource analytics
-- Resource selection follows the actual resource hierarchy.
-- Resource, descendants, Resource Type, Role, WBS, Status, Activity Code, date range and interval filters.
-- Daily, weekly, monthly and quarterly aggregation.
-- Units/Hours and Cost modes.
-- Planned, Actual, Remaining and Forecast visibility toggles.
-- Horizontal chart compression.
-- Always-visible time-phased audit table beneath charts.
-- Excel-ready TSV clipboard copy.
-- CSV export includes cumulative values and Forecast-vs-Plan variance.
-
-## Toolbar
-- P6-style command toolbar remains permanently available.
-- Added generic Save command to the toolbar while retaining explicit XER/XML download options.
-
-## Compatibility
-- P6 Professional 20.x remains the default scheduling-compatibility profile.
 
 ====================================================================================================
 FILE: SOURCE_MANIFEST.json
@@ -2111,6 +1440,667 @@ FILE: SOURCE_MANIFEST_V62.json
 }
 
 ====================================================================================================
+FILE: SOURCE_MANIFEST_V63.json
+====================================================================================================
+{
+  "release": "Schedule Studio Professional v6.3",
+  "version": "6.3.0",
+  "file_count": 130,
+  "files": [
+    {
+      "path": ".github/workflows/pages.yml",
+      "bytes": 598,
+      "sha256": "873e897c2af294b1f0711e2c94c2f1ad4c633bee903b0876e5871d2a43a979f9"
+    },
+    {
+      "path": ".nojekyll",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "EDITION_COMPARISON.md",
+      "bytes": 940,
+      "sha256": "330eca57389ada31f7374eeb4435532449d8cd062d03e3fa221a427e963d35a6"
+    },
+    {
+      "path": "FULL_SOURCE_MANIFEST.json",
+      "bytes": 185,
+      "sha256": "b4dd191b06641b0b87d84976cabcd043f57ea5264332f32105dee45205ed6857"
+    },
+    {
+      "path": "LAYOUT_REVIEW.md",
+      "bytes": 3762,
+      "sha256": "ea82fd6ac49c28847fc3d73483fbd6ceb0f1f47313662bf809a2961125f1b76e"
+    },
+    {
+      "path": "P6_COMMAND_MATRIX.md",
+      "bytes": 3536,
+      "sha256": "b21bf89a18cef4c98273a9f2b47da5f1d075649de9ee489e42e92dc369c62a61"
+    },
+    {
+      "path": "P6_GOLDEN_VALIDATION_PLAN.md",
+      "bytes": 1523,
+      "sha256": "75b03feb3b3c71bfee0c0a263102db32c1be9f37d723708e397aa88dc19b7fcc"
+    },
+    {
+      "path": "P6_STYLE_FEATURE_MATRIX.md",
+      "bytes": 3019,
+      "sha256": "1254f688ea31196e04861985946a157445ff37d4476d402f2976346373ae93bc"
+    },
+    {
+      "path": "P6_STYLE_FEATURE_MATRIX_V63.md",
+      "bytes": 1827,
+      "sha256": "f1580db8a80eb177fbdac07d6276aefd9ae6e16f83867c14b02187bf0a4c83c6"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2079,
+      "sha256": "900e9d157b47d2eda823c52120db270b42c9729b99af11a89174578ee16271e9"
+    },
+    {
+      "path": "README_V6.md",
+      "bytes": 2858,
+      "sha256": "6d7faefc900257efa85ee8563ed790821c2c04aa6f89d7c1d6dec3d0867a8462"
+    },
+    {
+      "path": "README_V61.md",
+      "bytes": 837,
+      "sha256": "e7ce046c70467a060753cd1dcfbc3689642851d7c55ffeb64797a116291c2514"
+    },
+    {
+      "path": "README_V62.md",
+      "bytes": 2359,
+      "sha256": "bd51c66c11715840a594d513c46751cabf67be44cbdc8bd5710f6ad40779040f"
+    },
+    {
+      "path": "README_V63.md",
+      "bytes": 3181,
+      "sha256": "686968de6cf061734bf209cf02e573b3578aec8d716f992172863df3890e6993"
+    },
+    {
+      "path": "REAL_XER_VALIDATION.json",
+      "bytes": 2252,
+      "sha256": "55c9e8275932490f3f7181dc6a88154abab327d1c6b5fd02807ae1540abdf407"
+    },
+    {
+      "path": "REAL_XER_VALIDATION.md",
+      "bytes": 1277,
+      "sha256": "b087f8033405e37b5a040ee1171bab1c24db7f27a01b21da2b3b603ca3733591"
+    },
+    {
+      "path": "REAL_XER_VALIDATION_V63.json",
+      "bytes": 2927,
+      "sha256": "4f9943d3c3cf1536829a7c4a9f3aa5d10b356f9efa7794c210d1542b08142d3d"
+    },
+    {
+      "path": "REAL_XER_VALIDATION_V63.md",
+      "bytes": 3451,
+      "sha256": "b8c562c7613ae4115b1e4bb6bd82f312f6b821cd2f2ed83079c4c0155566057f"
+    },
+    {
+      "path": "RELEASE_NOTES_V6.md",
+      "bytes": 1413,
+      "sha256": "4b5bfd7bc4739b69a2f9c60d89874e468cf2207d4a27e6421e1461d40af6b47e"
+    },
+    {
+      "path": "RELEASE_NOTES_V61.md",
+      "bytes": 752,
+      "sha256": "14d4494bf79de95da48e6a5d502c78b7d324eee9ffb8842e5cfc6ef776f35d5e"
+    },
+    {
+      "path": "RELEASE_NOTES_V62.md",
+      "bytes": 1439,
+      "sha256": "ba39f8f51de5c9f7aab42fb2ca24dd92221a790afdd0d6b98b4058c080dc44bf"
+    },
+    {
+      "path": "RELEASE_NOTES_V63.md",
+      "bytes": 2122,
+      "sha256": "fc57a58fd782f9f40f06389262185a2258edebf487a348b51684ef370c682164"
+    },
+    {
+      "path": "SOURCE_MANIFEST.json",
+      "bytes": 15529,
+      "sha256": "e9a904b60a4a729f8c97bcca143b94c1db9a31706fa21663cf748c80966f0576"
+    },
+    {
+      "path": "SOURCE_MANIFEST_V62.json",
+      "bytes": 18526,
+      "sha256": "c4458725baec2c5415e5b66e1b2ad5be0f42d37188d3a992ff57a9c4a892f3e8"
+    },
+    {
+      "path": "STATIC_VALIDATION.json",
+      "bytes": 469,
+      "sha256": "66d7760aa3942b13baa7a730181cfd0255d62d430698cc3b2330f968826f4d7f"
+    },
+    {
+      "path": "STATIC_VALIDATION_V62.json",
+      "bytes": 172,
+      "sha256": "0d5f8831f27799eb565b457a53d243cf2773c07039f6f1d9a0806ec4c332ef98"
+    },
+    {
+      "path": "STATIC_VALIDATION_V63.json",
+      "bytes": 189,
+      "sha256": "82151b93d24e5623dda0a9a9a7037b89b76db6b45362d28aca9b9f8368a3e025"
+    },
+    {
+      "path": "TEST_REPORT.md",
+      "bytes": 4325,
+      "sha256": "e9b5d0b11f7b423b021de36601982cf9cbd45f7e7824fa60d87031c784c2fb84"
+    },
+    {
+      "path": "TEST_REPORT_LAYOUT.md",
+      "bytes": 2364,
+      "sha256": "b9391c77b61faa43df5c57aafbc9e16094ae562558a4353991c4d0f6287e8634"
+    },
+    {
+      "path": "TEST_REPORT_V52_FULL.md",
+      "bytes": 746,
+      "sha256": "b0a9f981815146e74ef170274479b671d44994ffd23a1e813c3c78164af155e0"
+    },
+    {
+      "path": "TEST_REPORT_V6.md",
+      "bytes": 2180,
+      "sha256": "09c3138906d1677019d03923d61dfe4393c880e02160f527e10a7e970ff04712"
+    },
+    {
+      "path": "TEST_REPORT_V61.md",
+      "bytes": 1574,
+      "sha256": "5071c996cad31dcdfa05d32071e7af2af1769ae48347b1b54a88be75fd72996d"
+    },
+    {
+      "path": "TEST_REPORT_V62.md",
+      "bytes": 1806,
+      "sha256": "b082121f55467ba1a667231ef9358f17766d54cdff781a100715f28ed3e93dd9"
+    },
+    {
+      "path": "TEST_REPORT_V63.md",
+      "bytes": 2334,
+      "sha256": "6e971ef3e46ae07e71935a3a335e3fccf5af79e824acaef955a4c5e4018e5cbf"
+    },
+    {
+      "path": "index.html",
+      "bytes": 13050,
+      "sha256": "fbe1ab128c3ab09596ace599cbfe01697d6f34d69a2bd1ae05982ee3574252ad"
+    },
+    {
+      "path": "manifest.webmanifest",
+      "bytes": 359,
+      "sha256": "027413d4440b7a41566c45964309287b9f4fe2fde0e855bffd1c44a1ff502a85"
+    },
+    {
+      "path": "navisworks-exporter/NavisworksWebBundleExporter.csproj",
+      "bytes": 565,
+      "sha256": "ec11253dc1cb243aab723efc3e5d241f5d6c60aea10a8a4967ae9cfe9998feac"
+    },
+    {
+      "path": "navisworks-exporter/Plugin.cs",
+      "bytes": 5292,
+      "sha256": "4dea364de734ca8453841b8213b6d974ffea758c2a0ebe10c26c37c5246b5da7"
+    },
+    {
+      "path": "navisworks-exporter/README.md",
+      "bytes": 1224,
+      "sha256": "a127b71c451ac751c8213f4efff031b0675bca1f1fcb681701afe5dd43d84079"
+    },
+    {
+      "path": "package.json",
+      "bytes": 281,
+      "sha256": "d983a58bee051a5bdc509515a11fbe3ceda80b50bd197db3c45eb46c866f4644"
+    },
+    {
+      "path": "sample/sample-model-metadata.json",
+      "bytes": 720,
+      "sha256": "674c67c626dc3dd53c96287cbdae2d6d135880b3eda2f2a83cd25aa531ecde72"
+    },
+    {
+      "path": "sample/sample-previous.xer",
+      "bytes": 2128,
+      "sha256": "711df668089c40da72b18ef404ae394730fd833ae393ce4fab30193d3a073c7b"
+    },
+    {
+      "path": "sample/sample-project.xer",
+      "bytes": 3193,
+      "sha256": "b3ce95cfd01e44e6564b977c05ff4f6a8815da484a014ee7080031d85aa51757"
+    },
+    {
+      "path": "sample/sample-project.xml",
+      "bytes": 1778,
+      "sha256": "6bb1a843aaab8f01a25cee01503a8fa2994ea20b8a4e01a1b1de1b7d31b83e75"
+    },
+    {
+      "path": "scripts/check-modules.mjs",
+      "bytes": 1030,
+      "sha256": "1a4b46fe1e0f551a4c9fc4c9adca2ae984c9aff8bd1cb2e339c30da98f1ef1ad"
+    },
+    {
+      "path": "smoke.html",
+      "bytes": 769,
+      "sha256": "2ed5dc0e4b1ac02c9df35a179f31c84d66b69916bdb7e88d7a66121ba5af6921"
+    },
+    {
+      "path": "src/activity-editing.js",
+      "bytes": 3102,
+      "sha256": "4aa0992b78d6b32adbdcfb3ff35b5f50872c849d9466a4c48999998be8297d03"
+    },
+    {
+      "path": "src/activity-layout.js",
+      "bytes": 4230,
+      "sha256": "198754db0152cb767eb6ff47ba6cfa0c38a0ac59fb91790f7565a77bbe4575f9"
+    },
+    {
+      "path": "src/ai-context.js",
+      "bytes": 743,
+      "sha256": "4b337f8ccf122999f8985e87365f88e941c43937c7270d6728bb54da84cb5a66"
+    },
+    {
+      "path": "src/analysis-graphics.js",
+      "bytes": 1374,
+      "sha256": "35cf3a54662793d0b56075307003a2a9e22e1a3586eb42933570baee7e01b844"
+    },
+    {
+      "path": "src/analysis.js",
+      "bytes": 3646,
+      "sha256": "be9aa568630965001fb02733a78d2184e8e0ee24f0437cd04c5d3356d17a631a"
+    },
+    {
+      "path": "src/app.js",
+      "bytes": 242861,
+      "sha256": "18b5b2d459e0d9d0da2a46769a0478eace461a439dc8cba5131f6ab7b80c4819"
+    },
+    {
+      "path": "src/audit-log.js",
+      "bytes": 370,
+      "sha256": "5297c0f91fa0dfd109479d9ef0070eb0ee9d6deae334058f50eecc34eec7ba09"
+    },
+    {
+      "path": "src/baselines.js",
+      "bytes": 3266,
+      "sha256": "7b57c82fde9cb05d3cdaaa933877c5302ca0fb769963678ba513e97890cecbab"
+    },
+    {
+      "path": "src/bim-advanced.js",
+      "bytes": 1737,
+      "sha256": "2a4431a6541e0b10cc0cdbfb595a5b2181acaa608577e670b7e30b09e3d3c458"
+    },
+    {
+      "path": "src/bim-links.js",
+      "bytes": 8918,
+      "sha256": "6a4f311b1d830ff53a5b6cf1f53bd98d430e8f8de2e10b111d9b0e7c25c68425"
+    },
+    {
+      "path": "src/bim-viewer.js",
+      "bytes": 11412,
+      "sha256": "5a5b82272135177b5fb4ca37052b2ad40cab6d6846ee60ee19e2f9da4be96e2a"
+    },
+    {
+      "path": "src/calc-audit.js",
+      "bytes": 2224,
+      "sha256": "30bc41239985491e236e39b0f7b54a8e34c1184f972601729bcb3d3f4aad07a8"
+    },
+    {
+      "path": "src/calendar-editor.js",
+      "bytes": 5617,
+      "sha256": "2fe3179f55b8a6eff2beedcbfb1d1aff8b86d1d7ea85f5e16ec96e97a5af77ea"
+    },
+    {
+      "path": "src/calendar-tools.js",
+      "bytes": 809,
+      "sha256": "1acdb3e880b39755b487c7fa87997323954b240a3c3bec87f4f8572cab30fb19"
+    },
+    {
+      "path": "src/canonical-schema.js",
+      "bytes": 1315,
+      "sha256": "d66bd90d2f4444333a3058171fab01fd6aa72554ed4a5632bfe27525e1b31838"
+    },
+    {
+      "path": "src/codes-editor.js",
+      "bytes": 4458,
+      "sha256": "fd2b4b4008aa549b01ce4fde5d566b468858c801c153545e3a6e100d438876d0"
+    },
+    {
+      "path": "src/compare.js",
+      "bytes": 2744,
+      "sha256": "d704dd999d41325b97b7ff184c1cc018c9eaa11a25c0842e5419e2c4b7a7405c"
+    },
+    {
+      "path": "src/cpm.js",
+      "bytes": 21026,
+      "sha256": "f5694a15666f00b2d10688f12c873cdc69bb374573406e2c259c055d06849ce6"
+    },
+    {
+      "path": "src/critical-intelligence.js",
+      "bytes": 4853,
+      "sha256": "300565f0f48889ea46631118f32a2f91e09ea83d74555eedfd578d875109c918"
+    },
+    {
+      "path": "src/date-local.js",
+      "bytes": 892,
+      "sha256": "3cadd73143f4da193db7272176b0df7047849603a95ae933a7c670c8296ecdfc"
+    },
+    {
+      "path": "src/date-move.js",
+      "bytes": 4248,
+      "sha256": "96746599e85d086da2f6b1bf6c5fa8a27c95db926b4058033b24d31295cc4b47"
+    },
+    {
+      "path": "src/determinism.js",
+      "bytes": 1283,
+      "sha256": "11baaf8549442f8575564ea69dcd73e28a92639fd4c1e7884b1870ba85581928"
+    },
+    {
+      "path": "src/diagnostics.js",
+      "bytes": 1725,
+      "sha256": "c968b13146f4584eff31e71440a54e2d1db1c11943f45a41193d9f50ab894a50"
+    },
+    {
+      "path": "src/editor.js",
+      "bytes": 14528,
+      "sha256": "50c3f5547c701556fcd7afc78885034fdb9bcb75c66625645025273851672f04"
+    },
+    {
+      "path": "src/error-reporting.js",
+      "bytes": 760,
+      "sha256": "b7b6f5e26bae7cdf93d1b1528420e2d6b9ce3b67e4e64599d48ffd0380f7f0bc"
+    },
+    {
+      "path": "src/evm.js",
+      "bytes": 1102,
+      "sha256": "6441a480b4b81c9fd1acee8f64136d4edd509187434b9c253121afef6df6d0c1"
+    },
+    {
+      "path": "src/export.js",
+      "bytes": 558,
+      "sha256": "95e6c33130f5d322d802ecb64685566baee491f8a23c57c812730a21509dbb4f"
+    },
+    {
+      "path": "src/filters.js",
+      "bytes": 1075,
+      "sha256": "06567af581b2052137a1dbf917e5de26bac6948432ed7f21d104bca89ea7b83a"
+    },
+    {
+      "path": "src/float-paths.js",
+      "bytes": 1327,
+      "sha256": "c16e160779397188e60ee34aa8b115b1aa8474d7fd1f3d47665f2ff75d297761"
+    },
+    {
+      "path": "src/forensic-comparison.js",
+      "bytes": 9703,
+      "sha256": "82428e5bce91987efbbe41177abbb4282f85df9334d4ee89fe95e82c54f661ed"
+    },
+    {
+      "path": "src/forensic-reporting.js",
+      "bytes": 6147,
+      "sha256": "6498f377b6ed03285b279cd293622d3be957cee837d83de33fda383c20068f8a"
+    },
+    {
+      "path": "src/forensic-repository.js",
+      "bytes": 3980,
+      "sha256": "9b2650d4bc2523eb8b331206ce79fed4c7a8f6045c2f58f5fc68830cdf958011"
+    },
+    {
+      "path": "src/format-adapters.js",
+      "bytes": 18320,
+      "sha256": "d68eee41edc99fe70027a20838df0013a3db8a145f1b18c1434d306925f8ffc3"
+    },
+    {
+      "path": "src/gantt.js",
+      "bytes": 7204,
+      "sha256": "873d4725ece69794ebae5768c0f85546e831c0221d13a55cdaa0e8dd8a12a333"
+    },
+    {
+      "path": "src/global-search.js",
+      "bytes": 611,
+      "sha256": "3c6dda849b6f3567bf152e47fa7b843a2e4dfbc00a8bd92cdb2cc053f95956f9"
+    },
+    {
+      "path": "src/import-diagnostics.js",
+      "bytes": 3158,
+      "sha256": "ac7c36b5b7193cbbf20b7b698d145877d5f87462ff890777ed0b8e886010696d"
+    },
+    {
+      "path": "src/integrity.js",
+      "bytes": 6527,
+      "sha256": "961964ac2edfd96d725357b94cd887ce73cca07594f803e1c4ef310dcd488301"
+    },
+    {
+      "path": "src/layouts.js",
+      "bytes": 1401,
+      "sha256": "6a181e5f2791c3efbdafeb6ac3ae1e0138c0bbd48445192ad83860e594eb9b2c"
+    },
+    {
+      "path": "src/logger.js",
+      "bytes": 1796,
+      "sha256": "f7755c7e78930453648f85c1fd80119f3a0154d0fbecae66028ad8027db947d6"
+    },
+    {
+      "path": "src/p6-commands.js",
+      "bytes": 4860,
+      "sha256": "d9f81490d15732ffb25abcc1561e258be3e48695500989cb5a9959430fb7d0b7"
+    },
+    {
+      "path": "src/package-integrity.js",
+      "bytes": 865,
+      "sha256": "1cece9412a2b6329d5324fce7ee5606d99f2e1280011fe4652b490e1499dfbfc"
+    },
+    {
+      "path": "src/parser.js",
+      "bytes": 4517,
+      "sha256": "9b2de7abe412ec90d18363a20828da2a74f91a60ab97efbf87e9346b14ad42dd"
+    },
+    {
+      "path": "src/productivity.js",
+      "bytes": 784,
+      "sha256": "4060d4f5faa44fd8bd62aa5b979b85c0973a867fd6e7a5d0c54016154d94531d"
+    },
+    {
+      "path": "src/progress.js",
+      "bytes": 1409,
+      "sha256": "ce2130cdfcb57591ea4a07135c024df3ec0d5b3c83171e5881157739a78ad9d3"
+    },
+    {
+      "path": "src/project-folder.js",
+      "bytes": 4441,
+      "sha256": "7e99597067aa93bf3c35d32cb8e5dcd40689d88ce67f7f1b03e53268b993e5a5"
+    },
+    {
+      "path": "src/project-package.js",
+      "bytes": 690,
+      "sha256": "80343a0e55eb2d1b523665442e903c344606e00524542de5c99d77e2f706dcad"
+    },
+    {
+      "path": "src/relationship-tools.js",
+      "bytes": 1664,
+      "sha256": "b2bb1549f6a240719a0081991e0a1b6700aa593ca4ac26b99456ed2988f45538"
+    },
+    {
+      "path": "src/resource-analysis.js",
+      "bytes": 7317,
+      "sha256": "3d16b92a8f2b5c585f757bf964fde841e80d1c3af84ab11f1550a4a0d1eee41f"
+    },
+    {
+      "path": "src/resource-charts.js",
+      "bytes": 2287,
+      "sha256": "38a9e69f0314c556c3903e73088ca41117e0e985424d5147df8554967384bbb5"
+    },
+    {
+      "path": "src/resource-intelligence.js",
+      "bytes": 1700,
+      "sha256": "a293ae7b9c6f1f46b54fd46de01b13e9b6d942215712ad024bbe499fc85aeb13"
+    },
+    {
+      "path": "src/resource-tools.js",
+      "bytes": 6849,
+      "sha256": "2aa6143580a1467f582552607cc19b01c0520fcdc38d0f1f50f8f345ddf88ef5"
+    },
+    {
+      "path": "src/revision-history.js",
+      "bytes": 1013,
+      "sha256": "8da5e1ca5563310653a92911ba23eeadb0749461df80d8aa36fb0b4e40b5cc3e"
+    },
+    {
+      "path": "src/scenarios.js",
+      "bytes": 995,
+      "sha256": "909877c922053e5b7bbe9d97545908aec61466b6e1dfe9cd79b255a55c20154c"
+    },
+    {
+      "path": "src/schedule-health.js",
+      "bytes": 8239,
+      "sha256": "595845550b332a7278253b1bb8302c41d2283e2e5e944fa8a607a2b542127a88"
+    },
+    {
+      "path": "src/scheduling-options.js",
+      "bytes": 3261,
+      "sha256": "d868a1feb1f10721c8c5302881b44320b3a1ab9f96cdeb2cd358a8e9d250677e"
+    },
+    {
+      "path": "src/semantic.js",
+      "bytes": 7820,
+      "sha256": "eb0909403574bd46104823547c2bf6fbb983233e678ba7ca3ceadced672e6c23"
+    },
+    {
+      "path": "src/serializer.js",
+      "bytes": 742,
+      "sha256": "a2f02f9ad8b4cf10c2f7eef39cdd6585d3d81b50792d3c9c0a91692085e3cfb1"
+    },
+    {
+      "path": "src/transaction.js",
+      "bytes": 684,
+      "sha256": "ecc0cc7640ab7ce3301c03395517c4d9a05b349490db295c93ed70777089a708"
+    },
+    {
+      "path": "src/trend-forecast.js",
+      "bytes": 4533,
+      "sha256": "65822dc03f27f993b5f3537fe191f439bf4f90832f2fd51e3e9b7dd6dc344522"
+    },
+    {
+      "path": "src/tutorial.js",
+      "bytes": 8830,
+      "sha256": "49b943a5936dd7b4d4016911bced4bbcf86ca4eaf93a92c736a5b98c0039b787"
+    },
+    {
+      "path": "src/ui-labels.js",
+      "bytes": 956,
+      "sha256": "346a63351f5d402979fc6f3073b27f8ca14adec2c7d5fa97be94e89ebb6d0ef4"
+    },
+    {
+      "path": "src/wbs-tools.js",
+      "bytes": 4889,
+      "sha256": "28103d731e616d10979c2cbf823c6c578f607773defe8b7660b66af4e4586766"
+    },
+    {
+      "path": "src/workspace.js",
+      "bytes": 1891,
+      "sha256": "a5372f645e7ff0526de6502392d5ae9e53119689d62c3d47ed6da313df7d3995"
+    },
+    {
+      "path": "styles.css",
+      "bytes": 61581,
+      "sha256": "719e7ce2929be1a79957a99d3d07012857006ce72c66f10c1b9b6bfcc6c9d8c9"
+    },
+    {
+      "path": "sw.js",
+      "bytes": 2167,
+      "sha256": "f86dcdf99234835a43fa90cbfad6cbb38f9d9a08cc74a4104d90a7fc0c5a6ce2"
+    },
+    {
+      "path": "tests/advanced-cpm.test.js",
+      "bytes": 9356,
+      "sha256": "9c6264350d0c06545715341f1542b00bd9f6056aa5b2351fcaed1f6e7bbada40"
+    },
+    {
+      "path": "tests/baselines.test.js",
+      "bytes": 1380,
+      "sha256": "3ffb16a5cbf795bcbe203b6af782d3adbedd990430fdcc3a2487a757f7867212"
+    },
+    {
+      "path": "tests/bim-links.test.js",
+      "bytes": 4590,
+      "sha256": "99fbd60e275f873009ecb2ed37e773151e5b8f84926a99ffcdacec894f193f97"
+    },
+    {
+      "path": "tests/bim-viewer-v26.test.js",
+      "bytes": 4166,
+      "sha256": "dffddf2a23d116ab4367ed4c4b647859ab959e18aceb54168e697ac35e97750d"
+    },
+    {
+      "path": "tests/editor-cpm.test.js",
+      "bytes": 4586,
+      "sha256": "0f96ed6a557e806d5a42cadd1635c74fce3afad1664b5f05ed38307be247567a"
+    },
+    {
+      "path": "tests/forensic-intelligence.test.js",
+      "bytes": 8536,
+      "sha256": "acb504ce330cf71719c698c2a0dcbf5516caca6ae7ed6a0871e268e45bcffcb6"
+    },
+    {
+      "path": "tests/quality-hardening.test.js",
+      "bytes": 3754,
+      "sha256": "41248ec4022e0c5979ca18b47d89afa7103bcdece12a4a484381f0a61d9b5cd2"
+    },
+    {
+      "path": "tests/scheduling-options.test.js",
+      "bytes": 6779,
+      "sha256": "632a3beebc1c7e9f0f81adc9320a3dbe602df7850621afc2fdaf58236c3defca"
+    },
+    {
+      "path": "tests/unified-format.test.js",
+      "bytes": 2210,
+      "sha256": "3ca0569e801253db7f545676e9dcbf5c63b40d5df3abd9a541ab41a2e0b11660"
+    },
+    {
+      "path": "tests/v4-features.test.js",
+      "bytes": 7013,
+      "sha256": "549c3984072c752b4b3c87863136227fc768994f2e47a58f692deebc40fbdd00"
+    },
+    {
+      "path": "tests/v51-hardening.test.js",
+      "bytes": 4238,
+      "sha256": "fdf9c438b7c7b8ce8544dfae16a133348142ea74a06cfd1f1c604e3428ad7df5"
+    },
+    {
+      "path": "tests/v52-layout.test.js",
+      "bytes": 2094,
+      "sha256": "2fe62336da25b28cb16ddaf8db182ce240f822c1270babe59c85418ff3703984"
+    },
+    {
+      "path": "tests/v60-p6-shell.test.js",
+      "bytes": 3447,
+      "sha256": "f94617ddb05d050978571d9d91e0d61a68d3ed19b8110158dbc458f04bbc59dc"
+    },
+    {
+      "path": "tests/v61-p6-commands.test.js",
+      "bytes": 5292,
+      "sha256": "26123ef7424bb4c3480aa1a6eae9eb8c52603b8f0c3c91fc0c24540f07494b9f"
+    },
+    {
+      "path": "tests/v62-editors-resources.test.js",
+      "bytes": 8186,
+      "sha256": "9b01a9480ff632926adbf1ee43b08b88f766978a3a44329ce490fb9295d00211"
+    },
+    {
+      "path": "tests/v63-projects-editing-layout.test.js",
+      "bytes": 6937,
+      "sha256": "14ec5ced730b1e3c6f5b0f9cd6d99e02e037cce857ae9eac54afffde0053bf9e"
+    },
+    {
+      "path": "tests/viewer.test.js",
+      "bytes": 3377,
+      "sha256": "9c51d59c36e975ed0d10bda014cf21f29f4ca8ecf2b7fd2ad6a37c1f2afe40c6"
+    },
+    {
+      "path": "tests/wbs-editor.test.js",
+      "bytes": 4388,
+      "sha256": "4b46be3e4ed01c790c0de673fdd6901fd6e8ad81db2487ff65eb936bc3d16a66"
+    },
+    {
+      "path": "tests/wbs-resource-v24.test.js",
+      "bytes": 5154,
+      "sha256": "601461d222118f0330939810cfc07fd426b6fd4d8ed93586c4bb9da135be742c"
+    }
+  ]
+}
+
+====================================================================================================
 FILE: STATIC_VALIDATION.json
 ====================================================================================================
 {
@@ -2168,348 +2158,6 @@ FILE: STATIC_VALIDATION_V63.json
   "css_brace_balance": 0,
   "status": "PASS"
 }
-
-====================================================================================================
-FILE: TEST_REPORT.md
-====================================================================================================
-# Unified Schedule Studio v4.1 — Quality Hardening Test Report
-
-## Summary
-
-- **Automated regression tests:** 115 / 115 passing
-- **New quality-hardening tests:** 10 / 10 passing (included in the 115 total)
-- **JavaScript syntax checks:** PASS
-- **Relative module import resolution:** PASS
-- **50,000-activity / 49,999-relationship benchmark:** PASS
-- **Static GitHub Pages HTTP checks:** PASS
-- **ZIP integrity check:** performed during final packaging
-
-## Quality-hardening coverage
-
-The v4.1 tests specifically verify:
-
-- bundled sample passes structural integrity validation
-- dangling relationship/resource references are detected
-- failed transactional edits restore the pre-edit model exactly
-- XER serialization is deterministic and does not mutate the working model
-- XER export→re-import preserves the semantic fingerprint
-- MSP XML export is deterministic and non-mutating
-- local project date formatting does not apply unwanted timezone shifts
-- date-only P6 values parse at local midnight
-- model indexes normalize numeric/string identifiers consistently
-- generated MSP XML contains the complete Project/Tasks/Resources/Assignments/Calendars structure expected by browser re-import
-
-## Existing regression coverage retained
-
-The inherited suite still covers XER parsing/serialization, MSP XML conversion, activity/WBS/resource/relationship CRUD, undo/redo, working calendars, FS/SS/FF/SF, signed lag, constraints, progress modes, expected finish, suspend/resume, external relationships, resource leveling/curves, BIM UDF persistence, local GLB/4D, baselines, layouts/filters, EVM/productivity, scenarios, resource profiles and randomized CPM networks.
-
-## Large schedule benchmark
-
-A generated **50,000-activity FS chain** with **49,999 relationships** was run through the production graph/CPM code in this container.
-
-Observed:
-
-- cycle detection: approximately **48.1 ms**
-- CPM calculation: approximately **1.69 s**
-- calculated activities: **50,000**
-- cycles detected: **0**
-
-These are environment-specific figures, not browser performance guarantees.
-
-## Integrity behavior
-
-Critical operations now fail closed where appropriate. Export is blocked if structural errors exist. CPM application is transactional: a failure restores the complete pre-operation table state rather than leaving a partial calculation in memory.
-
-Warnings such as missing calendars remain warnings rather than hard errors because some imported schedules intentionally rely on fallback/default behavior.
-
-## Determinism
-
-The XER serializer uses stable domain-key ordering without mutating the canonical model. MSP resources, assignments and calendars are also emitted in stable order. Semantic fingerprints are used in tests and export guards to detect unintended model mutation.
-
-## Date/time regression
-
-Schedule timestamps are treated as project wall-clock values where the source format provides no timezone semantics. Tests include European DST-boundary dates to ensure conversion to MSP XML does not silently shift clock time through UTC.
-
-## Remaining production validation
-
-The main remaining reliability task is organizational golden-file parity, not another application feature. Maintain reference P6/MSP schedules covering:
-
-- mixed/exception calendars and DST-sensitive dates
-- every relationship type with positive/negative lag
-- out-of-sequence progress modes
-- hard/soft constraints
-- suspend/resume and expected finish
-- resource leveling and curves
-- external relationships
-- baseline variance and multiple float paths
-- XER↔MSP conversion
-- 10k–100k activity schedules
-
-For each reference, compare the application's calculated Early/Late Start/Finish, Total/Free Float, project finish and leveling results against the approved vendor result.
-
-
-## Final verification (2026-09-08)
-
-- Edition: **Recommended Hardened Edition**
-- Automated Node tests: **139/139 passing**
-- JavaScript syntax/import gate: **67 JS files parsed; all relative imports resolved**
-- HTML asset/ID validation: no duplicate IDs; no missing local index/service-worker assets
-- Production CPM stress: 50,000 activities / 49,999 relationships: cycles 0, results 50,000, cycle 221.8 ms, CPM 2729.2 ms
-- Additional production CPM stress: 100,000 activities / 99,999 relationships: cycles 0, results 100,000, cycle 430.3 ms, CPM 5866.9 ms
-
-====================================================================================================
-FILE: TEST_REPORT_LAYOUT.md
-====================================================================================================
-# Unified Schedule Studio v5.2 — Validation Report
-
-## Summary
-
-- Automated regression tests: **148 / 148 passing**
-- JavaScript syntax/import gate: **PASS — 69 JS files**
-- New v5.2 layout/label/Gantt tests: **9 passing**
-- Static HTML/CSS/service-worker validation: **PASS**
-- Production CPM stress test: **PASS**
-
-## v5.2 regression coverage
-
-New tests verify:
-
-- the sidebar is divided into navigation sections
-- the sidebar navigation is independently scrollable
-- the shell uses dynamic viewport height rather than page overflow
-- legacy premature sidebar-collapse rules are neutralised
-- Activities display WBS descriptions/codes rather than raw internal WBS IDs
-- WBS group labels use the same planner-facing representation
-- calendar labels prefer calendar descriptions
-- Activity-table and Gantt WBS group rows are synchronised
-- undated activities retain a corresponding Gantt row
-- the redesigned Dashboard contains the intended professional information hierarchy
-
-## Full inherited coverage
-
-The complete suite continues to cover parsers, XER/MSP conversion, deterministic export, integrity gates, WBS/activity/relationship/resource CRUD, undo/redo, calendars, every relationship type, positive/negative lag, constraints, OOS progress modes, Expected Finish, resource curves/leveling, baselines, BIM links/GLB, layouts/filters, EVM/productivity, scenarios/history, forensic revision comparison, stable activity/relationship identity, health/risk analysis, forecast intelligence, package checksums, import hardening and project-controls reporting.
-
-## Performance
-
-A generated production-model FS chain was run through the actual CPM implementation:
-
-- Activities: **50,000**
-- Relationships: **49,999**
-- Cycles: **0**
-- Calculated results: **50,000**
-- Cycle detection: approximately **260.8 ms**
-- CPM calculation: approximately **2.60 s**
-
-These measurements are environment-specific and are not browser performance guarantees.
-
-## Browser visual smoke note
-
-The container's Chromium process is unreliable for local-host screenshot automation because of its sandbox/DBus/network environment. The layout was therefore validated through source-level DOM/CSS assertions plus the full automated regression suite. Final visual acceptance should still be performed in the target Chrome/Edge browser at the organisation's standard laptop resolutions.
-
-====================================================================================================
-FILE: TEST_REPORT_V52_FULL.md
-====================================================================================================
-# Unified Schedule Studio v5.2 — Full Source Validation
-
-- npm verify: **144 / 144 tests passed**
-- JavaScript syntax/import validation: **69 JS files passed**
-- Duplicate HTML IDs: **0**
-- Missing HTML relative assets: **0**
-- Missing service-worker assets: **0**
-- CSS brace balance: **0**
-- Full package includes the complete v5.1 hardened engine plus the v5.2 professional layout/WBS/Gantt revisions.
-
-## v5.2-specific regression coverage
-
-- WBS labels prefer WBS description + WBS code over internal `wbs_id`.
-- Calendar labels prefer calendar name + calendar ID.
-- Sidebar navigation is independently scrollable and viewport-bound.
-- Service worker precaches `ui-labels.js`.
-- Grouped Activities and Gantt use the same group-label logic.
-
-====================================================================================================
-FILE: TEST_REPORT_V6.md
-====================================================================================================
-# Schedule Studio Professional v6.0 — Validation Report
-
-## Automated regression
-
-- `npm test`: **153 / 153 passed**
-- JavaScript syntax/import validation: **70 files checked; all relative imports resolve**
-
-The automated suite covers parser/serializer, CPM, all four relationship types, calendars, negative lag, constraints, cycles, WBS editing, resources, resource curves, baselines, BIM links/viewer, conversion, integrity, transactions, forensic comparison, package checksums, import hardening, diagnostics, EVM/productivity, scenarios, layouts/filters and the v6 P6-style shell.
-
-## v6 UI structural checks
-
-- Duplicate HTML IDs: **0**
-- Missing HTML-linked assets: **0**
-- CSS brace balance: **0 imbalance**
-- Missing service-worker precache assets: **0**
-- Menu groups found: File, Edit, View, Project, Enterprise, Tools, Reports, Help
-- Primary module tabs include Projects, Activities, WBS, Resources, Analysis, Reports, Issues, Risks, Documents and Dashboard
-
-## Production CPM stress
-
-Using the actual v6 production `calculateCPM()` implementation in this container:
-
-- 50,000 activities / 49,999 FS relationships: **50,000 results, 0 warnings, ~3.4 s**
-- 100,000 activities / 99,999 FS relationships: **100,000 results, 0 warnings, ~6.6 s**
-
-These timings are machine/container specific and are not browser performance guarantees.
-
-## Browser visual smoke limitation
-
-A direct headless Chromium screenshot/dump was attempted. Chromium in this container stalled on the environment's D-Bus/headless runtime and was terminated by timeout. This result is **not counted as a passed browser smoke test**. Static DOM/asset validation and the full Node regression suite were used instead.
-
-For release qualification, open the GitHub Pages build in current Chrome/Edge and check Activities at 1920x1080, 1440x900 and 1366x768, including table/Gantt splitter, vertical scroll synchronization, menus and bottom inspector.
-
-## Release status
-
-All executable tests available in this environment are green. Exact Oracle Primavera calculation parity is not claimed; representative real P6 golden schedules remain the final conformance gate for obscure scheduling-option behaviour.
-
-====================================================================================================
-FILE: TEST_REPORT_V61.md
-====================================================================================================
-# Schedule Studio Professional v6.1 — Functional Command Release
-
-## Automated regression
-
-- 163 / 163 Node automated tests passed.
-- 73 JavaScript files passed syntax checking and all relative imports resolve.
-- All HTML `data-command` IDs are represented by the central P6 command catalog.
-- No duplicate HTML IDs.
-- No missing local HTML assets.
-- No missing service-worker assets.
-
-## Production CPM stress
-
-Synthetic linear networks using the production CPM implementation:
-
-| Activities | Relationships | Cycles | Results | Cycle detection | CPM |
-|---:|---:|---:|---:|---:|---:|
-| 50,000 | 49,999 | 0 | 50,000 | ~52 ms | ~1.27 s |
-| 100,000 | 99,999 | 0 | 100,000 | ~92 ms | ~2.97 s |
-
-Timings are container-specific and are not browser guarantees.
-
-## v6.1 additions under test
-
-- central P6 command registry
-- toolbar/menu/keyboard command consistency
-- Ctrl+O / Ctrl+S / Ctrl+F / Ctrl+Z / Ctrl+Y / Ctrl+C / Ctrl+V
-- Insert/Delete activity commands
-- F9 scheduling command
-- P6 20.x default scheduling profile
-- Schedule Options dialog
-- Leveling Options command
-- inter-project predecessor relationship creation within a loaded multi-project model
-- activity copy/paste with dependent project-control data
-- imported-P6-versus-calculated evidence report
-- zoom shortcut normalization
-
-## Remaining qualification
-
-Exact Primavera P6 parity still requires the user's real P6 20.x XER golden files and workflow references. Until that validation is performed, the engine remains an independent implementation and does not claim bit-for-bit Oracle scheduling parity.
-
-====================================================================================================
-FILE: TEST_REPORT_V62.md
-====================================================================================================
-# v6.2 Software Validation Report
-
-## Automated regression
-
-- **175 / 175 tests passed.**
-- **79 JavaScript/test/support files** passed syntax validation.
-- All relative ES-module imports resolve.
-- `npm run verify` completed successfully.
-
-## Static package validation
-
-- Duplicate HTML IDs: **0**
-- Missing HTML/CSS local assets: **0**
-- Missing service-worker precache assets: **0**
-- CSS brace imbalance: **0**
-- Static HTTP smoke: `index.html`, `app.js`, resource/calendar modules, CSS and service worker all returned HTTP **200**.
-
-## Real Primavera XER validation
-
-Three supplied XER schedules were parsed and exercised through resource, calendar, relationship, code/UDF, round-trip and CPM-preflight paths. See `REAL_XER_VALIDATION.md`.
-
-- All 3: zero detected logic cycles.
-- All 3: CPM calculation completed without warnings in non-strict validation mode.
-- All 3: XER serialize → reparse preserved per-table row counts.
-- All real calendars decoded, including numeric P6 exception dates.
-- All relationships received planner-friendly relationship names.
-
-## Performance stress
-
-Production CPM engine, synthetic linear schedule:
-
-- 50,000 activities / 49,999 relationships: cycle detection ~39 ms; CPM ~974 ms.
-- 100,000 activities / 99,999 relationships: cycle detection ~61 ms; CPM ~1,966 ms.
-
-Timings are container-specific and are not browser guarantees.
-
-## Browser qualification
-
-The package has source/static/HTTP validation in this environment. Final visual qualification should still be performed in current Chrome/Edge at common business-laptop resolutions because this environment cannot provide a fully reliable desktop browser rendering qualification.
-
-## Release status
-
-**Release candidate suitable for GitHub Pages/static deployment and further P6 golden-file parity testing.**
-
-====================================================================================================
-FILE: TEST_REPORT_V63.md
-====================================================================================================
-# Schedule Studio Professional v6.3 — Validation Report
-
-## Automated regression
-
-- **185 / 185 automated tests passed.**
-- Node test runner completed with 0 failures, 0 skipped and 0 cancelled.
-- **83 JavaScript/test/support files** syntax-checked; all relative ES-module imports resolve.
-
-## v6.3-specific regression coverage
-
-New/updated tests cover:
-
-- WBS parent-child hierarchy when identifier types differ.
-- Exact shared Activities/Gantt row ordering.
-- WBS collapse semantics without schedule-data mutation.
-- Direct Start/Finish/% edits and calendar-aware duration recalculation.
-- F9 separation: direct planning edits preserve calculated early dates.
-- Duration-percent remaining-duration behaviour.
-- XER/XML project-folder file filtering and folder-first sorting.
-- File/folder write helpers used by Ctrl+S and Projects-folder saving.
-- Menubar outside-click dismissal architecture.
-- Gantt selection path does not call `renderGantt`.
-- Always-visible resource audit table, Excel copy and cumulative variance data.
-- Service-worker inclusion of v6.3 modules.
-
-## Static package checks
-
-- Duplicate HTML IDs: **0**
-- Missing HTML assets: **0**
-- Missing service-worker assets: **0**
-- CSS brace imbalance: **0**
-- Static HTTP asset checks: **PASS**
-
-## Real P6 XER validation
-
-All three supplied XERs were exercised through parsing, WBS hierarchy reconstruction, shared activity-row generation, resource profiles, calendar decoding, relationship labels, CPM preflight, direct planning edit, and XER serialize/reparse. See `REAL_XER_VALIDATION_V63.md`.
-
-## CPM stress
-
-| Activities | Relationships | Cycles | Results | Cycle detect | CPM |
-|---:|---:|---:|---:|---:|---:|
-| 50,000 | 49,999 | 0 | 50,000 | ~43 ms | ~0.97 s |
-| 100,000 | 99,999 | 0 | 100,000 | ~112 ms | ~1.90 s |
-
-Timings are container-specific and are not browser performance guarantees.
-
-## Browser visual smoke limitation
-
-A Chromium headless smoke run was attempted. The container Chromium process hangs on unavailable system D-Bus services and was terminated by timeout. This is an environment limitation and is **not recorded as a pass**. Final UI qualification should therefore still be performed in current Chrome/Edge at the intended desktop resolutions, particularly for File System Access permission flows and visual splitter/scroll behaviour.
 
 ====================================================================================================
 FILE: index.html
@@ -2604,6 +2252,7 @@ FILE: index.html
 </body>
 </html>
 
+
 ====================================================================================================
 FILE: manifest.webmanifest
 ====================================================================================================
@@ -2616,6 +2265,7 @@ FILE: manifest.webmanifest
   "theme_color": "#174f78",
   "description": "Single-user Primavera-style P6 XER and Microsoft Project XML schedule editor, CPM, forensic analysis, resource/EVM, BIM and reporting workbench."
 }
+
 
 ====================================================================================================
 FILE: navisworks-exporter/NavisworksWebBundleExporter.csproj
@@ -2632,6 +2282,7 @@ FILE: navisworks-exporter/NavisworksWebBundleExporter.csproj
     <Reference Include="Autodesk.Navisworks.Api"><HintPath>$(NAVISWORKS_API)\Autodesk.Navisworks.Api.dll</HintPath><Private>False</Private></Reference>
   </ItemGroup>
 </Project>
+
 
 ====================================================================================================
 FILE: navisworks-exporter/Plugin.cs
@@ -2741,39 +2392,13 @@ namespace ProjectControls.NavisworksExporter
     public class Manifest { public int SchemaVersion {get;set;} public string ModelKey {get;set;} public string Metadata {get;set;} public string Geometry {get;set;} public string SourceFile {get;set;} public DateTime ExportedUtc {get;set;} }
 }
 
-====================================================================================================
-FILE: navisworks-exporter/README.md
-====================================================================================================
-# Navisworks Web Bundle Exporter
-
-This is a separate **C# Navisworks plugin** used only to prepare a local BIM workspace for the GitHub-hosted Project Controls Viewer.
-
-## Runtime architecture
-
-- The GitHub Pages application never opens NWD/NWC directly.
-- Navisworks remains the authoring/review tool.
-- This plugin exports **stable metadata** (`model-metadata.json`) and a `manifest.json`.
-- Geometry is exported locally using **Navisworks Output → Export Scene → FBX**, then converted locally to `model.glb` with the converter of your choice.
-- The browser opens the resulting local `model.glb` and metadata together.
-
-## Build
-
-1. Install Visual Studio with .NET Framework 4.8 targeting pack.
-2. Install the matching Navisworks Manage/Simulate SDK/API.
-3. Define the MSBuild property `NAVISWORKS_API` to the folder containing `Autodesk.Navisworks.Api.dll`.
-4. Build Release.
-5. Copy the compiled DLL into the Navisworks Plugins folder for your version.
-
-## Notes
-
-The Autodesk API surface varies slightly between releases. The exporter intentionally uses reflection for stable object identity where API versions expose different members. Validate against your target Navisworks release before production deployment.
 
 ====================================================================================================
 FILE: package.json
 ====================================================================================================
 {
   "name": "unified-schedule-studio",
-  "version": "6.3.0",
+  "version": "6.3.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -2783,6 +2408,7 @@ FILE: package.json
     "verify": "npm run check && npm test"
   }
 }
+
 
 ====================================================================================================
 FILE: sample/sample-model-metadata.json
@@ -2799,107 +2425,6 @@ FILE: sample/sample-model-metadata.json
   ]
 }
 
-====================================================================================================
-FILE: sample/sample-previous.xer
-====================================================================================================
-ERMHDR	22.12	2026-08-16	Project	Admin	Primavera P6
-%T	PROJECT
-%F	proj_id	proj_short_name	proj_name	last_recalc_date
-%R	1	DEMO-P6	Demonstration Project	2026-08-08 17:00
-%T	PROJWBS
-%F	wbs_id	proj_id	parent_wbs_id	seq_num	wbs_short_name	wbs_name
-%R	10	1		1	DEMO	Demonstration Project
-%R	11	1	10	2	CIV	Civil Works
-%R	12	1	10	3	MEP	MEP Works
-%T	CALENDAR
-%F	clndr_id	clndr_name	clndr_type	day_hr_cnt	week_hr_cnt	clndr_data
-%R	100	5 Day / 8 Hour	CA_Project	8	40	(1||)(2||(s|08:00|f|12:00)(s|13:00|f|17:00))(3||(s|08:00|f|12:00)(s|13:00|f|17:00))(4||(s|08:00|f|12:00)(s|13:00|f|17:00))(5||(s|08:00|f|12:00)(s|13:00|f|17:00))(6||(s|08:00|f|12:00)(s|13:00|f|17:00))(7||)
-%T	TASK
-%F	task_id	proj_id	wbs_id	clndr_id	task_code	task_name	status_code	task_type	target_drtn_hr_cnt	remain_drtn_hr_cnt	target_start_date	target_end_date	early_start_date	early_end_date	act_start_date	act_end_date	total_float_hr_cnt	free_float_hr_cnt	complete_pct_type	phys_complete_pct	cstr_type	cstr_date
-%R	1000	1	11	100	A1000	Project Start	TK_Complete	TT_StartMile	0	0	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	0	0	CP_Phys	100		
-%R	1010	1	11	100	A1010	Excavation	TK_Active	TT_Task	80	16	2026-08-03 08:00	2026-08-14 17:00	2026-08-03 08:00	2026-08-14 17:00	2026-08-03 08:00		0	0	CP_Phys	80		
-%R	1020	1	11	100	A1020	Foundations	TK_NotStart	TT_Task	80	80	2026-08-17 08:00	2026-08-28 17:00	2026-08-17 08:00	2026-08-28 17:00			0	0	CP_Phys	0		
-%R	1030	1	12	100	A1030	Electrical Rough-In	TK_NotStart	TT_Task	160	160	2026-08-31 08:00	2026-09-25 17:00	2026-08-31 08:00	2026-09-25 17:00			0	0	CP_Phys	0		
-%R	1050	1	12	100	A1050	Commissioning	TK_NotStart	TT_Task	80	80	2026-09-28 08:00	2026-10-09 17:00	2026-09-28 08:00	2026-10-09 17:00			0	0	CP_Phys	0		
-%R	1060	1	12	100	A1060	Project Finish	TK_NotStart	TT_FinMile	0	0	2026-10-09 17:00	2026-10-09 17:00	2026-10-09 17:00	2026-10-09 17:00			0	0	CP_Phys	0		
-%T	TASKPRED
-%F	task_pred_id	proj_id	task_id	pred_task_id	pred_type	lag_hr_cnt
-%R	1	1	1010	1000	PR_FS	0
-%R	2	1	1020	1010	PR_FS	0
-%R	3	1	1030	1020	PR_FS	0
-%R	4	1	1050	1030	PR_FS	0
-%R	5	1	1060	1050	PR_FS	0
-%E
-
-====================================================================================================
-FILE: sample/sample-project.xer
-====================================================================================================
-ERMHDR	22.12	2026-08-23	Project	Admin	Primavera P6
-%T	PROJECT
-%F	proj_id	proj_short_name	proj_name	last_recalc_date
-%R	1	DEMO-P6	Demonstration Project	2026-08-15 17:00
-%T	PROJWBS
-%F	wbs_id	proj_id	parent_wbs_id	seq_num	wbs_short_name	wbs_name
-%R	10	1		1	DEMO	Demonstration Project
-%R	11	1	10	2	CIV	Civil Works
-%R	12	1	10	3	MEP	MEP Works
-%T	CALENDAR
-%F	clndr_id	clndr_name	clndr_type	day_hr_cnt	week_hr_cnt	clndr_data
-%R	100	5 Day / 8 Hour	CA_Project	8	40	(1||)(2||(s|08:00|f|12:00)(s|13:00|f|17:00))(3||(s|08:00|f|12:00)(s|13:00|f|17:00))(4||(s|08:00|f|12:00)(s|13:00|f|17:00))(5||(s|08:00|f|12:00)(s|13:00|f|17:00))(6||(s|08:00|f|12:00)(s|13:00|f|17:00))(7||)
-%T	TASK
-%F	task_id	proj_id	wbs_id	clndr_id	task_code	task_name	status_code	task_type	target_drtn_hr_cnt	remain_drtn_hr_cnt	target_start_date	target_end_date	early_start_date	early_end_date	act_start_date	act_end_date	total_float_hr_cnt	free_float_hr_cnt	complete_pct_type	phys_complete_pct	cstr_type	cstr_date
-%R	1000	1	11	100	A1000	Project Start	TK_Complete	TT_StartMile	0	0	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	2026-08-01 08:00	0	0	CP_Phys	100		
-%R	1010	1	11	100	A1010	Excavation	TK_Complete	TT_Task	80	0	2026-08-03 08:00	2026-08-14 17:00	2026-08-03 08:00	2026-08-14 17:00	2026-08-03 08:00	2026-08-14 17:00	0	0	CP_Phys	100		
-%R	1020	1	11	100	A1020	Foundations	TK_Active	TT_Task	120	64	2026-08-17 08:00	2026-09-04 17:00	2026-08-17 08:00	2026-09-04 17:00	2026-08-17 08:00		0	0	CP_Phys	45		
-%R	1030	1	12	100	A1030	Electrical Rough-In	TK_NotStart	TT_Task	160	160	2026-09-07 08:00	2026-10-02 17:00	2026-09-07 08:00	2026-10-02 17:00			16	8	CP_Phys	0		
-%R	1040	1	12	100	A1040	Mechanical Install	TK_NotStart	TT_Task	400	400	2026-09-07 08:00	2026-11-13 17:00	2026-09-07 08:00	2026-11-13 17:00			400	120	CP_Phys	0	CS_MSO	2026-09-07 08:00
-%R	1050	1	12	100	A1050	Commissioning	TK_NotStart	TT_Task	80	80	2026-10-05 08:00	2026-10-16 17:00	2026-10-05 08:00	2026-10-16 17:00			-16	0	CP_Phys	0		
-%R	1060	1	12	100	A1060	Project Finish	TK_NotStart	TT_FinMile	0	0	2026-10-16 17:00	2026-10-16 17:00	2026-10-16 17:00	2026-10-16 17:00			-16	0	CP_Phys	0		
-%T	TASKPRED
-%F	task_pred_id	proj_id	task_id	pred_task_id	pred_type	lag_hr_cnt
-%R	1	1	1010	1000	PR_FS	0
-%R	2	1	1020	1010	PR_FS	0
-%R	3	1	1030	1020	PR_FS	8
-%R	4	1	1040	1020	PR_FS	-8
-%R	5	1	1050	1030	PR_FS	0
-%R	6	1	1060	1050	PR_FS	0
-%T	RSRC
-%F	rsrc_id	rsrc_name	rsrc_type
-%R	200	Civil Crew	RT_Labor
-%R	201	Electrical Crew	RT_Labor
-%R	202	Mechanical Crew	RT_Labor
-%T	TASKRSRC
-%F	taskrsrc_id	task_id	rsrc_id	role_id	target_qty	act_reg_qty	remain_qty	target_cost	act_reg_cost
-%R	1	1010	200		800	800	0	24000	24000
-%R	2	1020	200		1200	560	640	36000	16800
-%R	3	1030	201		1600	0	1600	56000	0
-%R	4	1040	202		2400	0	2400	84000	0
-%T	ACTVTYPE
-%F	actv_code_type_id	actv_code_type
-%R	300	Area
-%T	ACTVCODE
-%F	actv_code_id	actv_code_type_id	short_name	actv_code_name
-%R	310	300	CIVIL	Civil Area
-%R	311	300	MEP	MEP Area
-%T	TASKACTV
-%F	task_id	actv_code_id
-%R	1010	310
-%R	1020	310
-%R	1030	311
-%R	1040	311
-%R	1050	311
-%T	UDFTYPE
-%F	udf_type_id	udf_type_label
-%R	400	Planner Note
-%T	UDFVALUE
-%F	udf_type_id	fk_id	udf_text
-%R	400	1040	Awaiting vendor access confirmation
-%E
-
-====================================================================================================
-FILE: sample/sample-project.xml
-====================================================================================================
-<?xml version="1.0" encoding="UTF-8"?><Project xmlns="http://schemas.microsoft.com/project"><UID>1</UID><Name>Demo Project</Name><StartDate>2026-08-01T08:00:00</StartDate><StatusDate>2026-08-15T08:00:00</StatusDate><Tasks><Task><UID>1</UID><ID>1</ID><Name>Demo Project</Name><OutlineLevel>1</OutlineLevel><Summary>1</Summary><Start>2026-08-01T08:00:00</Start><Finish>2026-08-30T17:00:00</Finish><Duration>PT0H0M</Duration><RemainingDuration>PT0H0M</RemainingDuration><PercentComplete>0</PercentComplete></Task><Task><UID>2</UID><ID>2</ID><Name>Excavation</Name><WBS>1.1</WBS><OutlineLevel>2</OutlineLevel><Summary>0</Summary><Start>2026-08-01T08:00:00</Start><Finish>2026-08-05T17:00:00</Finish><Duration>PT40H0M</Duration><RemainingDuration>PT40H0M</RemainingDuration><PercentComplete>0</PercentComplete></Task><Task><UID>3</UID><ID>3</ID><Name>Foundations</Name><WBS>1.2</WBS><OutlineLevel>2</OutlineLevel><Summary>0</Summary><Start>2026-08-06T08:00:00</Start><Finish>2026-08-12T17:00:00</Finish><Duration>PT40H0M</Duration><RemainingDuration>PT40H0M</RemainingDuration><PercentComplete>0</PercentComplete><PredecessorLink><PredecessorUID>2</PredecessorUID><Type>1</Type><LinkLag>PT0H0M</LinkLag></PredecessorLink></Task></Tasks><Resources><Resource><UID>1</UID><ID>1</ID><Name>Civil Crew</Name><Type>1</Type><MaxUnits>100</MaxUnits></Resource></Resources><Assignments><Assignment><UID>1</UID><TaskUID>2</TaskUID><ResourceUID>1</ResourceUID><Work>PT40H0M</Work><ActualWork>PT0H0M</ActualWork><RemainingWork>PT40H0M</RemainingWork><Cost>1000</Cost></Assignment><Assignment><UID>2</UID><TaskUID>3</TaskUID><ResourceUID>1</ResourceUID><Work>PT40H0M</Work><ActualWork>PT0H0M</ActualWork><RemainingWork>PT40H0M</RemainingWork><Cost>1200</Cost></Assignment></Assignments></Project>
 
 ====================================================================================================
 FILE: scripts/check-modules.mjs
@@ -2908,6 +2433,7 @@ import fs from 'node:fs';import path from 'node:path';import {execFileSync} from
 const root=process.cwd();const files=[];function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())walk(p);else if(/\.js$|\.mjs$/.test(e.name))files.push(p)}}walk(path.join(root,'src'));walk(path.join(root,'tests'));files.push(path.join(root,'sw.js'));
 for(const f of files)execFileSync(process.execPath,['--check',f],{stdio:'pipe'});
 const missing=[];for(const f of files.filter(x=>x.endsWith('.js'))){const text=fs.readFileSync(f,'utf8');for(const m of text.matchAll(/from\s+['"](\.\.?\/[^'"]+)['"]/g)){let target=path.resolve(path.dirname(f),m[1]);if(!path.extname(target))target+='.js';if(!fs.existsSync(target))missing.push(`${path.relative(root,f)} -> ${m[1]}`)}}if(missing.length){console.error('Missing relative imports:\n'+missing.join('\n'));process.exit(1)}console.log(`PASS: syntax checked ${files.length} JS files; all relative imports resolve.`);
+
 
 ====================================================================================================
 FILE: smoke.html
@@ -2922,6 +2448,7 @@ try{
  document.querySelector('#result').textContent=`PASS XER:${xm.table('TASK').length} XML:${mm.table('TASK').length} XOUT:${xo.includes('%T\tTASK')} MOUT:${mo.includes('<Tasks>')}`;
 }catch(e){document.querySelector('#result').textContent='FAIL '+e.stack}
 </script>
+
 
 ====================================================================================================
 FILE: src/activity-editing.js
@@ -2965,6 +2492,7 @@ export const constraintOptions=[
   ['', 'None'],['CS_MSO','Mandatory Start'],['CS_MEO','Mandatory Finish'],['CS_SNET','Start On or After'],['CS_SNLT','Start On or Before'],['CS_FNET','Finish On or After'],['CS_FNLT','Finish On or Before']
 ];
 export function constraintLabel(value){const row=constraintOptions.find(([v])=>String(v)===String(value));return row?.[1]||String(value||'None');}
+
 
 ====================================================================================================
 FILE: src/activity-layout.js
@@ -3026,12 +2554,14 @@ export function buildActivityRowModel(model,projId,tasks,{groupBy='',sort={field
 export function visibleActivityTasks(rowModel){return rowModel.filter(r=>r.kind==='activity').map(r=>r.task);}
 export function activityRowIndex(rowModel,taskId){return rowModel.findIndex(r=>r.kind==='activity'&&String(r.task?.task_id)===String(taskId));}
 
+
 ====================================================================================================
 FILE: src/ai-context.js
 ====================================================================================================
 export function verifiedAIContext({dashboard=null,health=null,comparison=null,dateMove=null,forecast=null,lookahead=[]}={}){
   return {schema:'uss-verified-ai-context',version:1,generatedAt:new Date().toISOString(),rules:['Use only the verified deterministic results supplied in this object.','Do not invent causes, schedule dates, resource values or probabilities.','Preserve confidence labels and caveats.'],dashboard,health:health?{score:health.score,rating:health.rating,counts:health.counts,metrics:health.metrics}:null,comparison:comparison?{summary:comparison.summary,topChanges:(comparison.changes||[]).filter(c=>['Critical','Material'].includes(c.criticality)).slice(0,50)}:null,dateMove,forecast,lookahead:lookahead.slice(0,100)};
 }
+
 
 ====================================================================================================
 FILE: src/analysis-graphics.js
@@ -3046,6 +2576,7 @@ export function issueGraphicData(model,projId,issues=[]){
   return {bySeverity,tasks,dated,wbs:[...wbs.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10)};
 }
 export function severityBarHTML(bySeverity={}){const entries=[['high','High'],['medium','Medium'],['low','Low'],['info','Info']],max=Math.max(1,...entries.map(([k])=>Number(bySeverity[k]||0)));return `<div class="analysis-bars">${entries.map(([k,l])=>`<div class="analysis-bar-row"><span>${l}</span><i class="${k}" style="width:${(Number(bySeverity[k]||0)/max*100).toFixed(1)}%"></i><b>${Number(bySeverity[k]||0)}</b></div>`).join('')}</div>`;}
+
 
 ====================================================================================================
 FILE: src/analysis.js
@@ -3101,6 +2632,7 @@ export function analyzeSchedule(model, projId, settings = {}) {
   const byRule = Object.groupBy ? Object.groupBy(issues, x=>x.rule) : issues.reduce((a,x)=>((a[x.rule]??=[]).push(x),a),{});
   return { issues, byRule, counts:{activities:tasks.length,relationships:rels.length,high:issues.filter(x=>x.severity==='high').length,medium:issues.filter(x=>x.severity==='medium').length,critical:tasks.filter(t=>num(t.total_float_hr_cnt)<=0 && !isComplete(t)).length}, dataDate:getDataDate(model,projId) };
 }
+
 
 ====================================================================================================
 FILE: src/app.js
@@ -3165,6 +2697,7 @@ import { issueGraphicData, severityBarHTML } from './analysis-graphics.js';
 import { buildActivityRowModel, visibleActivityTasks } from './activity-layout.js';
 import { datetimeLocalValue, p6FromDateInput, editableActivityDates, applyActivityPlanningEdit, constraintOptions, constraintLabel } from './activity-editing.js';
 import { chooseProjectFolder, loadProjectFolderHandle, clearProjectFolderHandle, folderPermission, scanProjectFolder, flattenScheduleFiles, fileFromTreeNode, writeFileHandle, writeScheduleToDirectory } from './project-folder.js';
+import { setMenuOpen, closeMenus, toggleExclusiveMenu } from './menu-controller.js';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const logger=new DiagnosticLogger({level:'INFO',maxEntries:3000});
@@ -3763,9 +3296,24 @@ $('#baselineInput').onchange=e=>e.target.files.length&&loadBaselines([...e.targe
 $('#packageInput').onchange=e=>e.target.files[0]&&openProjectPackage(e.target.files[0]);
 $('#projectSelect').onchange=e=>{state.projId=e.target.value;state.selectedTaskId=taskRows(state.model,state.projId)[0]?.task_id||null;state.selectedWbsId=wbsRows(state.model,state.projId)[0]?.wbs_id||null;state.lastCalculationDiscrepancies=[];render();updateEditButtons()};
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-view]'),table=e.target.closest('button[data-table]');if(b)setView(b.dataset.view);if(table){state.rawTable=table.dataset.table;setView('raw');$('#viewTitle').textContent=table.dataset.label||table.dataset.table}};
-function closeP6Menus(except=null){for(const d of $$('#menuBar details[open]'))if(d!==except)d.removeAttribute('open')}
-document.addEventListener('pointerdown',e=>{const menu=e.target.closest('#menuBar details');if(!menu){closeP6Menus();return}if(e.target.closest('summary'))closeP6Menus(menu)},true);
-$('#menuBar').onclick=e=>{const view=e.target.closest('button[data-view]'),table=e.target.closest('button[data-table]'),cmd=e.target.closest('button[data-command]');if(view){setView(view.dataset.view);closeP6Menus()}if(table){state.rawTable=table.dataset.table;setView('raw');$('#viewTitle').textContent=table.dataset.label||table.dataset.table;closeP6Menus()}if(cmd){executeCommand(cmd.dataset.command);closeP6Menus()}};
+function p6TopMenus(){return $$('#menuBar > details')}
+function closeP6Menus(except=null){closeMenus(p6TopMenus(),except)}
+function toggleP6Menu(menu){return toggleExclusiveMenu(p6TopMenus(),menu)}
+for(const menu of p6TopMenus())setMenuOpen(menu,menu.hasAttribute('open'));
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#menuBar'))closeP6Menus()},true);
+$('#menuBar').onclick=e=>{
+ const summary=e.target.closest('summary');
+ if(summary&&summary.closest('#menuBar')===$('#menuBar')){
+  e.preventDefault();
+  e.stopPropagation();
+  toggleP6Menu(summary.parentElement);
+  return;
+ }
+ const view=e.target.closest('button[data-view]'),table=e.target.closest('button[data-table]'),cmd=e.target.closest('button[data-command]');
+ if(view){closeP6Menus();setView(view.dataset.view);return}
+ if(table){closeP6Menus();state.rawTable=table.dataset.table;setView('raw');$('#viewTitle').textContent=table.dataset.label||table.dataset.table;return}
+ if(cmd){closeP6Menus();executeCommand(cmd.dataset.command);return}
+};
 $('#p6Toolbar').onclick=e=>{const cmd=e.target.closest('button[data-command]');if(cmd&&!cmd.disabled)executeCommand(cmd.dataset.command)};
 $('#globalSearch').oninput=e=>{state.search=e.target.value;if(state.model&&state.view==='activities')renderActivities()};
 $('#exportBtn').onclick=exportCurrent;
@@ -3794,10 +3342,12 @@ if(new URLSearchParams(location.search).get('demo')==='1'){
   fetch('./sample/sample-project.xer').then(r=>r.text()).then(text=>loadFile(new File([text],'sample-project.xer',{type:'text/plain'}))).catch(e=>console.error('Demo load failed',e));
 }
 
+
 ====================================================================================================
 FILE: src/audit-log.js
 ====================================================================================================
 export class AuditLog{constructor(){this.items=[]}add(action,details={}){const e={id:`a-${Date.now()}-${Math.random().toString(36).slice(2,5)}`,at:new Date().toISOString(),action,details};this.items.unshift(e);if(this.items.length>500)this.items.length=500;return e}export(){return JSON.stringify({schema:'uss-audit-v1',items:this.items},null,2)}clear(){this.items=[]}}
+
 
 ====================================================================================================
 FILE: src/baselines.js
@@ -3824,6 +3374,7 @@ export function baselineSummary(currentModel,currentProjId,b,hoursPerDay=8){cons
 export function baselineOverlayMap(b){const m=new Map();for(const t of taskRows(b.model,b.projId))m.set(key(t),{start:taskStart(t),finish:taskFinish(t),task:t});return m}
 export function setRole(baselines,id,role){for(const b of baselines){if(b.id===id)b.role=role;else if(role!=='Unassigned'&&b.role===role)b.role='Unassigned'}return baselines}
 
+
 ====================================================================================================
 FILE: src/bim-advanced.js
 ====================================================================================================
@@ -3832,6 +3383,7 @@ export function reconcileModelLinks(model,oldMeta,newMeta){const oldIds=new Set(
 export function buildBimSets(meta,property,values){return values.map(v=>({id:`set-${property}-${v}`,name:`${property}: ${v}`,property,value:v,objectIds:(meta?.objects||[]).filter(o=>String(o[property]??'')===String(v)).map(o=>o.objectId||o.guid||o.externalId||o.id)}))}
 export function matchBimRule(meta,rule){return (meta?.objects||[]).filter(o=>(rule.conditions||[]).every(c=>String(o[c.property]??'').toLowerCase()===String(c.value??'').toLowerCase()))}
 export function spatialCongestion({activities=[],linksByTask=new Map(),threshold=3}){const buckets=new Map();for(const a of activities){const day=String(a.early_start_date||a.target_start_date||'').slice(0,10);for(const l of linksByTask.get(String(a.task_id))||[]){const zone=l.level||l.zone||'Unzoned',k=`${day}|${zone}`;buckets.set(k,(buckets.get(k)||0)+1)}}return [...buckets.entries()].filter(([,n])=>n>=threshold).map(([k,count])=>{const [date,zone]=k.split('|');return {date,zone,count}})}
+
 
 ====================================================================================================
 FILE: src/bim-links.js
@@ -3966,6 +3518,7 @@ export function normalizeModelMetadata(data,fileName='model.json'){
   return {modelKey,name,version,sourceFile:String(source.sourceFile||fileName),objects};
 }
 
+
 ====================================================================================================
 FILE: src/bim-viewer.js
 ====================================================================================================
@@ -4005,6 +3558,7 @@ function rayPick(scene,cam,canvas,x,y,byNode){/* Fast bounding-sphere node pick;
 
 export function taskBimColor(task,date){const d=new Date(date),s=new Date(task.target_start_date||task.early_start_date||task.act_start_date),f=new Date(task.target_end_date||task.early_end_date||task.act_end_date);if(isNaN(s)||isNaN(f))return [0.55,0.58,0.62,1];if(String(task.status_code||'')==='TK_Complete'||f<=d)return [0.18,0.75,0.36,1];if(s<=d&&f>d)return [0.96,0.62,0.12,1];if(s>d)return [0.55,0.58,0.62,0.28];return [0.8,0.2,0.2,1]}
 export function colorHexToVec4(h){return hexToRgb(h)}
+
 
 ====================================================================================================
 FILE: src/calc-audit.js
@@ -4051,6 +3605,7 @@ export function discrepancySummary(rows=[]){
   const activities=new Set(rows.map(r=>String(r.task_id)));
   return {fields:rows.length,activities:activities.size,dateFields:rows.filter(r=>r.kind==='Date').length,floatFields:rows.filter(r=>r.kind==='Float').length};
 }
+
 
 ====================================================================================================
 FILE: src/calendar-editor.js
@@ -4122,6 +3677,7 @@ export function calendarDayStatus(def,date){
   const periods=def.week[DAY_NAMES[d.getDay()]]||[];return {working:periods.length>0,periods,exception:false,key};
 }
 
+
 ====================================================================================================
 FILE: src/calendar-tools.js
 ====================================================================================================
@@ -4129,6 +3685,7 @@ import { parseCalendarData } from './semantic.js';
 export function calendarVisual(model){return model.table('CALENDAR').map(c=>({id:c.clndr_id,name:c.clndr_name||c.clndr_id,type:c.clndr_type||'',hours:Number(c.day_hr_cnt||8),parsed:parseCalendarData(c.clndr_data||'')}))}
 export function recurringHolidayDates(year,month,weekday,nth){const d=new Date(year,month,1);let count=0;while(d.getMonth()===month){if(d.getDay()===weekday&&++count===nth)return d.toISOString().slice(0,10);d.setDate(d.getDate()+1)}return null}
 export function validateCalendarShifts(periods){const s=[...(periods||[])].sort((a,b)=>a[0]-b[0]);for(let i=0;i<s.length;i++){if(s[i][1]<=s[i][0])return {ok:false,message:'Shift finish must be after start'};if(i&&s[i][0]<s[i-1][1])return {ok:false,message:'Shifts overlap'}}return {ok:true}}
+
 
 ====================================================================================================
 FILE: src/canonical-schema.js
@@ -4151,6 +3708,7 @@ export function portabilityMatrix(model){
  return issues;
 }
 
+
 ====================================================================================================
 FILE: src/codes-editor.js
 ====================================================================================================
@@ -4167,6 +3725,7 @@ export function addUdfType(model,{label='New UDF',name='',dataType='FT_TEXT',tab
 export function updateUdfType(model,id,patch){const r=model.find('UDFTYPE','udf_type_id',String(id));if(!r)throw new Error('UDF definition not found.');Object.assign(r,patch);touch(model);return r;}
 export function setTaskUdfValue(model,taskId,udfTypeId,value){if(!model.find('TASK','task_id',String(taskId)))throw new Error('Activity not found.');const u=model.find('UDFTYPE','udf_type_id',String(udfTypeId));if(!u||String(u.table_name||'').toUpperCase()!=='TASK')throw new Error('Task UDF definition not found.');const t=ensureTable(model,'UDFVALUE',['udf_type_id','fk_id','udf_text','udf_number','udf_date','udf_code_id']);let r=t.rows.find(x=>String(x.udf_type_id)===String(udfTypeId)&&String(x.fk_id)===String(taskId));if(!r){r={udf_type_id:String(udfTypeId),fk_id:String(taskId),udf_text:'',udf_number:'',udf_date:'',udf_code_id:''};t.rows.push(r)}for(const k of ['udf_text','udf_number','udf_date','udf_code_id'])r[k]='';const typ=String(u.logical_data_type||'FT_TEXT').toUpperCase();if(typ.includes('NUMBER')||typ.includes('DOUBLE')||typ.includes('COST'))r.udf_number=String(value??'');else if(typ.includes('DATE'))r.udf_date=String(value??'');else r.udf_text=String(value??'');touch(model);return r;}
 export function removeTaskUdfValue(model,taskId,udfTypeId){const t=model.tables.get('UDFVALUE');if(!t)return;t.rows=t.rows.filter(r=>!(String(r.udf_type_id)===String(udfTypeId)&&String(r.fk_id)===String(taskId)));touch(model);}
+
 
 ====================================================================================================
 FILE: src/compare.js
@@ -4206,6 +3765,7 @@ export function compareModels(oldM,newM,oldProjId=null,newProjId=null) {
   }
   return {changes, summary:{added:changes.filter(x=>x.type==='Added').length,deleted:changes.filter(x=>x.type==='Deleted').length,fieldChanges:changes.filter(x=>x.type==='Changed').length,activitiesAffected:new Set(changes.map(x=>x.activity)).size}};
 }
+
 
 ====================================================================================================
 FILE: src/cpm.js
@@ -4288,6 +3848,7 @@ export function calculateCPM(model,projId,inputOptions={}){const options=normali
 
 export function applyCPM(model,projId,calc){const taskTable=model.tables.get('TASK');if(taskTable){for(const f of ['early_start_date','early_end_date','late_start_date','late_end_date','total_float_hr_cnt','free_float_hr_cnt','target_start_date','target_end_date','restart_date','reend_date'])if(!taskTable.fields.includes(f))taskTable.fields.push(f)}for(const r of calc.results){const t=model.find('TASK','task_id',r.task_id);if(!t)continue;if(!isComplete(t)){t.early_start_date=fmtP6(r.es);t.early_end_date=fmtP6(r.ef);t.late_start_date=fmtP6(r.ls);t.late_end_date=fmtP6(r.lf);t.total_float_hr_cnt=String(Math.round(r.totalFloat*1000)/1000);t.free_float_hr_cnt=String(Math.round(r.freeFloat*1000)/1000);if(isStarted(t)){t.restart_date=fmtP6(r.es);t.reend_date=fmtP6(r.ef)}else{if(!t.act_start_date)t.target_start_date=fmtP6(r.es);if(!t.act_end_date)t.target_end_date=fmtP6(r.ef)}}}const p=model.find('PROJECT','proj_id',String(projId));if(p){const pt=model.tables.get('PROJECT');const field=('last_recalc_date'in p)?'last_recalc_date':'data_date';if(pt&&!pt.fields.includes(field))pt.fields.push(field);p[field]=fmtP6(calc.dataDate)}model.indexes=new Map();return calc;}
 
+
 ====================================================================================================
 FILE: src/critical-intelligence.js
 ====================================================================================================
@@ -4350,6 +3911,7 @@ export function criticalPathMigration(oldModel,newModel,oldProjId=null,newProjId
   return {entered,left,stayed,summary:{previousCritical:oldCrit.size,currentCritical:newCrit.size,entered:entered.length,left:left.length}};
 }
 
+
 ====================================================================================================
 FILE: src/date-local.js
 ====================================================================================================
@@ -4364,6 +3926,7 @@ export function normalizeLocalDateTime(value,{separator='T',seconds=true}={}){
 export function toP6Local(value){return normalizeLocalDateTime(value,{separator:' ',seconds:true})}
 export function toXmlLocal(value){return normalizeLocalDateTime(value,{separator:'T',seconds:true})}
 export function localDateParts(value){const s=normalizeLocalDateTime(value);const m=s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);return m?{year:+m[1],month:+m[2],day:+m[3],hour:+m[4],minute:+m[5],second:+m[6]}:null}
+
 
 ====================================================================================================
 FILE: src/date-move.js
@@ -4403,6 +3966,7 @@ export function explainDateMovement(oldModel,newModel,activityKey,{oldProjId=nul
   return {activity:taskKey(newTask),name:newTask.task_name||'',available:true,oldFinish,newFinish,movementDays,contributors,statement:`${taskKey(newTask)} ${newTask.task_name||''} moved ${movementDays===null?'an unknown amount':`${movementDays>=0?'+':''}${movementDays.toFixed(1)} calendar day(s)`}.`,caveat:'Direct field changes are confirmed. Network contribution is labelled Strongly indicated/Possible where exact proprietary scheduling attribution cannot be proven from stored dates alone.'};
 }
 
+
 ====================================================================================================
 FILE: src/determinism.js
 ====================================================================================================
@@ -4412,6 +3976,7 @@ export function stableRows(name,rows){const keys=KEY_FIELDS[name]||[];if(!keys.l
 export function stableTableEntries(model){return [...model.tables.entries()].map(([name,t])=>[name,{...t,rows:stableRows(name,t.rows)}]);}
 export function semanticFingerprint(model){const normalized=stableTableEntries(model).map(([name,t])=>[name,[...t.fields],t.rows.map(r=>t.fields.map(f=>String(r[f]??'')))]);return fnv1a(JSON.stringify(normalized))}
 function fnv1a(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)}return (h>>>0).toString(16).padStart(8,'0')}
+
 
 ====================================================================================================
 FILE: src/diagnostics.js
@@ -4424,6 +3989,7 @@ export function explainActivity(model,projId,taskId,calc=null){
  return {taskId:a.id,name:a.name,earlyStart:t.early_start_date||t.target_start_date,earlyFinish:t.early_end_date||t.target_end_date,lateStart:t.late_start_date,lateFinish:t.late_end_date,totalFloat:num(t.total_float_hr_cnt),calendar:a.calendarName,constraints:[a.primaryConstraint&&`${a.primaryConstraint} ${a.primaryConstraintDate||''}`,a.secondaryConstraint&&`${a.secondaryConstraint} ${a.secondaryConstraintDate||''}`].filter(Boolean),incoming:candidates,calculationWarnings:calc?.warnings||[]};
 }
 export function driverText(diag){if(!diag)return 'No activity selected.';if(!diag.incoming.length)return 'No predecessor relationship constrains this activity; project/data-date/constraint rules govern its start.';const r=[...diag.incoming].sort((a,b)=>String(b.predFinish||b.predStart).localeCompare(String(a.predFinish||a.predStart)))[0];return `${r.predId}${r.predName?` — ${r.predName}`:''} via ${r.type||'FS'} ${r.lagHours>=0?'+':''}${r.lagHours}h is the strongest visible predecessor candidate. Calendar: ${diag.calendar}.`}
+
 
 ====================================================================================================
 FILE: src/editor.js
@@ -4588,6 +4154,7 @@ export function updateRow(model,tableName,rowIndex,field,value){const t=model.ta
 export function addRow(model,tableName,values={}){const t=model.tables.get(tableName);if(!t)throw new Error('Table not found');const row=Object.fromEntries(t.fields.map(f=>[f,'']));Object.assign(row,values);t.rows.push(row);touch(model);return row;}
 export function deleteRow(model,tableName,rowIndex){const t=model.tables.get(tableName);if(!t||!t.rows[rowIndex])throw new Error('Row not found');const [row]=t.rows.splice(rowIndex,1);touch(model);return row;}
 
+
 ====================================================================================================
 FILE: src/error-reporting.js
 ====================================================================================================
@@ -4601,6 +4168,7 @@ export function actionableError(error,{operation='Operation'}={}){
   return lines.join('\n');
 }
 
+
 ====================================================================================================
 FILE: src/evm.js
 ====================================================================================================
@@ -4610,6 +4178,7 @@ export function evmRows(model,projId,statusDate=new Date()){
  const dd=statusDate instanceof Date?statusDate:new Date(statusDate);return taskRows(model,projId).map(t=>{const bac=num(t.target_cost||t.target_work_qty||t.target_drtn_hr_cnt),pct=num(t.phys_complete_pct||t.complete_pct)/100,ev=bac*pct;const s=p6Date(t.target_start_date),f=p6Date(t.target_end_date);let planned=0;if(s&&f){if(dd>=f)planned=1;else if(dd>s)planned=Math.max(0,Math.min(1,(dd-s)/Math.max(1,f-s)))}const pv=bac*planned,ac=num(t.act_cost||t.act_work_qty||0),spi=pv?ev/pv:null,cpi=ac?ev/ac:null,eac=cpi?bac/cpi:bac,vac=bac-eac;return {task_id:t.task_id,task_code:t.task_code,task_name:t.task_name,bac,pv,ev,ac,spi,cpi,eac,vac}})
 }
 export function evmSummary(rows){const s=rows.reduce((a,r)=>{for(const k of ['bac','pv','ev','ac'])a[k]+=Number(r[k]||0);return a},{bac:0,pv:0,ev:0,ac:0});s.spi=s.pv?s.ev/s.pv:null;s.cpi=s.ac?s.ev/s.ac:null;s.eac=s.cpi?s.bac/s.cpi:s.bac;s.vac=s.bac-s.eac;s.tcpi=(s.bac-s.ev)/(Math.max(0.0001,s.bac-s.ac));return s}
+
 
 ====================================================================================================
 FILE: src/export.js
@@ -4623,6 +4192,7 @@ export function toCSV(rows, columns = null) {
 export function downloadText(name,text,type='text/plain') {
   const blob=new Blob([text],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;a.download=name;a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+
 
 ====================================================================================================
 FILE: src/filters.js
@@ -4640,6 +4210,7 @@ export function builtInFilters(){return [
  {id:'open-start',name:'No predecessor',special:'openStart'}
 ]}
 
+
 ====================================================================================================
 FILE: src/float-paths.js
 ====================================================================================================
@@ -4651,6 +4222,7 @@ export function traceFloatPaths(model,projId,targetTaskId,{maxPaths=10,maxDepth=
  const target=String(targetTaskId);const paths=[];const dfs=(id,path,seen)=>{if(path.length>maxDepth||paths.length>=maxPaths)return;const rels=(incoming.get(id)||[]).filter(r=>tasks.has(String(r.pred_task_id))).sort((a,b)=>score(tasks.get(String(a.pred_task_id)))-score(tasks.get(String(b.pred_task_id))));if(!rels.length){paths.push([...path].reverse());return}for(const r of rels.slice(0,Math.max(2,maxPaths-paths.length))){const p=String(r.pred_task_id);if(seen.has(p))continue;const ns=new Set(seen);ns.add(p);dfs(p,[...path,{taskId:p,relationship:r}],ns)}};
  if(tasks.has(target))dfs(target,[{taskId:target,relationship:null}],new Set([target]));return paths.map((p,i)=>({rank:i+1,activities:p.map(x=>tasks.get(x.taskId)).filter(Boolean),relationships:p.map(x=>x.relationship).filter(Boolean),floatHours:Math.min(...p.map(x=>score(tasks.get(x.taskId))))}));
 }
+
 
 ====================================================================================================
 FILE: src/forensic-comparison.js
@@ -4804,6 +4376,7 @@ export function wbsCodeMap(model, projId = null) {
   return new Map(wbsRows(model,projId).map(w => [String(w.wbs_id), w.wbs_short_name || w.wbs_name || w.wbs_id]));
 }
 
+
 ====================================================================================================
 FILE: src/forensic-reporting.js
 ====================================================================================================
@@ -4848,6 +4421,7 @@ export function buildLookahead(model,projId=null,{weeks=6,wbsId='',status='',fro
   const start=fromDate?new Date(fromDate):p6Date(getDataDate(model,projId))||new Date(),end=new Date(start.getTime()+weeks*7*86400000);
   return taskRows(model,projId).filter(t=>{const s=p6Date(dateOf(t,'start')),f=p6Date(dateOf(t,'finish'));if(!s&&!f)return false;const intersects=(s&&s<=end&&(!f||f>=start))||(f&&f>=start&&f<=end);return intersects&&(!wbsId||String(t.wbs_id)===String(wbsId))&&(!status||String(t.status_code||'').includes(status))}).map(t=>({activity:t.task_code||t.task_id,name:t.task_name||'',wbs_id:t.wbs_id||'',status:t.status_code||'',start:dateOf(t,'start'),finish:dateOf(t,'finish'),total_float_hours:num(t.total_float_hr_cnt),percent_complete:num(t.phys_complete_pct||t.complete_pct)})).sort((a,b)=>(p6Date(a.start)?.getTime()||0)-(p6Date(b.start)?.getTime()||0));
 }
+
 
 ====================================================================================================
 FILE: src/forensic-repository.js
@@ -4937,6 +4511,7 @@ export function repositorySummary(revisions = []) {
   }));
 }
 
+
 ====================================================================================================
 FILE: src/format-adapters.js
 ====================================================================================================
@@ -5023,6 +4598,7 @@ export function conversionAudit(model,target){
   return {source:src,target,warnings,quality,categories};
 }
 
+
 ====================================================================================================
 FILE: src/gantt.js
 ====================================================================================================
@@ -5096,6 +4672,7 @@ export function renderGantt(container,tasks,{hoursPerDay=8,selectedTaskId='',onS
 
 function cssEscape(value){return globalThis.CSS?.escape?CSS.escape(String(value)):String(value).replace(/["\\]/g,'\\$&');}
 
+
 ====================================================================================================
 FILE: src/global-search.js
 ====================================================================================================
@@ -5110,6 +4687,7 @@ export function globalScheduleSearch(model,query,{limit=500}={}){
   }
   return out;
 }
+
 
 ====================================================================================================
 FILE: src/import-diagnostics.js
@@ -5142,6 +4720,7 @@ export function diagnoseImportedSchedule(text,fileName='schedule.xer',options={}
   const preflight=preflightScheduleText(text,fileName,options);if(!preflight.ok)return {...preflight,model:null,integrity:null,parserWarnings:[]};
   try{const model=parseScheduleText(text,fileName),projectId=model.table('PROJECT')[0]?.proj_id||model.table('TASK')[0]?.proj_id||null,integrity=validateModelIntegrity(model,{projectId});return {...preflight,model,integrity,parserWarnings:[...(model.warnings||[])],ok:preflight.ok&&!integrity.counts?.errors};}catch(error){return {...preflight,ok:false,model:null,integrity:null,parserWarnings:[],issues:[...preflight.issues,error.message]};}
 }
+
 
 ====================================================================================================
 FILE: src/integrity.js
@@ -5211,6 +4790,7 @@ export function integritySummary(result,limit=8){
   return `${result.counts.errors} error(s), ${result.counts.warnings} warning(s).${top.length?'\n\n'+top.join('\n'):''}${more}`;
 }
 
+
 ====================================================================================================
 FILE: src/layouts.js
 ====================================================================================================
@@ -5221,6 +4801,7 @@ export function saveLayouts(layouts,key='uss-layouts'){localStorage.setItem(key,
 export function upsertLayout(layouts,layout){const i=layouts.findIndex(x=>x.id===layout.id);if(i>=0)layouts[i]=structuredClone(layout);else layouts.push(structuredClone(layout));return layouts}
 export function removeLayout(layouts,id){return layouts.filter(x=>x.id!==id||id==='default')}
 export function applyLayoutSort(rows,layout){const rules=layout?.sort||[];const groupBy=layout?.groupBy;return [...rows].sort((a,b)=>{if(groupBy){const g=String(a[groupBy]??'').localeCompare(String(b[groupBy]??''),undefined,{numeric:true});if(g)return g}for(const r of rules){const av=a[r.field]??'',bv=b[r.field]??'';const c=String(av).localeCompare(String(bv),undefined,{numeric:true});if(c)return c*(r.dir||1)}return 0})}
+
 
 ====================================================================================================
 FILE: src/logger.js
@@ -5235,6 +4816,47 @@ export class DiagnosticLogger{
   end(name,module,procedure,message='Completed'){const t=this.timers.get(name);if(!t)return null;const now=performance?.now?.()??Date.now(),durationMs=now-t.at;this.timers.delete(name);return this.info(module,procedure,message,{...t.context,durationMs:Number(durationMs.toFixed(2))})}
   export(){return JSON.stringify({schema:'uss-diagnostic-log',version:1,exportedAt:new Date().toISOString(),entries:this.entries},null,2)}
 }
+
+
+====================================================================================================
+FILE: src/menu-controller.js
+====================================================================================================
+/**
+ * Exclusive top-level menu helpers.
+ *
+ * These helpers deliberately avoid relying on the browser's native <details>
+ * toggle timing.  Schedule Studio controls the `open` state itself so only
+ * one top-level application menu can be open at a time.
+ */
+export function menuIsOpen(menu){
+  if(!menu)return false;
+  return Boolean(menu.open===true || menu.hasAttribute?.('open'));
+}
+
+export function setMenuOpen(menu,open){
+  if(!menu)return false;
+  const next=Boolean(open);
+  if(next)menu.setAttribute?.('open','');
+  else menu.removeAttribute?.('open');
+  try{menu.open=next}catch{}
+  const summary=menu.querySelector?.(':scope > summary') ?? menu.summary ?? null;
+  summary?.setAttribute?.('aria-expanded',next?'true':'false');
+  summary?.setAttribute?.('aria-haspopup','menu');
+  return next;
+}
+
+export function closeMenus(menus,except=null){
+  for(const menu of menus||[])if(menu!==except)setMenuOpen(menu,false);
+}
+
+export function toggleExclusiveMenu(menus,target){
+  if(!target)return false;
+  const wasOpen=menuIsOpen(target);
+  closeMenus(menus);
+  if(!wasOpen)setMenuOpen(target,true);
+  return !wasOpen;
+}
+
 
 ====================================================================================================
 FILE: src/p6-commands.js
@@ -5326,6 +4948,7 @@ export function commandForKeyboardEvent(e){
   return P6_COMMANDS.find(c=>key(c.shortcut)===key(s)) || null;
 }
 
+
 ====================================================================================================
 FILE: src/package-integrity.js
 ====================================================================================================
@@ -5341,6 +4964,7 @@ export function contentChecksum(value){
 }
 export function attachChecksum(obj){const copy={...obj};delete copy.checksum;return {...copy,checksum:contentChecksum(copy)}}
 export function verifyChecksum(obj){if(!obj?.checksum)return {ok:true,legacy:true};const copy={...obj};const expected=copy.checksum;delete copy.checksum;const actual=contentChecksum(copy);return {ok:expected===actual,legacy:false,expected,actual}}
+
 
 ====================================================================================================
 FILE: src/parser.js
@@ -5459,12 +5083,14 @@ export function escapeHtml(v) {
   return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 }
 
+
 ====================================================================================================
 FILE: src/productivity.js
 ====================================================================================================
 import { resourceSheetRows } from './resource-analysis.js';
 export function productivityRows(model,projId){return resourceSheetRows(model,projId).map(r=>{const budget=Number(r.budget_units||0),actual=Number(r.actual_units||0),remaining=Number(r.remaining_units||0);const t=model.table('TASK').find(x=>String(x.task_code)===String(r.task_code));const earned=budget*(Number(t?.phys_complete_pct||0)/100);return {...r,budget,actual,remaining,earned,efficiency:actual?earned/actual:null,forecast:actual+remaining}})}
 export function productivitySummary(rows){const x=rows.reduce((a,r)=>{a.budget+=r.budget||0;a.actual+=r.actual||0;a.remaining+=r.remaining||0;a.earned+=r.earned||0;return a},{budget:0,actual:0,remaining:0,earned:0});x.efficiency=x.actual?x.earned/x.actual:null;return x}
+
 
 ====================================================================================================
 FILE: src/progress.js
@@ -5473,6 +5099,7 @@ import { taskRows } from './semantic.js';
 export function validateProgress(model,projId,dataDate){const dd=new Date(dataDate);const issues=[];for(const t of taskRows(model,projId)){const pct=Number(t.phys_complete_pct||0),as=t.act_start_date?new Date(t.act_start_date):null,af=t.act_end_date?new Date(t.act_end_date):null;if(pct>0&&!as)issues.push({task:t,type:'Missing Actual Start'});if(pct>=100&&!af)issues.push({task:t,type:'Missing Actual Finish'});if(as&&dd instanceof Date&&as>dd)issues.push({task:t,type:'Actual Start after Data Date'});if(af&&dd instanceof Date&&af>dd)issues.push({task:t,type:'Actual Finish after Data Date'});if(Number(t.remain_drtn_hr_cnt)<0)issues.push({task:t,type:'Negative Remaining Duration'})}return issues}
 export function applyProgressRows(model,rows,{matchField='task_code'}={}){let n=0;for(const u of rows){const t=model.table('TASK').find(x=>String(x[matchField])===String(u[matchField]));if(!t)continue;for(const k of ['act_start_date','act_end_date','remain_drtn_hr_cnt','phys_complete_pct','restart_date','reend_date'])if(u[k]!==undefined)t[k]=String(u[k]??'');n++}return n}
 export function parseProgressCSV(text){const lines=String(text).trim().split(/\r?\n/);if(!lines.length)return[];const h=lines.shift().split(',').map(x=>x.trim());return lines.filter(Boolean).map(line=>{const a=line.split(',');return Object.fromEntries(h.map((k,i)=>[k,a[i]?.trim()??'']))})}
+
 
 ====================================================================================================
 FILE: src/project-folder.js
@@ -5513,12 +5140,14 @@ export async function fileFromTreeNode(node){if(!node?.handle||node.kind!=='file
 export async function writeFileHandle(fileHandle,text){if(!fileHandle?.createWritable)throw new Error('The selected browser/file handle is not writable.');const writable=await fileHandle.createWritable();try{await writable.write(text);}finally{await writable.close();}return true;}
 export async function writeScheduleToDirectory(directoryHandle,fileName,text){if(!directoryHandle?.getFileHandle)throw new Error('No writable project folder is connected.');const handle=await directoryHandle.getFileHandle(fileName,{create:true});await writeFileHandle(handle,text);return handle;}
 
+
 ====================================================================================================
 FILE: src/project-package.js
 ====================================================================================================
 import { verifyChecksum } from './package-integrity.js';
 export function serializeProjectPackage(pkg){return JSON.stringify(pkg,null,2)}
 export function parseProjectPackage(text){const p=JSON.parse(text);if(p.schema!=='unified-schedule-project')throw new Error('Not a Unified Schedule Studio project package');if(!Number.isInteger(p.version)||p.version<1||p.version>2)throw new Error(`Unsupported project package version: ${p.version}`);const check=verifyChecksum(p);if(!check.ok)throw new Error('Project package checksum failed. The file may be corrupted or incomplete.');if(!Array.isArray(p.tables))throw new Error('Project package does not contain a valid tables collection.');return p}
+
 
 ====================================================================================================
 FILE: src/relationship-tools.js
@@ -5538,6 +5167,7 @@ export function relationshipNeighborhood(model,projId,relationshipId,{depth=1}={
   for(let d=0;d<depth;d++){const next=[];for(const r of all){if(frontier.includes(String(r.task_id))&&!ids.has(String(r.pred_task_id))){ids.add(String(r.pred_task_id));next.push(String(r.pred_task_id))}if(frontier.includes(String(r.pred_task_id))&&!ids.has(String(r.task_id))){ids.add(String(r.task_id));next.push(String(r.task_id))}}frontier=next;}
   return {tasks:taskRows(model,projId).filter(t=>ids.has(String(t.task_id))),relationships:all.filter(r=>ids.has(String(r.pred_task_id))&&ids.has(String(r.task_id))),selected:rel};
 }
+
 
 ====================================================================================================
 FILE: src/resource-analysis.js
@@ -5574,6 +5204,7 @@ export function buildResourceTimeSeries(model,projId,opts={}){
 export function cumulativeSeries(rows){let b=0,a=0,r=0,f=0;return rows.map(x=>({date:x.date,budget:(b+=x.budget),actual:(a+=x.actual),remaining:(r+=x.remaining),forecast:(f+=x.forecast)}))}
 export function summarizeResources(model,projId){const rows=resourceSheetRows(model,projId),map=new Map();for(const r of rows){const k=r.resource_id||r.resource_name,x=map.get(k)||{resource_id:r.resource_id,resource_name:r.resource_name,resource_type:r.resource_type,assignments:0,budget_units:0,actual_units:0,remaining_units:0,budget_cost:0,actual_cost:0,remaining_cost:0};x.assignments++;for(const f of ['budget_units','actual_units','remaining_units','budget_cost','actual_cost','remaining_cost'])x[f]+=num(r[f]);map.set(k,x)}return [...map.values()].sort((a,b)=>String(a.resource_name).localeCompare(String(b.resource_name)))}
 
+
 ====================================================================================================
 FILE: src/resource-charts.js
 ====================================================================================================
@@ -5590,6 +5221,7 @@ export function renderCurve(el,rows,{fields=['budget','actual','forecast'],title
   for(const f of fields){const pts=rows.map((r,i)=>`${pad+i*dx},${H-pad-(Number(r[f])||0)/max*plotH}`).join(' ');svg+=`<polyline points="${pts}" class="curve-${f}" fill="none" stroke-width="2.4"/>`}
   rows.forEach((r,i)=>{if(i%Math.max(1,Math.ceil(rows.length/12))===0)svg+=`<text x="${pad+i*dx}" y="${H-12}" class="axis-label">${esc(r.date.slice(5))}</text>`});svg+='</svg>';el.innerHTML=svg;
 }
+
 
 ====================================================================================================
 FILE: src/resource-intelligence.js
@@ -5614,6 +5246,7 @@ export function resourceOverloadAnalysis(model,projId=null,{bucket='week',capaci
 export function resourceLoadingGaps(model,projId=null){
   return resourceSheetRows(model,projId).filter(r=>num(r.remaining_units)>0&&!r.resource_id).map(r=>({activity:r.activity_id,name:r.activity_name,issue:'Remaining work has no resource assignment'}));
 }
+
 
 ====================================================================================================
 FILE: src/resource-tools.js
@@ -5708,6 +5341,7 @@ export function addResourceRate(model,resourceId,{startDate='',pricePerUnit=0,ma
   t.rows.push(row);touch(model);return row;
 }
 
+
 ====================================================================================================
 FILE: src/revision-history.js
 ====================================================================================================
@@ -5719,12 +5353,14 @@ export function revisionDiff(current,currentProj,snapshotModel,snapProj){return 
 export function loadRevisionMeta(key='uss-revisions'){try{return JSON.parse(localStorage.getItem(key)||'[]')}catch{return []}}
 export function saveRevisionMeta(items,key='uss-revisions'){localStorage.setItem(key,JSON.stringify(items.slice(-100)))}
 
+
 ====================================================================================================
 FILE: src/scenarios.js
 ====================================================================================================
 export function createScenario(model,name='Scenario'){return {id:`sc-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,name,createdAt:new Date().toISOString(),tables:[...model.tables.entries()].map(([n,t])=>[n,{name:t.name,fields:[...t.fields],rows:t.rows.map(r=>({...r}))}]),sourceFormat:model.sourceFormat}}
 export function scenarioTaskDiff(model,scenario){const sTask=new Map((scenario.tables.find(x=>x[0]==='TASK')?.[1]?.rows||[]).map(t=>[String(t.task_id),t]));const out=[];for(const t of model.table('TASK')){const b=sTask.get(String(t.task_id));if(!b)continue;for(const f of ['target_start_date','target_end_date','remain_drtn_hr_cnt','total_float_hr_cnt'])if(String(t[f]??'')!==String(b[f]??''))out.push({task_code:t.task_code,task_name:t.task_name,field:f,scenario:b[f]??'',current:t[f]??''})}return out}
 export function promoteScenario(model,scenario){model.tables=new Map(scenario.tables.map(([n,t])=>[n,{...t,fields:[...t.fields],rows:t.rows.map(r=>({...r}))}]));return model}
+
 
 ====================================================================================================
 FILE: src/schedule-health.js
@@ -5821,6 +5457,7 @@ export function scheduleRiskRadar(model,projId=null,settings={},forecastStabilit
   return {categories,overall:Math.round(categories.reduce((s,c)=>s+c.score,0)/categories.length),health,progress};
 }
 
+
 ====================================================================================================
 FILE: src/scheduling-options.js
 ====================================================================================================
@@ -5874,6 +5511,7 @@ export function applyProfile(options,profileId){
   const profile=compatibilityProfiles[profileId]||compatibilityProfiles.generic;
   return normalizeSchedulingOptions({...options,...profile.values,compatibilityProfile:profileId});
 }
+
 
 ====================================================================================================
 FILE: src/semantic.js
@@ -6014,6 +5652,7 @@ export function parseCalendarData(raw='') {
   return result;
 }
 
+
 ====================================================================================================
 FILE: src/serializer.js
 ====================================================================================================
@@ -6030,6 +5669,7 @@ export function serializeXER(model){
 }
 function clean(v){return String(v??'').replace(/[\r\n\t]/g,' ')}
 
+
 ====================================================================================================
 FILE: src/transaction.js
 ====================================================================================================
@@ -6045,6 +5685,7 @@ export function runTransaction(model,label,mutator,{validate=true,projectId=null
     return result;
   }catch(error){restoreTables(model,before);throw error}
 }
+
 
 ====================================================================================================
 FILE: src/trend-forecast.js
@@ -6093,6 +5734,7 @@ export function stalledActivities(revisions=[],{thresholdPercent=90,minPeriods=3
   return out;
 }
 
+
 ====================================================================================================
 FILE: src/tutorial.js
 ====================================================================================================
@@ -6113,6 +5755,7 @@ function topicNavis(){return `<div class="panel-head"><h3>6. Navisworks exporter
 └── settings/calculation-options.json</pre></div>`}
 
 function topicAdvanced(){return `<div class="panel-head"><h3>8. Advanced project-controls workflow</h3></div><div class="panel-body"><ul><li><b>Layouts & Filters:</b> save column sets, grouping, timescale, sorting and P6-style AND/OR filters.</li><li><b>Logic Diagnostics:</b> select an activity to inspect visible date drivers and ranked multiple-float paths.</li><li><b>Progress & EVM:</b> import status CSV, validate progress, review PV/EV/AC/SPI/CPI/EAC/VAC and productivity.</li><li><b>History & Scenarios:</b> create revision snapshots, compare them, clone recovery scenarios and keep an audit trail.</li><li><b>Project Workspace:</b> autosave locally with IndexedDB and export a portable <code>.ussproj</code> package.</li><li><b>Calendars:</b> use exception overrides and split shifts; validate overlaps before scheduling.</li><li><b>BIM Advanced:</b> build property sets, apply rule-based links, review linked quantities and reconcile new model revisions by stable IDs.</li><li><b>Conversion audit:</b> cross-format XER/XML exports show a quality score and fidelity warnings before download.</li></ul><p>For contractual use, validate calculated dates and float against your organization’s approved P6/MSP golden schedules before relying on a new compatibility profile.</p></div>`}
+
 
 ====================================================================================================
 FILE: src/ui-labels.js
@@ -6139,6 +5782,7 @@ export function groupDisplayLabel(model,groupBy,row){
   if(groupBy==='clndr_id')return calendarDisplayLabel(model,row?.clndr_id);
   return String(row?.[groupBy]??'Unassigned')||'Unassigned';
 }
+
 
 ====================================================================================================
 FILE: src/wbs-tools.js
@@ -6192,6 +5836,7 @@ export function cloneWBSBranch(model,sourceWbsId,{newParentWbsId=null,includeAct
 }
 export function moveActivitiesToWBS(model,taskIds,wbsId){return reassignTasksToWBS(model,taskIds,wbsId)}
 
+
 ====================================================================================================
 FILE: src/workspace.js
 ====================================================================================================
@@ -6202,6 +5847,7 @@ export async function saveWorkspace(record){const db=await openDB();return await
 export async function listWorkspaces(){const db=await openDB();return await new Promise((res,rej)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
 export async function getWorkspace(id){const db=await openDB();return await new Promise((res,rej)=>{const r=db.transaction(STORE).objectStore(STORE).get(id);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error)})}
 export function makeProjectPackage({model,settings,baselines=[],bimModels=[],layouts=[],audit=[],scenarios=[],revisions=[]}){const safeBaselines=baselines.map(b=>({id:b.id,name:b.name,fileName:b.fileName,role:b.role,importedAt:b.importedAt,projId:b.projId,format:b.format||b.model?.sourceFormat||'',tables:b.model?[...b.model.tables.entries()].map(([n,t])=>[n,{name:t.name,fields:t.fields,rows:t.rows}]):b.tables||[]}));return attachChecksum({schema:'unified-schedule-project',version:2,createdAt:new Date().toISOString(),sourceFormat:model?.sourceFormat||'',header:model?.header||[],tables:model?[...model.tables.entries()].map(([n,t])=>[n,{name:t.name,fields:t.fields,rows:t.rows}]):[],settings,baselines:safeBaselines,bimModels,layouts,audit,scenarios,revisions})}
+
 
 ====================================================================================================
 FILE: styles.css
@@ -6555,14 +6201,20 @@ body.p6-desktop{display:grid;grid-template-rows:var(--p6-title-h) var(--p6-menu-
 .resource-audit-table{margin-bottom:0}.resource-audit-scroll{padding:0;max-height:430px;overflow:auto;user-select:text}.resource-audit-scroll .table-wrap{max-height:none;overflow:visible}.resource-audit-scroll table{font-variant-numeric:tabular-nums}.resource-audit-scroll th{top:0;z-index:4}.resource-audit-scroll td,.resource-audit-scroll th{height:26px;padding:4px 7px}.resource-audit-scroll tbody tr{cursor:text}.resource-audit-scroll tbody tr:hover{background:color-mix(in srgb,var(--accent) 6%,var(--panel))}
 @media(max-width:900px){.detail-edit-grid{grid-template-columns:110px 1fr}.project-library-summary{gap:8px}.resource-audit-scroll{max-height:320px}}
 
+/* v6.3.1: top-level menus are exclusively controlled by app.js. */
+.p6-menubar > details:not([open]) > .p6-menu{display:none!important}
+.p6-menubar > details[open] > .p6-menu{display:block}
+
+
 ====================================================================================================
 FILE: sw.js
 ====================================================================================================
-const CACHE='unified-schedule-studio-v6.3';
-const ASSETS=['./','./index.html','./styles.css','./src/app.js','./src/parser.js','./src/semantic.js','./src/analysis.js','./src/compare.js','./src/export.js','./src/gantt.js','./src/ui-labels.js','./src/editor.js','./src/serializer.js','./src/cpm.js','./src/scheduling-options.js','./src/wbs-tools.js','./src/resource-analysis.js','./src/resource-charts.js','./src/bim-links.js','./src/bim-viewer.js','./src/tutorial.js','./src/baselines.js','./src/format-adapters.js','./src/canonical-schema.js','./src/layouts.js','./src/filters.js','./src/diagnostics.js','./src/float-paths.js','./src/revision-history.js','./src/progress.js','./src/evm.js','./src/productivity.js','./src/scenarios.js','./src/audit-log.js','./src/calendar-tools.js','./src/workspace.js','./src/bim-advanced.js','./src/project-package.js','./src/date-local.js','./src/error-reporting.js','./src/determinism.js','./src/transaction.js','./src/integrity.js','./src/forensic-repository.js','./src/forensic-comparison.js','./src/critical-intelligence.js','./src/date-move.js','./src/schedule-health.js','./src/trend-forecast.js','./src/resource-intelligence.js','./src/import-diagnostics.js','./src/forensic-reporting.js','./src/global-search.js','./src/ai-context.js','./src/logger.js','./src/package-integrity.js','./src/p6-commands.js','./src/calc-audit.js','./src/analysis-graphics.js','./src/codes-editor.js','./src/relationship-tools.js','./src/calendar-editor.js','./src/resource-tools.js','./src/project-folder.js','./src/activity-editing.js','./src/activity-layout.js','./manifest.webmanifest','./sample/sample-model-metadata.json','./sample/sample-project.xer','./sample/sample-project.xml'];
+const CACHE='unified-schedule-studio-v6.3.1';
+const ASSETS=['./','./index.html','./styles.css','./src/app.js','./src/parser.js','./src/semantic.js','./src/analysis.js','./src/compare.js','./src/export.js','./src/gantt.js','./src/ui-labels.js','./src/editor.js','./src/serializer.js','./src/cpm.js','./src/scheduling-options.js','./src/wbs-tools.js','./src/resource-analysis.js','./src/resource-charts.js','./src/bim-links.js','./src/bim-viewer.js','./src/tutorial.js','./src/baselines.js','./src/format-adapters.js','./src/canonical-schema.js','./src/layouts.js','./src/filters.js','./src/diagnostics.js','./src/float-paths.js','./src/revision-history.js','./src/progress.js','./src/evm.js','./src/productivity.js','./src/scenarios.js','./src/audit-log.js','./src/calendar-tools.js','./src/workspace.js','./src/bim-advanced.js','./src/project-package.js','./src/date-local.js','./src/error-reporting.js','./src/determinism.js','./src/transaction.js','./src/integrity.js','./src/forensic-repository.js','./src/forensic-comparison.js','./src/critical-intelligence.js','./src/date-move.js','./src/schedule-health.js','./src/trend-forecast.js','./src/resource-intelligence.js','./src/import-diagnostics.js','./src/forensic-reporting.js','./src/global-search.js','./src/ai-context.js','./src/logger.js','./src/package-integrity.js','./src/p6-commands.js','./src/calc-audit.js','./src/analysis-graphics.js','./src/codes-editor.js','./src/relationship-tools.js','./src/calendar-editor.js','./src/resource-tools.js','./src/project-folder.js','./src/activity-editing.js','./src/activity-layout.js','./src/menu-controller.js','./manifest.webmanifest','./sample/sample-model-metadata.json','./sample/sample-project.xer','./sample/sample-project.xml'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
 self.addEventListener('fetch',e=>{if(e.request.method==='GET')e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(x=>{const y=x.clone();caches.open(CACHE).then(c=>c.put(e.request,y));return x;})))});
+
 
 ====================================================================================================
 FILE: tests/advanced-cpm.test.js
@@ -6688,6 +6340,7 @@ test('cycle detection handles a 10000-activity chain without recursion overflow'
   assert.deepEqual(detectCycles(m,'1'),[]);
 });
 
+
 ====================================================================================================
 FILE: tests/baselines.test.js
 ====================================================================================================
@@ -6698,6 +6351,7 @@ test('baseline matching and variance rows',()=>{const b=makeBaseline(old,old.tab
 test('baseline roles are unique',()=>{const a={id:'a',role:'Primary'},b={id:'b',role:'Secondary'};setRole([a,b],'b','Primary');assert.equal(a.role,'Unassigned');assert.equal(b.role,'Primary')});
 
 test('baseline-only activities are retained in variance rows',()=>{const b=makeBaseline(old,old.table('PROJECT')[0]?.proj_id,{name:'BL1'});const fake=b.model.table('TASK')[0];b.model.table('TASK').push({...fake,task_id:'99999',task_code:'BL-ONLY',task_name:'Removed later'});const rows=baselineRows(cur,cur.table('PROJECT')[0]?.proj_id,b,8);assert.ok(rows.some(r=>r.status==='Baseline only'&&r.activity==='BL-ONLY'))});
+
 
 ====================================================================================================
 FILE: tests/bim-links.test.js
@@ -6762,6 +6416,7 @@ test('Duplicating a WBS branch carries BIM activity UDF links to copied activiti
   const copied=m.table('TASK').find(t=>t.wbs_id===r.rootWbsId);assert.ok(copied);assert.deepEqual(getActivityBimLinks(m,copied.task_id),[{modelKey:'M',objectId:'G1'}]);
 });
 
+
 ====================================================================================================
 FILE: tests/bim-viewer-v26.test.js
 ====================================================================================================
@@ -6777,6 +6432,7 @@ test('Future state colour is translucent while complete state is opaque green',(
 test('Tutorial is copy-safe static HTML without script tags',()=>{assert.equal(/<script/i.test(tutorialHTML()),false)});
 test('P6 code keeps BIM viewer isolated as a dedicated module',()=>{const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');assert.match(app,/from '\.\/bim-viewer\.js'/);assert.match(app,/renderBimModel/)});
 test('GLB fixture bounds are finite and positive',async()=>{const b=glb();const s=await parseGLB({name:'tri.glb',arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)});assert.ok(Number.isFinite(s.bounds.diag));assert.ok(s.bounds.diag>0)});
+
 
 ====================================================================================================
 FILE: tests/editor-cpm.test.js
@@ -6842,6 +6498,7 @@ test('relationship editor rejects missing, cross-project and invalid relationshi
   assert.throws(()=>addRelationship(m,'1','1020','1030','PR_XY',0),/Unsupported/);
   assert.throws(()=>addRelationship(m,'1','1020','1030','PR_FS','abc'),/must be a number/);
 });
+
 
 ====================================================================================================
 FILE: tests/forensic-intelligence.test.js
@@ -6909,6 +6566,68 @@ test('project package carries forensic revision repository',()=>{const m=parseXE
 
 test('website exposes forensic, health, trend, reporting and global search navigation',()=>{const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');for(const view of ['intelligence','health','trends','reporting','searchAll'])assert.match(html,new RegExp(`data-view="${view}"`))});
 
+
+====================================================================================================
+FILE: tests/menu-controller.test.js
+====================================================================================================
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { menuIsOpen, setMenuOpen, closeMenus, toggleExclusiveMenu } from '../src/menu-controller.js';
+
+class FakeSummary{
+  constructor(){this.attrs=new Map();}
+  setAttribute(k,v){this.attrs.set(k,String(v));}
+  getAttribute(k){return this.attrs.get(k);}
+}
+class FakeMenu{
+  constructor(open=false){this.attrs=new Set();this.open=false;this.summary=new FakeSummary();if(open)this.setAttribute('open','');}
+  setAttribute(k){this.attrs.add(k);if(k==='open')this.open=true;}
+  removeAttribute(k){this.attrs.delete(k);if(k==='open')this.open=false;}
+  hasAttribute(k){return this.attrs.has(k);}
+  querySelector(q){return q===':scope > summary'?this.summary:null;}
+}
+
+test('exclusive controller opens one menu and closes every sibling',()=>{
+  const file=new FakeMenu(true), edit=new FakeMenu(false), view=new FakeMenu(false);
+  assert.equal(toggleExclusiveMenu([file,edit,view],edit),true);
+  assert.equal(menuIsOpen(file),false);
+  assert.equal(menuIsOpen(edit),true);
+  assert.equal(menuIsOpen(view),false);
+  assert.equal(file.summary.getAttribute('aria-expanded'),'false');
+  assert.equal(edit.summary.getAttribute('aria-expanded'),'true');
+});
+
+test('clicking the already-open top menu closes it without opening a sibling',()=>{
+  const file=new FakeMenu(true), edit=new FakeMenu(false);
+  assert.equal(toggleExclusiveMenu([file,edit],file),false);
+  assert.equal(menuIsOpen(file),false);
+  assert.equal(menuIsOpen(edit),false);
+});
+
+test('closeMenus closes all menus or preserves only the explicit exception',()=>{
+  const a=new FakeMenu(true),b=new FakeMenu(true),c=new FakeMenu(true);
+  closeMenus([a,b,c],b);
+  assert.equal(menuIsOpen(a),false);
+  assert.equal(menuIsOpen(b),true);
+  assert.equal(menuIsOpen(c),false);
+  closeMenus([a,b,c]);
+  assert.equal(menuIsOpen(b),false);
+});
+
+test('setMenuOpen keeps open property, attribute and aria-expanded synchronized',()=>{
+  const menu=new FakeMenu(false);
+  setMenuOpen(menu,true);
+  assert.equal(menu.open,true);
+  assert.equal(menu.hasAttribute('open'),true);
+  assert.equal(menu.summary.getAttribute('aria-expanded'),'true');
+  assert.equal(menu.summary.getAttribute('aria-haspopup'),'menu');
+  setMenuOpen(menu,false);
+  assert.equal(menu.open,false);
+  assert.equal(menu.hasAttribute('open'),false);
+  assert.equal(menu.summary.getAttribute('aria-expanded'),'false');
+});
+
+
 ====================================================================================================
 FILE: tests/quality-hardening.test.js
 ====================================================================================================
@@ -6975,6 +6694,7 @@ test('MSP XML golden export is structurally complete for browser re-import',()=>
   assert.match(xml,/^<\?xml version="1.0"/); assert.match(xml,/<Project xmlns="http:\/\/schemas.microsoft.com\/project">/);
   assert.match(xml,/<Tasks>[\s\S]*<\/Tasks>/); assert.match(xml,/<Resources>[\s\S]*<\/Resources>/); assert.match(xml,/<Assignments>[\s\S]*<\/Assignments>/); assert.match(xml,/<Calendars>[\s\S]*<\/Calendars>/); assert.match(xml,/<\/Project>$/);
 });
+
 
 ====================================================================================================
 FILE: tests/scheduling-options.test.js
@@ -7060,6 +6780,7 @@ test('resource curves alter leveling demand when curve data is present',()=>{
  assert.ok(curved.leveling.conflicts.some(x=>x.delayHours>0));
 });
 
+
 ====================================================================================================
 FILE: tests/unified-format.test.js
 ====================================================================================================
@@ -7078,6 +6799,7 @@ test('conversion audit flags target-specific fidelity risks',()=>{const a=conver
 test('format labels are user friendly',()=>{assert.match(formatLabel('xer'),/Primavera/);assert.match(formatLabel('mspxml'),/Microsoft Project/)});
 test('UI exposes both save targets and dual-format picker',()=>{const h=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');assert.match(h,/Save as XER/);assert.match(h,/Save as MSP XML/);assert.match(h,/\.xer,\.xml/)});
 test('format adapter is a separate module from the scheduling engine',()=>{const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');assert.match(app,/format-adapters\.js/);assert.doesNotMatch(fs.readFileSync(new URL('../src/cpm.js',import.meta.url),'utf8'),/DOMParser|Microsoft Project XML/)});
+
 
 ====================================================================================================
 FILE: tests/v4-features.test.js
@@ -7119,6 +6841,7 @@ test('BIM model revision reconciliation preserves stable links and flags missing
 test('v4 UI exposes layouts diagnostics progress history workspace and project package',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const id of ['layouts','diagnostics','progressEvm','history','workspace'])assert.match(html,new RegExp(`data-view="${id}"`));assert.match(html,/savePackageBtn/);assert.match(html,/openPackageBtn/)});
 test('v4 specialist modules remain separated from app and CPM engine',()=>{for(const f of ['canonical-schema.js','layouts.js','filters.js','diagnostics.js','float-paths.js','progress.js','evm.js','productivity.js','scenarios.js','audit-log.js','calendar-tools.js','workspace.js','bim-advanced.js','project-package.js'])assert.ok(fs.existsSync(path.join(root,'src',f)));const cpm=fs.readFileSync(path.join(root,'src/cpm.js'),'utf8');assert.doesNotMatch(cpm,/IndexedDB|BIM Sets|EVM Summary/)});
 test('calculation engine still calculates after v4 modular additions',()=>{const m=sample(),p=m.table('PROJECT')[0]?.proj_id;const c=calculateCPM(m,p,{hoursPerDay:8});applyCPM(m,p,c);assert.ok(c.projectFinish instanceof Date);assert.ok(m.table('TASK').some(t=>t.early_end_date))});
+
 
 ====================================================================================================
 FILE: tests/v51-hardening.test.js
@@ -7191,6 +6914,7 @@ test('content checksum is deterministic across object key order',()=>{
  assert.equal(contentChecksum({b:2,a:1}),contentChecksum({a:1,b:2}));
 });
 
+
 ====================================================================================================
 FILE: tests/v52-layout.test.js
 ====================================================================================================
@@ -7240,6 +6964,7 @@ test('activities and Gantt share one row model for grouping and vertical order',
   assert.match(gantt,/if\(rowModel\?\.length\)/);
   assert.match(gantt,/gantt-group-row/);
 });
+
 
 ====================================================================================================
 FILE: tests/v60-p6-shell.test.js
@@ -7293,7 +7018,7 @@ test('gantt has P6-style summary bars squared relationship lines and zoom',()=>{
 
 test('service worker and package version are v6',()=>{
   assert.match(fs.readFileSync(path.join(root,'sw.js'),'utf8'),/unified-schedule-studio-v6\.3/);
-  assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version,'6.3.0');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version,'6.3.1');
 });
 
 test('activity grid and Gantt use a draggable splitter with synchronized vertical scrolling',()=>{
@@ -7317,6 +7042,7 @@ test('Projects view is a persistent local folder tree rather than traditional EP
   assert.match(app,/saveCurrentSchedule/);
   assert.match(css,/\.project-folder-tree/);
 });
+
 
 ====================================================================================================
 FILE: tests/v61-p6-commands.test.js
@@ -7396,6 +7122,7 @@ test('P6 20.x is the application default compatibility target',async()=>{
   const fs=await import('node:fs');const app=fs.readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
   assert.match(app,/normalizeSchedulingOptions\(\{compatibilityProfile:'p6v20'/);
 });
+
 
 ====================================================================================================
 FILE: tests/v62-editors-resources.test.js
@@ -7494,6 +7221,7 @@ test('activity grid and gantt enforce matching row heights and toolbar remains p
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8'),css=fs.readFileSync(new URL('../styles.css',import.meta.url),'utf8');
   assert.match(html,/id="p6Toolbar"/);assert.match(css,/\.p6-grid-pane tbody tr[^\{]*\{[^\}]*height:var\(--row\)!important/);assert.match(css,/\.gantt-row/);
 });
+
 
 ====================================================================================================
 FILE: tests/v63-projects-editing-layout.test.js
@@ -7618,6 +7346,19 @@ test('v6.3 service worker includes hierarchy, activity editing and project folde
   for(const file of ['activity-layout.js','activity-editing.js','project-folder.js'])assert.match(sw,new RegExp(file.replace('.','\\.')));
 });
 
+
+test('v6.3.1 top menus suppress native details toggling and route through exclusive controller',()=>{
+  const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8');
+  const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
+  assert.match(app,/toggleExclusiveMenu/);
+  assert.match(app,/function toggleP6Menu\(menu\)\{return toggleExclusiveMenu\(p6TopMenus\(\),menu\)\}/);
+  assert.match(app,/summary&&summary\.closest\('#menuBar'\)===\$\('#menuBar'\)/);
+  assert.match(app,/e\.preventDefault\(\);\s*e\.stopPropagation\(\);\s*toggleP6Menu\(summary\.parentElement\)/s);
+  assert.match(app,/document\.addEventListener\('pointerdown',e=>\{if\(!e\.target\.closest\('#menuBar'\)\)closeP6Menus\(\)\},true\)/);
+  assert.match(css,/\.p6-menubar > details:not\(\[open\]\) > \.p6-menu\{display:none!important\}/);
+});
+
+
 ====================================================================================================
 FILE: tests/viewer.test.js
 ====================================================================================================
@@ -7708,6 +7449,7 @@ test('CSV export escapes quotes and columns',()=>{
   assert.match(csv,/"a","b"/);
   assert.match(csv,/"say ""hi"""/);
 });
+
 
 ====================================================================================================
 FILE: tests/wbs-editor.test.js
@@ -7804,6 +7546,7 @@ test('WBS edits participate in undo/redo history',()=>{
   h.redo();
   assert.ok(m.find('PROJWBS','wbs_id',w.wbs_id));
 });
+
 
 ====================================================================================================
 FILE: tests/wbs-resource-v24.test.js

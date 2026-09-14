@@ -47,7 +47,7 @@ test('gantt has P6-style summary bars squared relationship lines and zoom',()=>{
 
 test('service worker and package version are v6',()=>{
   assert.match(fs.readFileSync(path.join(root,'sw.js'),'utf8'),/unified-schedule-studio-v6\.3/);
-  assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version,'6.3.0');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version,'6.3.1');
 });
 
 test('activity grid and Gantt use a draggable splitter with synchronized vertical scrolling',()=>{

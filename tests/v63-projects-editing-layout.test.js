@@ -117,3 +117,15 @@ test('v6.3 service worker includes hierarchy, activity editing and project folde
   const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
   for(const file of ['activity-layout.js','activity-editing.js','project-folder.js'])assert.match(sw,new RegExp(file.replace('.','\\.')));
 });
+
+
+test('v6.3.1 top menus suppress native details toggling and route through exclusive controller',()=>{
+  const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8');
+  const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
+  assert.match(app,/toggleExclusiveMenu/);
+  assert.match(app,/function toggleP6Menu\(menu\)\{return toggleExclusiveMenu\(p6TopMenus\(\),menu\)\}/);
+  assert.match(app,/summary&&summary\.closest\('#menuBar'\)===\$\('#menuBar'\)/);
+  assert.match(app,/e\.preventDefault\(\);\s*e\.stopPropagation\(\);\s*toggleP6Menu\(summary\.parentElement\)/s);
+  assert.match(app,/document\.addEventListener\('pointerdown',e=>\{if\(!e\.target\.closest\('#menuBar'\)\)closeP6Menus\(\)\},true\)/);
+  assert.match(css,/\.p6-menubar > details:not\(\[open\]\) > \.p6-menu\{display:none!important\}/);
+});

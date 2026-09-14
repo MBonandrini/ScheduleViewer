@@ -1,3 +1,7 @@
+# Schedule Studio Professional v6.3.1
+
+> Menu-state hotfix over the v6.3 P6 hierarchy/projects/resource-audit release.
+
 # Schedule Studio Professional v6.3 — P6 Hierarchy, Projects Folder & Resource Audit
 
 Full GitHub Pages source release for the single-user, browser-based Primavera P6 20.x-style schedule workbench.
@@ -37,3 +41,7 @@ See:
 - `RELEASE_NOTES_V63.md`
 
 All schedule/model processing remains browser-side/local-first. For contractual use, continue validating calculated schedules against approved Primavera P6 golden schedules.
+
+
+## v6.3.1 menu fix
+Top-level application menus are mutually exclusive and close on outside click, command selection, repeat click, or Escape. See `RELEASE_NOTES_V631.md`.

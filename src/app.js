@@ -58,6 +58,7 @@ import { issueGraphicData, severityBarHTML } from './analysis-graphics.js';
 import { buildActivityRowModel, visibleActivityTasks } from './activity-layout.js';
 import { datetimeLocalValue, p6FromDateInput, editableActivityDates, applyActivityPlanningEdit, constraintOptions, constraintLabel } from './activity-editing.js';
 import { chooseProjectFolder, loadProjectFolderHandle, clearProjectFolderHandle, folderPermission, scanProjectFolder, flattenScheduleFiles, fileFromTreeNode, writeFileHandle, writeScheduleToDirectory } from './project-folder.js';
+import { setMenuOpen, closeMenus, toggleExclusiveMenu } from './menu-controller.js';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const logger=new DiagnosticLogger({level:'INFO',maxEntries:3000});
@@ -656,9 +657,24 @@ $('#baselineInput').onchange=e=>e.target.files.length&&loadBaselines([...e.targe
 $('#packageInput').onchange=e=>e.target.files[0]&&openProjectPackage(e.target.files[0]);
 $('#projectSelect').onchange=e=>{state.projId=e.target.value;state.selectedTaskId=taskRows(state.model,state.projId)[0]?.task_id||null;state.selectedWbsId=wbsRows(state.model,state.projId)[0]?.wbs_id||null;state.lastCalculationDiscrepancies=[];render();updateEditButtons()};
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-view]'),table=e.target.closest('button[data-table]');if(b)setView(b.dataset.view);if(table){state.rawTable=table.dataset.table;setView('raw');$('#viewTitle').textContent=table.dataset.label||table.dataset.table}};
-function closeP6Menus(except=null){for(const d of $$('#menuBar details[open]'))if(d!==except)d.removeAttribute('open')}
-document.addEventListener('pointerdown',e=>{const menu=e.target.closest('#menuBar details');if(!menu){closeP6Menus();return}if(e.target.closest('summary'))closeP6Menus(menu)},true);
-$('#menuBar').onclick=e=>{const view=e.target.closest('button[data-view]'),table=e.target.closest('button[data-table]'),cmd=e.target.closest('button[data-command]');if(view){setView(view.dataset.view);closeP6Menus()}if(table){state.rawTable=table.dataset.table;setView('raw');$('#viewTitle').textContent=table.dataset.label||table.dataset.table;closeP6Menus()}if(cmd){executeCommand(cmd.dataset.command);closeP6Menus()}};
+function p6TopMenus(){return $$('#menuBar > details')}
+function closeP6Menus(except=null){closeMenus(p6TopMenus(),except)}
+function toggleP6Menu(menu){return toggleExclusiveMenu(p6TopMenus(),menu)}
+for(const menu of p6TopMenus())setMenuOpen(menu,menu.hasAttribute('open'));
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#menuBar'))closeP6Menus()},true);
+$('#menuBar').onclick=e=>{
+ const summary=e.target.closest('summary');
+ if(summary&&summary.closest('#menuBar')===$('#menuBar')){
+  e.preventDefault();
+  e.stopPropagation();
+  toggleP6Menu(summary.parentElement);
+  return;
+ }
+ const view=e.target.closest('button[data-view]'),table=e.target.closest('button[data-table]'),cmd=e.target.closest('button[data-command]');
+ if(view){closeP6Menus();setView(view.dataset.view);return}
+ if(table){closeP6Menus();state.rawTable=table.dataset.table;setView('raw');$('#viewTitle').textContent=table.dataset.label||table.dataset.table;return}
+ if(cmd){closeP6Menus();executeCommand(cmd.dataset.command);return}
+};
 $('#p6Toolbar').onclick=e=>{const cmd=e.target.closest('button[data-command]');if(cmd&&!cmd.disabled)executeCommand(cmd.dataset.command)};
 $('#globalSearch').oninput=e=>{state.search=e.target.value;if(state.model&&state.view==='activities')renderActivities()};
 $('#exportBtn').onclick=exportCurrent;
