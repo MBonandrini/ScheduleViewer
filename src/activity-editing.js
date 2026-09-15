@@ -8,9 +8,10 @@ export function p6FromDateInput(value){if(!value)return '';const d=new Date(valu
 
 export function editableActivityDates(task){return {start:task?.target_start_date||task?.early_start_date||task?.act_start_date||'',finish:task?.target_end_date||task?.early_end_date||task?.act_end_date||''};}
 
-/** Apply user-entered Start/Finish/% values without running CPM. The change is a planning input;
- * F9 remains authoritative for calculated early/late dates. */
-export function applyActivityPlanningEdit(model,projId,taskId,{start,finish,percent}={},options={}){
+/** Build a Start/Finish/% planning patch without mutating the schedule.
+ * This lets the P6-style validation layer inspect the complete proposed change
+ * before anything is committed to the model or undo history. */
+export function buildActivityPlanningPatch(model,projId,taskId,{start,finish,percent}={},options={}){
   const task=model.find('TASK','task_id',String(taskId));if(!task)throw new Error('Activity not found.');
   const current=editableActivityDates(task),startDate=p6Date(start??current.start),finishDate=p6Date(finish??current.finish);
   if(startDate&&finishDate&&finishDate<startDate)throw new Error('Finish must be on or after Start.');
@@ -30,7 +31,14 @@ export function applyActivityPlanningEdit(model,projId,taskId,{start,finish,perc
     }else patch.remain_drtn_hr_cnt=String(Math.round(duration*1000)/1000);
     if(percent!==undefined&&/DRTN|DURATION/.test(pctType))patch.remain_drtn_hr_cnt=String(Math.max(0,Math.round(duration*(1-pct/100)*1000)/1000));
   }
-  Object.assign(task,patch);model.indexes=new Map();return {task,patch,requiresSchedule:true};
+  return {task,patch,requiresSchedule:true};
+}
+
+/** Apply user-entered Start/Finish/% values without running CPM. The change is a planning input;
+ * F9 remains authoritative for calculated early/late dates. */
+export function applyActivityPlanningEdit(model,projId,taskId,values={},options={}){
+  const result=buildActivityPlanningPatch(model,projId,taskId,values,options);
+  Object.assign(result.task,result.patch);model.indexes=new Map();return result;
 }
 
 export const constraintOptions=[

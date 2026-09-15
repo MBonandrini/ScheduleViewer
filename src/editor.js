@@ -142,7 +142,21 @@ export function addRelationship(model,projId,predTaskId,taskId,type='PR_FS',lagH
   if(t.rows.some(r=>r.proj_id===String(projId)&&r.task_id===String(taskId)&&r.pred_task_id===String(predTaskId)&&r.pred_type===type))throw new Error('Relationship already exists.');
   const row={task_pred_id:nextNumericId(t.rows,'task_pred_id',1),proj_id:String(projId),task_id:String(taskId),pred_task_id:String(predTaskId),pred_type:type,lag_hr_cnt:String(lagHours??0)}; t.rows.push(row); touch(model); return row;
 }
-export function updateRelationship(model,id,patch){const r=model.find('TASKPRED','task_pred_id',String(id)); if(!r)throw new Error('Relationship not found'); Object.assign(r,patch); touch(model); return r;}
+export function updateRelationship(model,id,patch={}){
+  const r=model.find('TASKPRED','task_pred_id',String(id));
+  if(!r)throw new Error('Relationship not found.');
+  const candidate={...r,...patch};
+  const pred=model.find('TASK','task_id',String(candidate.pred_task_id)),succ=model.find('TASK','task_id',String(candidate.task_id));
+  if(!pred||!succ)throw new Error('Both predecessor and successor activities must exist.');
+  if(String(candidate.pred_task_id)===String(candidate.task_id))throw new Error('An activity cannot be related to itself.');
+  if(!['PR_FS','PR_SS','PR_FF','PR_SF'].includes(String(candidate.pred_type)))throw new Error('Unsupported relationship type.');
+  if(!Number.isFinite(Number(candidate.lag_hr_cnt)))throw new Error('Relationship lag must be a number of hours.');
+  if(String(succ.proj_id)!==String(candidate.proj_id))throw new Error('Successor activity must belong to the relationship project.');
+  const table=model.tables.get('TASKPRED');
+  const duplicate=table?.rows?.some(x=>String(x.task_pred_id)!==String(id)&&String(x.proj_id)===String(candidate.proj_id)&&String(x.task_id)===String(candidate.task_id)&&String(x.pred_task_id)===String(candidate.pred_task_id)&&String(x.pred_type)===String(candidate.pred_type));
+  if(duplicate)throw new Error('Relationship already exists.');
+  Object.assign(r,candidate,{lag_hr_cnt:String(candidate.lag_hr_cnt)}); touch(model); return r;
+}
 export function deleteRelationship(model,id){const t=model.tables.get('TASKPRED'); if(t)t.rows=t.rows.filter(r=>r.task_pred_id!==String(id)); touch(model);}
 
 export function addResourceAssignment(model,taskId,rsrcId,values={}){

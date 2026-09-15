@@ -449,3 +449,56 @@ body.p6-desktop{display:grid;grid-template-rows:var(--p6-title-h) var(--p6-menu-
 }
 .welcome .welcome-open-control:hover,
 .welcome .welcome-open-control:focus-visible{filter:brightness(1.05);outline:2px solid color-mix(in srgb,var(--blue) 35%,transparent);outline-offset:2px}
+
+/* v6.3.5 — P6-style Activities grid refinements */
+/* WBS hierarchy colours are deliberately level-dependent so the hierarchy can
+   be read at a glance without drawing WBS summary bars on the Gantt. */
+.p6-grid-pane .wbs-band td:before{display:none!important}
+.p6-grid-pane .wbs-band td{color:#142633!important;border-bottom-color:rgba(60,75,86,.32)!important}
+.p6-grid-pane .wbs-band.wbs-level-0 td{background:#f3d739!important}
+.p6-grid-pane .wbs-band.wbs-level-1 td{background:#f7e36a!important}
+.p6-grid-pane .wbs-band.wbs-level-2 td{background:#faec99!important}
+.p6-grid-pane .wbs-band.wbs-level-3 td{background:#d9e8f3!important}
+.p6-grid-pane .wbs-band.wbs-level-4 td{background:#dcebd5!important}
+.p6-grid-pane .wbs-band.wbs-level-5 td{background:#eadff1!important}
+.p6-grid-pane .wbs-band.wbs-level-6 td{background:#eee5d8!important}
+.p6-grid-pane .wbs-band.wbs-level-7 td{background:#eceff1!important}
+.dark .p6-grid-pane .wbs-band td{color:#f4f7f9!important}
+.dark .p6-grid-pane .wbs-band.wbs-level-0 td{background:#705f19!important}
+.dark .p6-grid-pane .wbs-band.wbs-level-1 td{background:#675b27!important}
+.dark .p6-grid-pane .wbs-band.wbs-level-2 td{background:#5b5330!important}
+.dark .p6-grid-pane .wbs-band.wbs-level-3 td{background:#314b60!important}
+.dark .p6-grid-pane .wbs-band.wbs-level-4 td{background:#35513a!important}
+.dark .p6-grid-pane .wbs-band.wbs-level-5 td{background:#4c3f5a!important}
+.dark .p6-grid-pane .wbs-band.wbs-level-6 td{background:#584b3d!important}
+.dark .p6-grid-pane .wbs-band.wbs-level-7 td{background:#414a50!important}
+
+/* Individual Activities columns now have persistent drag handles. */
+.activity-resizable-table th{position:relative;overflow:visible!important}
+.activity-col-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:5px}
+.activity-col-resizer{position:absolute;right:-4px;top:0;bottom:0;width:9px;cursor:col-resize;z-index:18;touch-action:none}
+.activity-col-resizer:after{content:"";position:absolute;right:4px;top:5px;bottom:5px;width:1px;background:#93a7b5}
+.activity-col-resizer:hover:after{width:3px;background:#176b9c}
+html.resizing-column,html.resizing-column *{cursor:col-resize!important;user-select:none!important}
+
+/* P6/Schedule-AI-Toolkit style Available/Displayed field chooser. */
+.activity-columns-dialog{max-width:min(960px,94vw)}
+.activity-column-chooser{display:grid;grid-template-columns:minmax(260px,1fr) 145px minmax(260px,1fr);gap:12px;align-items:stretch;margin:14px 0}
+.activity-column-list{display:grid;grid-template-rows:auto minmax(330px,52vh);gap:6px;min-width:0}
+.activity-column-list strong{font-size:11px;color:var(--text)}
+.activity-column-list select{width:100%;height:100%;min-height:330px;border:1px solid var(--line);background:var(--panel);color:var(--text);font:11px/1.35 system-ui,sans-serif;padding:3px}
+.activity-column-list option{padding:4px 6px}
+.activity-column-buttons{display:flex;flex-direction:column;justify-content:center;gap:6px}
+.activity-column-buttons button{width:100%;min-height:29px;white-space:nowrap}
+.column-button-separator{height:7px}
+.activity-column-hint{padding:8px 10px;border:1px solid var(--line);background:var(--panel2);font-size:10px;color:var(--muted)}
+
+/* Percent fields are always visibly percentages, while keeping a numeric editor. */
+.activity-percent-editor,.detail-percent-control{display:flex;align-items:center;gap:3px;min-width:0}
+.activity-percent-editor>input,.detail-percent-control>input{flex:1 1 auto;min-width:0;text-align:right}
+.activity-percent-editor>span,.detail-percent-control>span{flex:0 0 auto;font-weight:700;color:inherit}
+.activity-pct-readonly{display:block;text-align:right;font-variant-numeric:tabular-nums;padding-right:3px}
+.milestone-pct{font-weight:700;text-align:right}
+.p6-validation-note{border-left:3px solid #3f7ea6;padding:6px 8px;background:color-mix(in srgb,#3f7ea6 7%,var(--panel))}
+
+@media(max-width:850px){.activity-column-chooser{grid-template-columns:1fr}.activity-column-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.column-button-separator{display:none}.activity-column-list{grid-template-rows:auto minmax(220px,34vh)}}
