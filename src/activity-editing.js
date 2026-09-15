@@ -1,5 +1,5 @@
 import { p6Date, num } from './parser.js';
-import { fmtP6, buildCalendar, workHoursBetween } from './cpm.js';
+import { fmtP6, buildCalendar, workHoursBetween, addWorkHours } from './cpm.js';
 import { getDataDate } from './semantic.js';
 
 function pad(n){return String(n).padStart(2,'0');}
@@ -30,6 +30,33 @@ export function buildActivityPlanningPatch(model,projId,taskId,{start,finish,per
       patch.remain_drtn_hr_cnt=String(Math.max(0,Math.round(workHoursBetween(cal,remainingStart,finishDate)*1000)/1000));
     }else patch.remain_drtn_hr_cnt=String(Math.round(duration*1000)/1000);
     if(percent!==undefined&&/DRTN|DURATION/.test(pctType))patch.remain_drtn_hr_cnt=String(Math.max(0,Math.round(duration*(1-pct/100)*1000)/1000));
+  }
+  return {task,patch,requiresSchedule:true};
+}
+
+
+/** Build an Original Duration planning patch. The entered duration is interpreted
+ * in hours, using the activity calendar exactly as the Start/Finish planning editor
+ * does. Changing Original Duration therefore moves the editable Finish while keeping
+ * Start fixed. This is intentionally a planning-input edit; CPM logic is still
+ * recalculated only when the user runs F9. */
+export function buildActivityDurationPatch(model,projId,taskId,durationHours,options={}){
+  const task=model.find('TASK','task_id',String(taskId));if(!task)throw new Error('Activity not found.');
+  const milestone=/MILE/i.test(String(task.task_type||'')),summary=/TT_WBS|WBS.?SUMMARY/i.test(String(task.task_type||''));
+  if(summary)throw new Error('WBS Summary duration is calculated and cannot be edited directly.');
+  let duration=Math.max(0,num(durationHours,0));
+  if(milestone)duration=0;
+  const current=editableActivityDates(task),startDate=p6Date(current.start),cal=buildCalendar(model,task.clndr_id,options),patch={target_drtn_hr_cnt:String(Math.round(duration*1000)/1000)};
+  if(startDate){
+    const finishDate=addWorkHours(cal,startDate,duration);
+    patch.target_end_date=fmtP6(finishDate);
+  }
+  const status=String(task.status_code||'').toUpperCase();
+  if(/COMPLETE/.test(status))patch.remain_drtn_hr_cnt='0';
+  else if(!/ACTIVE|START/.test(status))patch.remain_drtn_hr_cnt=patch.target_drtn_hr_cnt;
+  else{
+    const pct=Math.max(0,Math.min(100,num(task.phys_complete_pct,0))),pctType=String(task.complete_pct_type||'').toUpperCase();
+    if(/DRTN|DURATION/.test(pctType))patch.remain_drtn_hr_cnt=String(Math.max(0,Math.round(duration*(1-pct/100)*1000)/1000));
   }
   return {task,patch,requiresSchedule:true};
 }
