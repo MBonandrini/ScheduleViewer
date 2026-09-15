@@ -553,7 +553,7 @@ html.resizing-column,html.resizing-column *{cursor:col-resize!important;user-sel
 .import-progress.error #importProgressPercent{color:#8c2f2f}
 
 /* ============================================================
-   v6.3.7 — Activities, P6-style details and DCMA dashboard
+   v6.3.8 — Activities, P6-style details and DCMA dashboard
    ============================================================ */
 .activity-date-cell{
   width:100%;height:24px;padding:0 4px;border:0;border-radius:0;background:transparent;color:var(--text);text-align:left;font-size:11px;white-space:nowrap;
@@ -600,3 +600,70 @@ html.resizing-column,html.resizing-column *{cursor:col-resize!important;user-sel
 .dcma-dashboard-panel .panel-body{padding:10px}.dcma-table-wrap{overflow:auto;max-height:none;border:1px solid var(--line)}.dcma-health-table{font-size:11px}.dcma-health-table th,.dcma-health-table td{height:29px}.dcma-health-table .dcma-basis{white-space:normal;min-width:320px;color:var(--muted)}.dcma-result{display:inline-flex;min-width:62px;justify-content:center;padding:3px 7px;border-radius:2px;font-size:9px;font-weight:800}.dcma-result.pass{background:var(--ok-bg);color:var(--ok)}.dcma-result.fail{background:var(--danger-bg);color:var(--danger)}.dcma-result.na{background:var(--panel2);color:var(--muted)}.dcma-graphic-title{margin:14px 0 8px;font-size:12px}.dcma-gauge-grid{display:grid;grid-template-columns:repeat(2,minmax(320px,1fr));gap:7px 12px}.dcma-gauge{border:1px solid var(--line);background:var(--panel2);padding:7px 9px}.dcma-gauge-head{display:flex;justify-content:space-between;gap:8px;font-size:10px;margin-bottom:5px}.dcma-gauge-head span{font-variant-numeric:tabular-nums}.dcma-gauge-track{position:relative;height:12px;background:#d9e0e5;border:1px solid #b5c0c8;overflow:visible}.dark .dcma-gauge-track{background:#31404c;border-color:#536471}.dcma-gauge-fill{height:100%;background:#5c91b8}.dcma-gauge.pass .dcma-gauge-fill{background:#4b9b69}.dcma-gauge.fail .dcma-gauge-fill{background:#c85a57}.dcma-threshold{position:absolute;top:-4px;bottom:-4px;width:2px;background:#111;z-index:2}.dark .dcma-threshold{background:#fff}.dcma-gauge-na{font-size:8px;text-align:center;line-height:10px;color:var(--muted)}.dcma-gauge small{display:block;margin-top:4px;font-size:8px;color:var(--muted)}.dashboard-disclaimer{font-size:9px;color:var(--muted);margin:10px 0 0}
 
 @media(max-width:1100px){.p6-form-row.four,.p6-form-row.three{grid-template-columns:repeat(2,minmax(180px,1fr))}.p6-status-layout{grid-template-columns:1fr}.p6-relationship-split{grid-template-columns:1fr}.dcma-gauge-grid{grid-template-columns:1fr}.p6-detail-project{display:none}}
+
+/* ============================================================
+   v6.3.8 — A3 print layouts
+   Screen layout is unchanged; these rules activate only while printing.
+   ============================================================ */
+.print-report-header{display:none}
+.print-view-button{height:25px!important;padding:2px 9px!important;border-radius:2px!important;font-size:10px!important;font-weight:700;background:#fff;color:#174f78;border:1px solid #8fa8bc}
+.print-view-button:hover{background:#eef6fb}
+.dark .print-view-button{background:#223440;color:#e7f1f8;border-color:#5d7383}
+
+@media print{
+  html,body{height:auto!important;background:#fff!important;color:#111!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body.print-gantt .p6-titlebar,body.print-gantt .p6-menubar,body.print-gantt .p6-commandbar,body.print-gantt .p6-module-tabs,body.print-gantt .p6-viewbar,body.print-gantt .p6-statusbar,
+  body.print-dashboard .p6-titlebar,body.print-dashboard .p6-menubar,body.print-dashboard .p6-commandbar,body.print-dashboard .p6-module-tabs,body.print-dashboard .p6-viewbar,body.print-dashboard .p6-statusbar{display:none!important}
+  body.print-gantt .p6-main,body.print-dashboard .p6-main{display:block!important;min-height:0!important}
+  body.print-gantt .view,body.print-dashboard .view{padding:0!important;margin:0!important;overflow:visible!important;background:#fff!important}
+  body.print-gantt .print-report-header,body.print-dashboard .print-report-header{display:flex!important;justify-content:space-between;align-items:flex-end;gap:20px;padding:0 0 7px;margin:0 0 7px;border-bottom:2px solid #174f78;color:#111;background:#fff}
+  .print-report-header strong{display:block;color:#174f78;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+  .print-report-header h1{font-size:18px;line-height:1.05;margin:2px 0 2px;font-weight:750}
+  .print-report-header>div>span{font-size:10px;color:#49545c}
+  .print-report-meta{display:grid;grid-template-columns:auto auto;gap:2px 12px;text-align:right;font-size:8px;color:#5b6570}
+  .print-report-meta span{white-space:nowrap}.print-report-meta b{color:#111}
+  body.print-gantt button,body.print-dashboard button{box-shadow:none!important}
+
+  /* Gantt: dedicated single-sheet A3 landscape layout. */
+  body.print-gantt .p6-activity-workspace{display:block!important;height:auto!important;min-height:0!important;width:max-content!important;overflow:visible!important;border:0!important;background:#fff!important;zoom:var(--print-gantt-scale,1)}
+  body.print-gantt .p6-layout-strip,body.print-gantt .p6-detail-pane{display:none!important}
+  body.print-gantt .p6-activity-main{display:grid!important;grid-template-columns:var(--print-table-width,620px) 2px var(--print-gantt-width,900px)!important;width:max-content!important;min-height:0!important;overflow:visible!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  body.print-gantt .p6-grid-pane,body.print-gantt .p6-gantt-pane,body.print-gantt .p6-grid-pane .table-wrap{display:block!important;height:auto!important;max-height:none!important;overflow:visible!important;min-height:0!important;background:#fff!important;color:#111!important;scrollbar-width:none}
+  body.print-gantt .p6-grid-pane::-webkit-scrollbar,body.print-gantt .p6-gantt-pane::-webkit-scrollbar,body.print-gantt .p6-grid-pane .table-wrap::-webkit-scrollbar{display:none}
+  body.print-gantt .p6-grid-pane{width:var(--print-table-width,620px)!important;border:1px solid #8495a2!important}
+  body.print-gantt .p6-gantt-pane{width:var(--print-gantt-width,900px)!important;border-top:1px solid #8495a2!important;border-right:1px solid #8495a2!important;border-bottom:1px solid #8495a2!important}
+  body.print-gantt .p6-splitter{width:2px!important;background:#8495a2!important;border:0!important}
+  body.print-gantt .gantt-head{position:relative!important;top:auto!important;background:#e9edf0!important;color:#111!important}
+  body.print-gantt .p6-grid-pane th{position:relative!important;top:auto!important;background:#e7edf2!important;color:#273746!important}
+  body.print-gantt .p6-grid-pane td{color:#111!important;border-color:#d7dde2!important}
+  body.print-gantt .p6-grid-pane tbody tr.selected td,body.print-gantt .gantt-row.selected{background:transparent!important;color:#111!important;box-shadow:none!important}
+  body.print-gantt .activity-col-resizer{display:none!important}
+  body.print-gantt .activity-inline-edit,body.print-gantt .activity-date-cell,body.print-gantt select{border:0!important;background:transparent!important;color:#111!important;padding:0!important;appearance:none!important;-webkit-appearance:none!important}
+  body.print-gantt .activity-wbs-toggle{border:0!important;background:transparent!important;color:#111!important}
+  body.print-gantt .gantt-link{stroke:#111!important}
+  body.print-gantt .gantt-grid{opacity:.34!important}
+
+  /* Dashboard: dedicated single-sheet A3 portrait report. */
+  body.print-dashboard .dashboard-shell{max-width:none!important;width:1000px!important;margin:0!important;zoom:var(--print-dashboard-scale,1);background:#fff!important;color:#111!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  body.print-dashboard .dashboard-project-header{padding:8px 10px!important;margin-bottom:7px!important;background:#f6f8fa!important;border-color:#aab5bd!important}
+  body.print-dashboard .dashboard-project-header .print-view-button,body.print-dashboard .panel-head button{display:none!important}
+  body.print-dashboard .metric-grid{gap:6px!important;margin-bottom:7px!important}
+  body.print-dashboard .metric-card,body.print-dashboard .panel{box-shadow:none!important;border-color:#aeb8c0!important;background:#fff!important;color:#111!important}
+  body.print-dashboard .dashboard-grid{gap:7px!important;grid-template-columns:1.12fr .88fr!important}
+  body.print-dashboard .dashboard-panel{margin-bottom:7px!important}
+  body.print-dashboard .dcma-dashboard-panel{grid-column:1/-1!important;margin-bottom:0!important}
+  body.print-dashboard .panel-head{background:#eaf0f4!important;color:#111!important;border-color:#adb8c0!important}
+  body.print-dashboard .panel-body{padding:7px!important}
+  body.print-dashboard .dcma-table-wrap{overflow:visible!important;border-color:#aab4bb!important}
+  body.print-dashboard .dcma-health-table{font-size:8px!important;table-layout:fixed!important}
+  body.print-dashboard .dcma-health-table th,body.print-dashboard .dcma-health-table td{height:19px!important;padding:2px 4px!important;color:#111!important;border-color:#d0d5d9!important}
+  body.print-dashboard .dcma-health-table th{background:#eef2f5!important}
+  body.print-dashboard .dcma-health-table .dcma-basis{min-width:0!important;white-space:normal!important}
+  body.print-dashboard .dcma-gauge-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:4px 7px!important}
+  body.print-dashboard .dcma-gauge{padding:4px 6px!important;background:#f8fafb!important;border-color:#c0c8ce!important;break-inside:avoid!important}
+  body.print-dashboard .dcma-gauge-head{font-size:7px!important;margin-bottom:2px!important}
+  body.print-dashboard .dcma-gauge-track{height:8px!important}
+  body.print-dashboard .dcma-gauge small{font-size:6px!important;margin-top:2px!important}
+  body.print-dashboard .dcma-graphic-title{font-size:9px!important;margin:6px 0 4px!important}
+  body.print-dashboard .dashboard-disclaimer{font-size:6px!important;margin-top:5px!important}
+}
