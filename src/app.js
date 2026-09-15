@@ -44,7 +44,7 @@ import { activityTimeline, forecastStability, milestoneTrend, forecastConfidence
 import { resourceOverloadAnalysis } from './resource-intelligence.js';
 import { whatChangedDashboard, executiveDashboard, generateScheduleNarrative, buildLookahead } from './forensic-reporting.js';
 import { globalScheduleSearch } from './global-search.js';
-import { diagnoseImportedSchedule } from './import-diagnostics.js';
+import { diagnoseImportedScheduleAsync } from './import-diagnostics.js';
 import { verifiedAIContext } from './ai-context.js';
 import { DiagnosticLogger } from './logger.js';
 import { wbsDisplayLabel, calendarDisplayLabel, groupFieldLabel, groupDisplayLabel } from './ui-labels.js';
@@ -93,7 +93,78 @@ function activityColumnDefaultWidth(key){const map={task_code:115,task_name:265,
 function activityTableHTML(rowModel,cols,columnWidths={}){if(!rowModel.length)return '<div class="empty">No records found.</div>';const widths=cols.map(c=>Math.max(60,Math.min(600,Number(columnWidths?.[c.key])||activityColumnDefaultWidth(c.key)))),total=widths.reduce((a,b)=>a+b,0);const body=rowModel.map(row=>{if(row.kind==='activity'){const r=row.task;return `<tr data-id="${escapeHtml(r.task_id||'')}" data-row-key="${escapeHtml(row.key)}">${cols.map(c=>`<td class="${c.num?'num':''}" data-col-key="${escapeHtml(c.key)}">${c.render?c.render(r):escapeHtml(r[c.key]??'—')}</td>`).join('')}</tr>`}const depth=Math.max(0,Number(row.depth)||0),level=Math.min(7,depth),label=row.kind==='wbs'?(row.code?`${row.code} — ${row.label}`:row.label):(row.label||row.value||'Group'),toggle=row.kind==='wbs'&&row.wbsId!==''?`<button class="activity-wbs-toggle" data-activity-wbs-toggle="${escapeHtml(row.wbsId)}" title="Expand / collapse WBS">${row.hasChildren||row.directCount?(row.expanded?'▾':'▸'):'·'}</button>`:'<span class="activity-wbs-toggle-spacer"></span>';return `<tr class="group-row ${row.kind==='wbs'?`wbs-band wbs-level-${level}`:''}" data-wbs-depth="${depth}" data-row-key="${escapeHtml(row.key||'')}" style="--group-depth:${depth}"><td colspan="${cols.length}"><div class="activity-group-label" style="padding-left:${depth*16}px">${toggle}<span>${escapeHtml(label)}</span><small>${row.count??''}${row.count===1?' activity':' activities'}</small></div></td></tr>`}).join('');return `<div class="table-wrap"><table class="activity-resizable-table" style="width:${total}px;min-width:100%"><colgroup>${cols.map((c,i)=>`<col data-activity-col="${escapeHtml(c.key)}" style="width:${widths[i]}px">`).join('')}</colgroup><thead><tr>${cols.map(c=>`<th data-col-key="${escapeHtml(c.key)}"><span class="activity-col-title">${escapeHtml(c.label)}</span><i class="activity-col-resizer" data-activity-resize="${escapeHtml(c.key)}" title="Drag to resize ${escapeHtml(c.label)}"></i></th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`}
 function filterTasks(){let rows=taskRows(state.model,state.projId);if(state.search){const q=state.search.toLowerCase();rows=rows.filter(t=>[t.task_code,t.task_name,t.status_code,t.task_type,t.wbs_id].some(v=>String(v||'').toLowerCase().includes(q)))}rows=applyFilterGroup(rows,state.filterGroup);const layout=state.layouts.find(x=>x.id===state.activeLayoutId)||defaultLayout();return applyLayoutSort(rows,layout)}
 
-async function loadFile(file,isCompare=false,sourceCtx={}){const timer=logger.start('loadFile',{file:file?.name||'',compare:isCompare});try{const text=await file.text();const diag=diagnoseImportedSchedule(text,file.name,{maxMB:Number(state.settings.maxImportFileMB||500)});state.lastImportDiagnostic={fileName:file.name,format:diag.format,bytes:diag.bytes,issues:[...(diag.issues||[])],warnings:[...(diag.warnings||[])],parserWarnings:[...(diag.parserWarnings||[])],integrity:diag.integrity?{counts:diag.integrity.counts,issues:diag.integrity.issues}:null};logger.info('app','loadFile','Import diagnostics complete',{file:file.name,issues:diag.issues?.length||0,warnings:(diag.warnings?.length||0)+(diag.parserWarnings?.length||0),bytes:diag.bytes});if(!diag.model)throw new Error(diag.issues.join('\n')||'Import diagnostics could not create a schedule model.');const m=diag.model;if(diag.warnings.length||diag.parserWarnings.length||diag.integrity?.issues?.length)console.warn('Import Diagnostic Report',{preflight:diag.warnings,parser:diag.parserWarnings,integrity:diag.integrity});if(isCompare){state.compareModel=m;state.compareProjId=m.table('PROJECT')[0]?.proj_id||null;toast(`Comparison schedule loaded: ${file.name}`);setView('compare');return}state.model=m;state.sourceFormat=m.sourceFormat||'xer';state.history=new EditHistory(m);state.dirty=false;state.needsRecalc=false;state.projectFileHandle=sourceCtx.fileHandle||null;state.projectFileDirectoryHandle=sourceCtx.parentHandle||null;state.projectFilePath=sourceCtx.relativePath||'';state.baselines=[];state.primaryBaselineId=null;state.selectedBaselineId=null;state.lastCalc=null;state.fileName=file.name;state.projId=m.table('PROJECT')[0]?.proj_id||m.table('TASK')[0]?.proj_id||null;state.importedCalculationSnapshots=Object.fromEntries(projectRows(m).map(p=>[String(p.proj_id),captureImportedCalculation(m,p.proj_id)]));state.lastCalculationDiscrepancies=[];state.selectedTaskId=m.table('TASK')[0]?.task_id||null;state.selectedWbsId=wbsRows(m,state.projId)[0]?.wbs_id||null;state.selectedFloatTarget=state.selectedTaskId;state.search='';state.revisionSnapshots=[snapshotModel(m,`Loaded ${file.name}`)];state.revisionRepository=[createRevision(m,{name:`Loaded ${file.name}`,projectId:state.projId,sourceFile:file.name})];state.selectedRevisionA=state.revisionRepository[0]?.id||'';state.selectedRevisionB='';state.forensicComparison=null;state.dateMoveResult=null;state.audit=new AuditLog();state.audit.add('Open schedule',{file:file.name,format:state.sourceFormat});const integrity=validateModelIntegrity(m,{projectId:state.projId});if(integrity.issues.length)console.warn('Schedule integrity findings',integrity);$('#fileStatus').textContent=`${file.name} • ${formatLabel(state.sourceFormat)} • ${m.rowCount().toLocaleString()} canonical rows${integrity.counts.errors?` • ${integrity.counts.errors} integrity error(s)`:''}${diag.warnings.length||diag.parserWarnings.length?` • ${diag.warnings.length+diag.parserWarnings.length} import warning(s)`:''}`;populateProjects();$('#exportBtn').disabled=false;updateEditButtons();crumb();render();toast(`Loaded ${file.name}`);logger.end('loadFile','app','loadFile','Schedule loaded')}catch(e){logger.error('app','loadFile',String(e?.message||e),{file:file?.name||'',compare:isCompare});console.error(e);alert(`Could not load schedule:\n${e.message}`)}}
+function nextUiFrame(){return new Promise(resolve=>{if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>resolve());else setTimeout(resolve,0)})}
+function setImportProgress(percent,stage,detail=''){
+ const box=$('#importProgress'),bar=$('#importProgressBar'),pct=$('#importProgressPercent'),stageEl=$('#importProgressStage'),detailEl=$('#importProgressDetail');
+ if(!box)return;
+ const value=Math.max(0,Math.min(100,Math.round(Number(percent)||0)));
+ box.hidden=false;box.classList.remove('error');box.setAttribute('aria-valuenow',String(value));
+ if(bar)bar.style.width=`${value}%`;if(pct)pct.textContent=`${value}%`;if(stageEl)stageEl.textContent=stage||'Processing schedule';if(detailEl)detailEl.textContent=detail||'';
+}
+function beginImportProgress(file,{compare=false}={}){
+ const title=$('#importProgressTitle'),box=$('#importProgress');
+ if(title)title.textContent=compare?'Opening comparison schedule':'Opening schedule';
+ if(box){box.hidden=false;box.classList.remove('error','done')}
+ setImportProgress(2,'Preparing import',file?.name||'Schedule file');
+}
+function finishImportProgress(message='Schedule ready'){
+ const box=$('#importProgress');setImportProgress(100,message,'Import complete');if(box)box.classList.add('done');
+ setTimeout(()=>{if(box)box.hidden=true},900);
+}
+function failImportProgress(error){
+ const box=$('#importProgress');setImportProgress(100,'Could not open schedule',String(error?.message||error||'Unknown import error'));if(box){box.classList.remove('done');box.classList.add('error')}
+ setTimeout(()=>{if(box)box.hidden=true},6000);
+}
+function readScheduleTextWithProgress(file){
+ return new Promise((resolve,reject)=>{
+  if(typeof FileReader==='undefined'){
+   file.text().then(resolve,reject);return;
+  }
+  const reader=new FileReader();
+  reader.onprogress=e=>{const ratio=e.lengthComputable&&e.total?e.loaded/e.total:0;const pct=5+Math.round(ratio*14);const loaded=e.lengthComputable?`${(e.loaded/1024/1024).toFixed(1)} / ${(e.total/1024/1024).toFixed(1)} MB`:'Reading local file';setImportProgress(pct,'Reading schedule file',loaded)};
+  reader.onerror=()=>reject(reader.error||new Error('The selected file could not be read.'));
+  reader.onabort=()=>reject(new Error('Reading the selected file was cancelled.'));
+  reader.onload=()=>resolve(String(reader.result||''));
+  reader.readAsText(file);
+ });
+}
+
+async function loadFile(file,isCompare=false,sourceCtx={}){
+ const timer=logger.start('loadFile',{file:file?.name||'',compare:isCompare});
+ beginImportProgress(file,{compare:isCompare});
+ try{
+  await nextUiFrame();
+  const text=await readScheduleTextWithProgress(file);
+  setImportProgress(21,'File read complete',`${(file.size/1024/1024).toFixed(1)} MB • ${file.name}`);
+  await nextUiFrame();
+  const diag=await diagnoseImportedScheduleAsync(text,file.name,{maxMB:Number(state.settings.maxImportFileMB||500)},info=>setImportProgress(info.percent,info.stage,info.detail));
+  state.lastImportDiagnostic={fileName:file.name,format:diag.format,bytes:diag.bytes,issues:[...(diag.issues||[])],warnings:[...(diag.warnings||[])],parserWarnings:[...(diag.parserWarnings||[])],integrity:diag.integrity?{counts:diag.integrity.counts,issues:diag.integrity.issues}:null};
+  logger.info('app','loadFile','Import diagnostics complete',{file:file.name,issues:diag.issues?.length||0,warnings:(diag.warnings?.length||0)+(diag.parserWarnings?.length||0),bytes:diag.bytes});
+  if(!diag.model)throw new Error(diag.issues.join('\n')||'Import diagnostics could not create a schedule model.');
+  const m=diag.model;
+  if(diag.warnings.length||diag.parserWarnings.length||diag.integrity?.issues?.length)console.warn('Import Diagnostic Report',{preflight:diag.warnings,parser:diag.parserWarnings,integrity:diag.integrity});
+  if(isCompare){
+   setImportProgress(88,'Preparing comparison view',`${m.table('TASK').length.toLocaleString()} activities`);await nextUiFrame();
+   state.compareModel=m;state.compareProjId=m.table('PROJECT')[0]?.proj_id||null;toast(`Comparison schedule loaded: ${file.name}`);setView('compare');finishImportProgress('Comparison schedule ready');return;
+  }
+
+  setImportProgress(81,'Initialising project data','Projects, WBS, activities, calendars and resources');await nextUiFrame();
+  state.model=m;state.sourceFormat=m.sourceFormat||'xer';state.history=new EditHistory(m);state.dirty=false;state.needsRecalc=false;state.projectFileHandle=sourceCtx.fileHandle||null;state.projectFileDirectoryHandle=sourceCtx.parentHandle||null;state.projectFilePath=sourceCtx.relativePath||'';state.baselines=[];state.primaryBaselineId=null;state.selectedBaselineId=null;state.lastCalc=null;state.fileName=file.name;state.projId=m.table('PROJECT')[0]?.proj_id||m.table('TASK')[0]?.proj_id||null;
+  state.importedCalculationSnapshots=Object.fromEntries(projectRows(m).map(p=>[String(p.proj_id),captureImportedCalculation(m,p.proj_id)]));state.lastCalculationDiscrepancies=[];state.selectedTaskId=m.table('TASK')[0]?.task_id||null;state.selectedWbsId=wbsRows(m,state.projId)[0]?.wbs_id||null;state.selectedFloatTarget=state.selectedTaskId;state.search='';
+
+  setImportProgress(87,'Creating revision snapshot','Preparing forensic/revision history');await nextUiFrame();
+  state.revisionSnapshots=[snapshotModel(m,`Loaded ${file.name}`)];state.revisionRepository=[createRevision(m,{name:`Loaded ${file.name}`,projectId:state.projId,sourceFile:file.name})];state.selectedRevisionA=state.revisionRepository[0]?.id||'';state.selectedRevisionB='';state.forensicComparison=null;state.dateMoveResult=null;state.audit=new AuditLog();state.audit.add('Open schedule',{file:file.name,format:state.sourceFormat});
+  const integrity=diag.integrity||validateModelIntegrity(m,{projectId:state.projId});if(integrity.issues.length)console.warn('Schedule integrity findings',integrity);
+  $('#fileStatus').textContent=`${file.name} • ${formatLabel(state.sourceFormat)} • ${m.rowCount().toLocaleString()} canonical rows${integrity.counts.errors?` • ${integrity.counts.errors} integrity error(s)`:''}${diag.warnings.length||diag.parserWarnings.length?` • ${diag.warnings.length+diag.parserWarnings.length} import warning(s)`:''}`;
+
+  setImportProgress(94,'Building Activities and Gantt',`${m.table('TASK').length.toLocaleString()} activities`);await nextUiFrame();
+  populateProjects();$('#exportBtn').disabled=false;updateEditButtons();crumb();render();
+  setImportProgress(99,'Finalising workspace','Synchronising controls and layout');await nextUiFrame();
+  toast(`Loaded ${file.name}`);logger.end('loadFile','app','loadFile','Schedule loaded');finishImportProgress('Schedule ready');
+ }catch(e){
+  logger.error('app','loadFile',String(e?.message||e),{file:file?.name||'',compare:isCompare});console.error(e);failImportProgress(e);alert(`Could not load schedule:\n${e.message}`);
+ }
+}
 function populateProjects(){const s=$('#projectSelect'), rows=projectRows(state.model);s.innerHTML=rows.length?rows.map(p=>`<option value="${escapeHtml(p.proj_id)}">${escapeHtml(p.proj_short_name||p.proj_name||p.proj_id)}</option>`).join(''):`<option value="${escapeHtml(state.projId||'')}">Project ${escapeHtml(state.projId||'')}</option>`;s.disabled=false;s.value=state.projId||''}
 
 function render(){crumb();if(!state.model && !['settings','tutorial','bimModel','eps'].includes(state.view)){return}
@@ -240,7 +311,6 @@ function bindActivityDetailTab(task,tab){
  if(tab==='logic'){if($('#detailAddRelationship'))$('#detailAddRelationship').onclick=()=>showRelationshipEditor();$$('.detail-rel-edit').forEach(b=>b.onclick=()=>showRelationshipEditor(b.dataset.id))}
  if(tab==='resources'){if($('#detailAddResource'))$('#detailAddResource').onclick=()=>showResourceEditor(null,{taskId:task.task_id});$$('.detail-res-edit').forEach(b=>b.onclick=()=>showResourceEditor(b.dataset.id))}
  if(tab==='codes'){const type=$('#detailCodeType'),value=$('#detailCodeValue');const filter=()=>{const t=type?.value||'';if(value)[...value.options].forEach(o=>{if(!o.value)return;o.hidden=!!t&&o.dataset.type!==t;if(o.hidden&&o.selected)value.value=''})};if(type){type.onchange=filter;filter()}if($('#detailCodeAssign'))$('#detailCodeAssign').onclick=()=>{if(!value.value)return toast('Choose a code value');try{checkpoint('Assign activity code');assignActivityCode(state.model,task.task_id,value.value);renderActivityDetail(task);toast('Activity code assigned')}catch(e){state.history?.undo();alert(e.message)}};$$('.detail-code-remove').forEach(b=>b.onclick=()=>{checkpoint('Remove activity code');removeActivityCodeAssignment(state.model,task.task_id,b.dataset.code);renderActivityDetail(task);toast('Activity code removed')})}}
-}
 function renderActivityDetail(task){
  const el=$('#detailPanel');if(!task){el.innerHTML='<div class="empty">Select an activity.</div>';return}const a=activityView(state.model,task),tabs=['general','status','dates','logic','resources','expenses','codes','constraints','notes','steps','risks','trace','raw'];if(!tabs.includes(state.activeActivityDetailTab))state.activeActivityDetailTab='general';
  el.innerHTML=`<div class="panel-head"><h3>${escapeHtml(a.id)} — ${escapeHtml(a.name)}</h3><span class="badge ${a.totalFloat<=0?'high':''}">${a.totalFloat<=0?'Critical / ≤0 float':'Non-critical'}</span></div><div class="tabs"><button data-tab="general">General</button><button data-tab="status">Status</button><button data-tab="dates">Dates</button><button data-tab="logic">Relationships</button><button data-tab="resources">Resources</button><button data-tab="expenses">Expenses</button><button data-tab="codes">Codes</button><button data-tab="constraints">Constraints</button><button data-tab="notes">Notebooks</button><button data-tab="steps">Steps</button><button data-tab="risks">Risks</button><button data-tab="trace">Trace Logic</button><button data-tab="raw">Raw Data</button></div><div class="detail" id="detailBody"></div>`;
@@ -631,7 +701,7 @@ function openScheduleFromDevice(){
 function executeCommand(id){
  const meta=commandById(id);if(!meta)return;
  const enabled=commandEnabled(meta,{hasModel:!!state.model,hasSelection:!!state.selectedTaskId});if(!enabled)return toast(`${meta.label} is not available in the current context`);
- const handlers={open:openScheduleFromDevice,save:saveCurrentSchedule,saveXer:saveXER,saveMsp:saveMSP,openPackage:()=>$('#packageInput').click(),savePackage:saveProjectPackage,export:exportCurrent,print:()=>window.print(),undo:doUndo,redo:doRedo,copyActivity:copySelectedActivity,pasteActivity,find:focusFind,addActivity:addActivityFromToolbar,deleteActivity:deleteActivityFromToolbar,relationships:()=>showRelationshipEditor(),assignResource:()=>showResourceEditor(),columns:()=>showColumnsDialog(),groupSort:()=>setView('layouts'),filter:()=>setView('layouts'),zoomIn:()=>zoomGantt(1),zoomOut:()=>zoomGantt(-1),schedule:runSchedule,scheduleOptions:()=>showScheduleOptionsDialog(),levelResources:levelResourcesNow,levelOptions:()=>showScheduleOptionsDialog({leveling:true}),updateProgress:()=>setView('progressEvm'),baselines:()=>setView('baselines'),traceLogic:()=>{state.selectedFloatTarget=state.selectedTaskId;setView('diagnostics')},globalChange:()=>setView('editor'),resourceProfiles:()=>setView('resourceProfiles'),compare:()=>$('#compareInput').click(),settings:()=>setView('settings'),calculationAudit:showCalculationAudit,about:()=>alert('Schedule Studio Professional v6.3.5\nSingle-user P6 20.x-style project-controls workbench.\nAll schedule processing remains local in this browser.')};
+ const handlers={open:openScheduleFromDevice,save:saveCurrentSchedule,saveXer:saveXER,saveMsp:saveMSP,openPackage:()=>$('#packageInput').click(),savePackage:saveProjectPackage,export:exportCurrent,print:()=>window.print(),undo:doUndo,redo:doRedo,copyActivity:copySelectedActivity,pasteActivity,find:focusFind,addActivity:addActivityFromToolbar,deleteActivity:deleteActivityFromToolbar,relationships:()=>showRelationshipEditor(),assignResource:()=>showResourceEditor(),columns:()=>showColumnsDialog(),groupSort:()=>setView('layouts'),filter:()=>setView('layouts'),zoomIn:()=>zoomGantt(1),zoomOut:()=>zoomGantt(-1),schedule:runSchedule,scheduleOptions:()=>showScheduleOptionsDialog(),levelResources:levelResourcesNow,levelOptions:()=>showScheduleOptionsDialog({leveling:true}),updateProgress:()=>setView('progressEvm'),baselines:()=>setView('baselines'),traceLogic:()=>{state.selectedFloatTarget=state.selectedTaskId;setView('diagnostics')},globalChange:()=>setView('editor'),resourceProfiles:()=>setView('resourceProfiles'),compare:()=>$('#compareInput').click(),settings:()=>setView('settings'),calculationAudit:showCalculationAudit,about:()=>alert('Schedule Studio Professional v6.3.6\nSingle-user P6 20.x-style project-controls workbench.\nAll schedule processing remains local in this browser.')};
  if(handlers[id])return handlers[id]();
  if(meta.prepared)return toast(`${meta.label}: command surface prepared; detailed workflow will be completed against the supplied P6 reference files.`);
  toast(`${meta.label}: command handler is not yet assigned.`);
@@ -766,6 +836,18 @@ function nextActivityCode(){const used=new Set(taskRows(state.model,state.projId
 function addActivityFromToolbar(){if(!state.model)return;try{const current=state.model.find('TASK','task_id',state.selectedTaskId)||taskRows(state.model,state.projId)[0];checkpoint('Add activity');const t=addTask(state.model,state.projId,{wbs_id:current?.wbs_id||wbsRows(state.model,state.projId)[0]?.wbs_id||'',clndr_id:current?.clndr_id||state.model.table('CALENDAR')[0]?.clndr_id||'',task_code:nextActivityCode(),task_name:'New Activity'});state.selectedTaskId=t.task_id;markDirty();setView('activities');toast(`Added ${t.task_code}`)}catch(e){alert(`Could not add activity: ${e.message}`)}}
 function deleteActivityFromToolbar(){if(!state.model||!state.selectedTaskId)return;const t=state.model.find('TASK','task_id',state.selectedTaskId);if(!t)return;if(!confirm(`Delete ${t.task_code||t.task_id} — ${t.task_name||''}?\n\nDependent relationships, assignments, codes and activity UDF values will also be removed.`))return;try{checkpoint('Delete activity');deleteTask(state.model,state.selectedTaskId);state.selectedTaskId=taskRows(state.model,state.projId)[0]?.task_id||null;markDirty();setView('activities');toast('Activity deleted')}catch(e){alert(`Could not delete activity: ${e.message}`)}}
 function levelResourcesNow(){if(!state.model)return;const prior=state.settings.resourceLevelingEnabled;state.settings.resourceLevelingEnabled=true;persistSettings();toast('Resource leveling enabled — calculating schedule');try{runSchedule()}finally{state.settings.resourceLevelingEnabled=prior;persistSettings()}}
+function focusFind(){const input=$('#globalSearch');if(input){input.focus();input.select?.()}}
+function copySelectedActivity(){
+ if(!state.model||!state.selectedTaskId)return toast('Select an activity to copy');
+ const task=state.model.find('TASK','task_id',state.selectedTaskId);if(!task)return toast('Select an activity to copy');
+ state.activityClipboard={taskId:String(task.task_id),projectId:String(task.proj_id||state.projId)};updateEditButtons();toast(`Copied ${task.task_code||task.task_id}`);
+}
+function pasteActivity(){
+ if(!state.model||!state.activityClipboard?.taskId)return toast('Copy an activity first');
+ const src=state.model.find('TASK','task_id',state.activityClipboard.taskId);if(!src)return toast('The copied activity is no longer available');
+ const used=new Set(taskRows(state.model,src.proj_id).map(t=>String(t.task_code||'').toUpperCase()));const base=`${src.task_code||'ACT'}-COPY`;let code=base,n=2;while(used.has(code.toUpperCase()))code=`${base}-${n++}`;
+ try{checkpoint('Paste activity');const copy=cloneTask(state.model,src.task_id,{taskCode:code,taskName:src.task_name,wbsId:src.wbs_id});state.projId=copy.proj_id||state.projId;state.selectedTaskId=copy.task_id;state.needsRecalc=true;markDirty();setView('activities');toast(`Pasted ${copy.task_code}`)}catch(e){state.history?.undo();alert(e.message)}
+}
 function dispatchMenuCommand(command){executeCommand(command)}
 
 // Open controls are native <label for="fileInput"> elements.  The label's
@@ -834,6 +916,7 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('beforeunload',e=>{if(!state.dirty)return;e.preventDefault();e.returnValue=''});
 window.addEventListener('dragover',e=>{e.preventDefault();document.body.classList.add('dragging')});window.addEventListener('dragleave',e=>{if(e.clientX===0&&e.clientY===0)document.body.classList.remove('dragging')});window.addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('dragging');const f=[...e.dataTransfer.files].find(f=>/\.(xer|xml)$/i.test(f.name));if(f)loadFile(f);else toast('Drop a .xer or .xml schedule file')});
+window.__scheduleStudioBooted=true;
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
 // Developer/demo harness: append ?demo=1 to load the bundled sample XER automatically.

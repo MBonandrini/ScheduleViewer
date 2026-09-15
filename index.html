@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#dfe9f4" />
-  <title>Schedule Studio Professional v6.3.5</title>
+  <title>Schedule Studio Professional v6.3.6</title>
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=6.3.5" />
+  <link rel="stylesheet" href="./styles.css?v=6.3.6" />
 </head>
 <body class="p6-desktop">
   <header class="p6-titlebar">
-    <div class="p6-product"><span class="p6-mark">SS</span><strong>Schedule Studio Professional <span class="version-badge">v6.3.5</span></strong><span id="titleProject">Single-User Project Controls Workbench</span></div>
+    <div class="p6-product"><span class="p6-mark">SS</span><strong>Schedule Studio Professional <span class="version-badge">v6.3.6</span></strong><span id="titleProject">Single-User Project Controls Workbench</span></div>
     <div class="p6-user"><span>Local Planner</span><span class="dot">•</span><span>Single User</span><span class="dot">•</span><span>Browser Local</span></div>
   </header>
 
@@ -79,12 +79,46 @@
       <div><h1 id="viewTitle">Activities</h1><div id="crumb" class="crumb">Open a schedule to begin</div></div>
       <div class="p6-view-actions"><input id="globalSearch" type="search" placeholder="Find activity…" /><button id="exportBtn" disabled>Export</button></div>
     </section>
-    <section id="view" class="view"><div class="welcome"><div class="hero-icon">SS</div><h2>Schedule Studio Professional <span class="version-badge welcome-version">v6.3.5</span></h2><p>A single-user Primavera-style schedule intelligence, editing, forensic analysis and reporting workbench. Open a P6 XER or Microsoft Project XML schedule to begin.</p><label for="fileInput" id="welcomeOpen" class="primary large p6-file-open-control welcome-open-control" role="button" tabindex="0">Open schedule file</label><div class="feature-grid"><span>Activities + Gantt</span><span>WBS & Logic</span><span>Resources</span><span>Baselines</span><span>Critical Paths</span><span>Schedule Health</span><span>Forensic Compare</span><span>Progress & EVM</span></div></div></section>
+    <section id="view" class="view"><div class="welcome"><div class="hero-icon">SS</div><h2>Schedule Studio Professional <span class="version-badge welcome-version">v6.3.6</span></h2><p>A single-user Primavera-style schedule intelligence, editing, forensic analysis and reporting workbench. Open a P6 XER or Microsoft Project XML schedule to begin.</p><label for="fileInput" id="welcomeOpen" class="primary large p6-file-open-control welcome-open-control" role="button" tabindex="0">Open schedule file</label><div class="feature-grid"><span>Activities + Gantt</span><span>WBS & Logic</span><span>Resources</span><span>Baselines</span><span>Critical Paths</span><span>Schedule Health</span><span>Forensic Compare</span><span>Progress & EVM</span></div></div></section>
   </main>
 
   <footer class="p6-statusbar"><span id="fileStatus">No file loaded</span><span id="statusDataDate">Data Date: —</span><span id="statusBaseline">Baseline: —</span><span id="offlineStatus">Local browser database</span><span>User: Local Planner</span></footer>
   <dialog id="modal"><form method="dialog"><button class="modal-close">×</button></form><div id="modalBody"></div></dialog>
   <div id="toast" class="toast"></div>
-  <script type="module" src="./src/app.js?v=6.3.5"></script>
+  <aside id="importProgress" class="import-progress" role="progressbar" aria-label="Schedule import progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
+    <div class="import-progress-head"><strong id="importProgressTitle">Opening schedule</strong><span id="importProgressPercent">0%</span></div>
+    <div class="import-progress-track"><span id="importProgressBar" class="import-progress-bar"></span></div>
+    <div id="importProgressStage" class="import-progress-stage">Preparing import</div>
+    <div id="importProgressDetail" class="import-progress-detail"></div>
+  </aside>
+  <script>
+    window.__scheduleStudioBooted=false;
+    window.addEventListener('DOMContentLoaded',()=>{
+      const input=document.getElementById('fileInput');
+      const box=document.getElementById('importProgress');
+      const stage=document.getElementById('importProgressStage');
+      const detail=document.getElementById('importProgressDetail');
+      input?.addEventListener('change',()=>{
+        if(!input.files?.length)return;
+        if(box)box.hidden=false;
+        if(stage)stage.textContent='File selected — starting importer';
+        if(detail)detail.textContent=input.files[0]?.name||'';
+        setTimeout(()=>{
+          if(window.__scheduleStudioBooted)return;
+          if(box){box.hidden=false;box.classList.add('error');box.setAttribute('aria-valuenow','100')}
+          if(stage)stage.textContent='Application did not initialise';
+          if(detail)detail.textContent='A JavaScript startup error prevented the schedule importer from starting. Reload the page and check the browser console.';
+        },1200);
+      },{capture:true});
+    });
+    window.addEventListener('error',event=>{
+      const box=document.getElementById('importProgress'),stage=document.getElementById('importProgressStage'),detail=document.getElementById('importProgressDetail');
+      if(window.__scheduleStudioBooted)return;
+      if(box){box.hidden=false;box.classList.add('error');box.setAttribute('aria-valuenow','100')}
+      if(stage)stage.textContent='Application startup error';
+      if(detail)detail.textContent=event.message||'The application could not start.';
+    });
+  </script>
+  <script type="module" src="./src/app.js?v=6.3.6"></script>
 </body>
 </html>

@@ -26,3 +26,50 @@ export function diagnoseImportedSchedule(text,fileName='schedule.xer',options={}
   const preflight=preflightScheduleText(text,fileName,options);if(!preflight.ok)return {...preflight,model:null,integrity:null,parserWarnings:[]};
   try{const model=parseScheduleText(text,fileName),projectId=model.table('PROJECT')[0]?.proj_id||model.table('TASK')[0]?.proj_id||null,integrity=validateModelIntegrity(model,{projectId});return {...preflight,model,integrity,parserWarnings:[...(model.warnings||[])],ok:preflight.ok&&!integrity.counts?.errors};}catch(error){return {...preflight,ok:false,model:null,integrity:null,parserWarnings:[],issues:[...preflight.issues,error.message]};}
 }
+
+/**
+ * Async import diagnostics with progress hooks for the browser UI.
+ *
+ * Heavy schedule operations are still deterministic and local, but yielding
+ * between phases lets the browser paint a meaningful progress indicator even
+ * for large XER/XML schedules.
+ */
+function importYield(){
+  return new Promise(resolve=>{
+    if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>resolve());
+    else setTimeout(resolve,0);
+  });
+}
+
+export async function diagnoseImportedScheduleAsync(text,fileName='schedule.xer',options={},onProgress=()=>{}){
+  const report=(percent,stage,detail='')=>{
+    try{onProgress({percent,stage,detail});}catch{}
+  };
+  report(24,'Checking file structure',fileName);
+  await importYield();
+  const preflight=preflightScheduleText(text,fileName,options);
+  if(!preflight.ok){
+    report(100,'Import stopped','The schedule did not pass the preflight checks.');
+    return {...preflight,model:null,integrity:null,parserWarnings:[]};
+  }
+
+  const format=preflight.format==='xml'?'Microsoft Project XML':'Primavera P6 XER';
+  report(38,`Parsing ${format}`,`${(preflight.megabytes||0).toFixed(1)} MB`);
+  await importYield();
+  try{
+    const model=parseScheduleText(text,fileName);
+    report(64,'Building canonical schedule model',`${model.rowCount().toLocaleString()} records parsed`);
+    await importYield();
+
+    const projectId=model.table('PROJECT')[0]?.proj_id||model.table('TASK')[0]?.proj_id||null;
+    report(72,'Checking schedule integrity','Activities, WBS, logic, calendars and references');
+    await importYield();
+    const integrity=validateModelIntegrity(model,{projectId});
+    const result={...preflight,model,integrity,parserWarnings:[...(model.warnings||[])],ok:preflight.ok&&!integrity.counts?.errors};
+    report(78,'Schedule validated',`${model.table('TASK').length.toLocaleString()} activities`);
+    return result;
+  }catch(error){
+    report(100,'Import stopped',error?.message||'Could not parse the schedule.');
+    return {...preflight,ok:false,model:null,integrity:null,parserWarnings:[],issues:[...preflight.issues,error.message]};
+  }
+}
