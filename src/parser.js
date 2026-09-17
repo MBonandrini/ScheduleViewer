@@ -27,7 +27,7 @@ export function parseXER(text) {
     }
     if (marker === '%F') {
       fields = parts.slice(1).map(v => v.trim());
-      if (current && tables.has(current)) tables.get(current).fields = fields;
+      if (current && tables.has(current)) tables.get(current).fields = [...new Set([...tables.get(current).fields, ...fields])];
       continue;
     }
     if (marker === '%R') {
@@ -83,10 +83,17 @@ export function p6Date(value) {
   const s = String(value).trim();
   // Schedule dates are wall-clock/local project values. Parse these explicitly before
   // JavaScript's Date parser so YYYY-MM-DD is never silently interpreted as UTC.
-  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/);
-  if (m) return new Date(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0), 0);
-  const slash = s.match(/^(\d{4})\/(\d{2})\/(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/);
-  if (slash) return new Date(+slash[1], +slash[2]-1, +slash[3], +(slash[4]||0), +(slash[5]||0), +(slash[6]||0), 0);
+  const m = s.match(/^(\d{4})[-/](\d{2})[-/](\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?)?(Z|[+-]\d{2}:?\d{2})?$/i);
+  if (m) {
+    const year=+m[1],month=+m[2],day=+m[3],hour=+(m[4]||0),minute=+(m[5]||0),second=+(m[6]||0);
+    const check=new Date(0);check.setUTCFullYear(year,month-1,day);check.setUTCHours(hour,minute,second,0);
+    if(check.getUTCFullYear()!==year||check.getUTCMonth()!==month-1||check.getUTCDate()!==day||hour>23||minute>59||second>59)return null;
+    if(m[8]) { const zoned=new Date(s);return Number.isNaN(zoned.getTime())?null:zoned; }
+    const local=new Date(0);local.setFullYear(year,month-1,day);local.setHours(hour,minute,second,Number((m[7]||'').padEnd(3,'0')));
+    return local;
+  }
+  // Do not let Date's permissive fallback repair malformed project dates.
+  if(/^\d{4}[-/]/.test(s))return null;
   const d = new Date(s);
   return Number.isNaN(d.getTime()) ? null : d;
 }
@@ -101,7 +108,7 @@ export function yes(value) {
 }
 
 export function fmtDate(value, includeTime = false) {
-  const d = value instanceof Date ? value : p6Date(value);
+  const d = p6Date(value);
   if (!d) return value || '—';
   const opts = { year:'numeric', month:'short', day:'2-digit' };
   if (includeTime) Object.assign(opts, { hour:'2-digit', minute:'2-digit' });

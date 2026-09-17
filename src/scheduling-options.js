@@ -8,6 +8,7 @@ export const compatibilityProfiles = {
 
 export const defaultSchedulingOptions = {
   compatibilityProfile:'generic',
+  autoSchedule:false,
   relationshipLagCalendar:'predecessor',
   outOfSequenceMode:'retainedLogic', // retainedLogic | progressOverride | actualDates
   expectedFinishMode:'respect',      // ignore | respect | constrain

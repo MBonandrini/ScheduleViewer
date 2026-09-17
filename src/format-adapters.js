@@ -74,7 +74,7 @@ export function conversionAudit(model,target){
     if(model.table('PROJECT').length>1)penalize('structure',20,'Only the selected project is exported to a single MSP XML Project document.');
   }else if(target==='xer'){
     if(src==='mspxml')penalize('structure',8,'Microsoft Project summary tasks are converted into P6 WBS nodes; leaf tasks become P6 activities.');
-    penalize('customFields',8,'MSP-specific formatting/layout fields are not part of the P6 XER data model.');
+    if(src==='mspxml')penalize('customFields',8,'MSP-specific formatting/layout fields are not part of the P6 XER data model.');
   }
   const weights={structure:.2,logic:.25,calendars:.2,resources:.15,customFields:.1,baselines:.1};
   const quality=Math.round(Object.entries(weights).reduce((n,[k,w])=>n+categories[k]*w,0)*10)/10;

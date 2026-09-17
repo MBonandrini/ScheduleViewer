@@ -1,0 +1,17 @@
+import {performance} from 'node:perf_hooks';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+if(!process.argv[2])throw new Error('Usage: node tests/benchmark.mjs /path/to/extracted-original-v7.0.0');
+const original=path.resolve(process.argv[2]);
+import {model} from './helpers/model.mjs';
+const {runQSRA:oldRisk}=await import(pathToFileURL(path.join(original,'src/v7-risk-engine.js')));
+import {runQSRA as newRisk} from '../src/v7-risk-engine.js';
+const {buildActivityRowModel:oldRows}=await import(pathToFileURL(path.join(original,'src/activity-layout.js')));
+import {buildActivityRowModel as newRows} from '../src/activity-layout.js';
+const measure=(fn)=>{fn();const times=[];let result;for(let i=0;i<3;i++){const t=performance.now();result=fn();times.push(performance.now()-t)}return {medianMs:times.sort((a,b)=>a-b)[1],result}};
+const n=180,m=model(Array.from({length:n},()=>({})),Array.from({length:n-1},(_,i)=>({pred_task_id:String(i+1),task_id:String(i+2)}))),opts={iterations:5000,seed:2026,distribution:'triangular'};
+const before=measure(()=>oldRisk(m,'P',opts)),after=measure(()=>newRisk(m,'P',opts));
+const large=model(Array.from({length:10000},(_,i)=>({wbs_id:String(i%100),target_start_date:'2026-01-01',target_end_date:'2026-01-05'})),[],{PROJWBS:Array.from({length:100},(_,i)=>({proj_id:'P',wbs_id:String(i),parent_wbs_id:i?String(i-1):''}))});
+const a=measure(()=>oldRows(large,'P',large.table('TASK'),{groupBy:'wbs_id'})),b=measure(()=>newRows(large,'P',large.table('TASK'),{groupBy:'wbs_id'}));
+const result={node:process.version,platform:process.platform,repetitions:3,statistic:'median after one warm-up',risk:{activities:n,relationships:n-1,iterations:opts.iterations,beforeMs:before.medianMs,afterMs:after.medianMs,speedup:before.medianMs/after.medianMs,p80Unchanged:before.result.p80===after.result.p80},wbs:{activities:10000,levels:100,beforeMs:a.medianMs,afterMs:b.medianMs,speedup:a.medianMs/b.medianMs,rowsUnchanged:a.result.length===b.result.length}};
+console.log(JSON.stringify(result,null,2));

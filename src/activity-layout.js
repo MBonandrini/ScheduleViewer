@@ -1,6 +1,7 @@
+const sortCollator=new Intl.Collator(undefined,{numeric:true,sensitivity:'base'});
 import { buildWBSTree, wbsRows, taskStart, taskFinish } from './semantic.js';
 
-function cmpValue(a,b){return String(a??'').localeCompare(String(b??''),undefined,{numeric:true,sensitivity:'base'});}
+function cmpValue(a,b){return sortCollator.compare(String(a??''),String(b??''));}
 function sortTasks(tasks,sort={field:'task_code',dir:1}){const field=sort?.field||'task_code',dir=Number(sort?.dir)||1;return [...tasks].sort((a,b)=>cmpValue(a?.[field],b?.[field])*dir||cmpValue(a?.task_code,b?.task_code));}
 function minDate(a,b){if(!a)return b||null;if(!b)return a;return a<b?a:b;}
 function maxDate(a,b){if(!a)return b||null;if(!b)return a;return a>b?a:b;}
@@ -26,28 +27,22 @@ export function buildActivityRowModel(model,projId,tasks,{groupBy='',sort={field
   for(const t of input){const id=String(t.wbs_id||'');if(id&&nodes.has(id)){if(!byWbs.has(id))byWbs.set(id,[]);byWbs.get(id).push(t);}else unassigned.push(t);}
   for(const [id,rows] of byWbs)byWbs.set(id,sortTasks(rows,sort));
 
-  // Keep ancestors of filtered activities visible so the tree remains structurally correct.
-  const relevant=new Set();
-  for(const id of byWbs.keys()){
-    let cur=id,guard=0;
-    while(cur&&guard++<1000){if(relevant.has(cur))break;relevant.add(cur);const n=nodes.get(cur);cur=String(n?.parent_wbs_id||'');}
+  const roots=buildWBSTree(model,projId),ordered=[],stack=[...roots].reverse();
+  while(stack.length){const node=stack.pop();ordered.push(node);for(let i=node.children.length-1;i>=0;i--)stack.push(node.children[i]);}
+  // Aggregate counts/ranges once, without copying each descendant task into every ancestor.
+  const summaries=new Map();
+  for(let i=ordered.length-1;i>=0;i--){const node=ordered[i],id=String(node.wbs_id),direct=byWbs.get(id)||[];let {start,finish}=taskRange(direct),count=direct.length;
+    for(const child of node.children){const sum=summaries.get(String(child.wbs_id));count+=sum.count;start=minDate(start,sum.start);finish=maxDate(finish,sum.finish);}
+    summaries.set(id,{count,start,finish});
   }
-
-  const subtreeCache=new Map();
-  const descendantTasks=node=>{
-    const id=String(node.wbs_id);if(subtreeCache.has(id))return subtreeCache.get(id);
-    let rows=[...(byWbs.get(id)||[])];for(const child of node.children||[])rows=rows.concat(descendantTasks(child));subtreeCache.set(id,rows);return rows;
-  };
-  const out=[];
-  const walk=(node,depth)=>{
-    const id=String(node.wbs_id);if(!relevant.has(id))return;
-    const direct=byWbs.get(id)||[],subtree=descendantTasks(node),range=taskRange(subtree),expanded=wbsExpanded[id]!==false;
-    out.push({kind:'wbs',key:`wbs:${id}`,wbs:node,wbsId:id,depth,label:node.wbs_name||node.wbs_short_name||id,code:node.wbs_short_name||'',directCount:direct.length,count:subtree.length,expanded,hasChildren:(node.children||[]).some(c=>relevant.has(String(c.wbs_id))),...range});
-    if(!expanded)return;
+  const out=[],pending=roots.map(node=>({node,depth:0})).reverse();
+  while(pending.length){const {node,depth}=pending.pop(),id=String(node.wbs_id),summary=summaries.get(id);if(!summary.count)continue;
+    const direct=byWbs.get(id)||[],expanded=wbsExpanded[id]!==false;
+    out.push({kind:'wbs',key:`wbs:${id}`,wbs:node,wbsId:id,depth,label:node.wbs_name||node.wbs_short_name||id,code:node.wbs_short_name||'',directCount:direct.length,...summary,expanded,hasChildren:node.children.some(c=>summaries.get(String(c.wbs_id)).count>0)});
+    if(!expanded)continue;
     for(const t of direct)out.push({kind:'activity',key:`task:${t.task_id}`,task:t,depth:depth+1,wbsId:id});
-    for(const child of node.children||[])walk(child,depth+1);
-  };
-  for(const root of buildWBSTree(model,projId))walk(root,0);
+    for(let i=node.children.length-1;i>=0;i--)pending.push({node:node.children[i],depth:depth+1});
+  }
   if(unassigned.length){const rows=sortTasks(unassigned,sort),range=taskRange(rows);out.push({kind:'wbs',key:'wbs:__unassigned__',wbsId:'',depth:0,label:'Unassigned Activities',code:'',directCount:rows.length,count:rows.length,expanded:true,hasChildren:false,...range});for(const t of rows)out.push({kind:'activity',key:`task:${t.task_id}`,task:t,depth:1,wbsId:''});}
   return out;
 }

@@ -4,7 +4,7 @@ import { normalizeSchedulingOptions } from './scheduling-options.js';
 
 const HOUR=3600000;
 const pad=n=>String(n).padStart(2,'0');
-export function fmtP6(d){if(!(d instanceof Date)||Number.isNaN(d))return ''; return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`}
+export function fmtP6(d){if(!(d instanceof Date)||Number.isNaN(d.getTime()))return ''; return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`}
 function ymd(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
 function parseTime(s){const m=String(s||'').trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i); if(!m)return null; let h=+m[1],min=+m[2]; const ap=m[3]?.toUpperCase(); if(ap==='PM'&&h<12)h+=12;if(ap==='AM'&&h===12)h=0;return h*60+min;}
 
@@ -12,7 +12,7 @@ export function buildCalendar(model,id,options={}){
   const opt=normalizeSchedulingOptions(options),r=model.find('CALENDAR','clndr_id',String(id)); const defaultHours=num(r?.day_hr_cnt,8)||8; const parsed=parseCalendarData(r?.clndr_data||''); const dayMap=new Map();
   for(let dow=0;dow<7;dow++)dayMap.set(dow,[]);
   for(const d of parsed.days){const dow=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].indexOf(d.day); const periods=d.periods.map(p=>[parseTime(p.start),parseTime(p.finish)]).filter(x=>x[0]!=null&&x[1]!=null&&x[1]>=x[0]); dayMap.set(dow,periods)}
-  if(![...dayMap.values()].some(x=>x.length)){for(let d=1;d<=5;d++)dayMap.set(d,[[8*60,8*60+defaultHours*60]])}
+  if(![...dayMap.values()].some(x=>x.length)&&!String(r?.clndr_data||'').includes('DaysOfWeek')){for(let d=1;d<=5;d++)dayMap.set(d,[[8*60,8*60+defaultHours*60]])}
   const exceptionMap=new Map();
   if(opt.calendarExceptionMode!=='overrides')for(const [date,periods] of Object.entries(parsed.exceptionPeriods||{}))exceptionMap.set(date,periods.map(p=>[parseTime(p.start),parseTime(p.finish)]).filter(x=>x[0]!=null&&x[1]!=null));
   if(opt.calendarExceptionMode!=='xer')for(const [date,periods] of Object.entries(opt.exceptionOverrides?.[String(id)]||{}))exceptionMap.set(date,(periods||[]).map(x=>[Number(x[0]),Number(x[1])]));
@@ -20,17 +20,53 @@ export function buildCalendar(model,id,options={}){
 }
 function dateAtMinutes(d,min){const x=new Date(d);x.setHours(Math.floor(min/60),min%60,0,0);return x}
 function intervalsFor(cal,date){const base=new Date(date);base.setHours(0,0,0,0); const ex=cal.exceptionMap?.get(ymd(base));const periods=ex!==undefined?ex:(cal.dayMap.get(base.getDay())||[]);return periods.map(([a,b])=>[dateAtMinutes(base,a),dateAtMinutes(base,b)]);}
-export function nextWork(cal,date,forward=true){let d=new Date(date); for(let guard=0;guard<3700;guard++){const ints=intervalsFor(cal,d);if(forward){for(const [s,e] of ints){if(d<=s)return new Date(s); if(d>s&&d<e)return new Date(d)} d=new Date(d);d.setHours(24,0,0,0);}else {for(let i=ints.length-1;i>=0;i--){const [s,e]=ints[i];if(d>=e)return new Date(e);if(d>s&&d<e)return new Date(d)} const x=new Date(d);x.setHours(0,0,0,0);x.setTime(x.getTime()-1);d=x;}}return new Date(date);}
-export function addWorkHours(cal,start,hours){let remaining=Math.max(0,num(hours)); let d=nextWork(cal,start,true); if(remaining===0)return d; for(let guard=0;guard<100000&&remaining>1e-9;guard++){const ints=intervalsFor(cal,d); let moved=false;for(const [s,e] of ints){if(d>=e)continue; const cur=d<s?s:d; const avail=(e-cur)/HOUR; if(remaining<=avail+1e-9)return new Date(cur.getTime()+remaining*HOUR); remaining-=avail; d=new Date(e);moved=true;}if(remaining>1e-9){const x=new Date(d);x.setHours(24,0,0,0);d=nextWork(cal,x,true);moved=true} if(!moved)break;} return d;}
-export function subtractWorkHours(cal,finish,hours){const remaining=Math.max(0,num(hours));const d=nextWork(cal,finish,false);if(remaining===0)return d;return _subtract(cal,d,remaining);}
-function _subtract(cal,d,remaining){for(let guard=0;guard<100000&&remaining>1e-9;guard++){const ints=intervalsFor(cal,d);let moved=false;for(let i=ints.length-1;i>=0;i--){const [s,e]=ints[i];if(d<=s)continue;const cur=d>e?e:d;const avail=(cur-s)/HOUR;if(remaining<=avail+1e-9)return new Date(cur.getTime()-remaining*HOUR);remaining-=avail;d=new Date(s);moved=true;}if(remaining>1e-9){const x=new Date(d);x.setHours(0,0,0,0);x.setTime(x.getTime()-1);d=nextWork(cal,x,false);moved=true}if(!moved)break;}return d;}
-export function shiftWorkHours(cal,date,hours){const h=num(hours);return h<0?subtractWorkHours(cal,date,-h):addWorkHours(cal,date,h)}
+export function nextWork(cal,date,forward=true){
+  const requested=new Date(date);if(Number.isNaN(requested.getTime()))throw new Error('Invalid scheduling date.');
+  let day=new Date(requested);
+  for(let guard=0;guard<3700;guard++){
+    const intervals=intervalsFor(cal,day);
+    if(forward){for(const [start,end] of intervals){if(end<=start)continue;if(requested<=start)return new Date(start);if(requested<end)return new Date(requested);}}
+    else {for(let i=intervals.length-1;i>=0;i--){const [start,end]=intervals[i];if(end<=start)continue;if(requested>=end)return new Date(end);if(requested>start)return new Date(requested);}}
+    day.setHours(0,0,0,0);day.setDate(day.getDate()+(forward?1:-1));
+  }
+  throw new Error('No working time found within the calendar search horizon (3700 days). Check the calendar.');
+}
+export function addWorkHours(cal,start,hours){
+  let remaining=Math.max(0,num(hours)),d=nextWork(cal,start,true);
+  if(remaining===0)return d;
+  for(let guard=0;guard<100000;guard++){
+    for(const [s,e] of intervalsFor(cal,d)){
+      if(d>=e)continue;const cur=d<s?s:d,available=(e-cur)/HOUR;if(available<=0)continue;
+      if(remaining<=available+1e-9)return new Date(cur.getTime()+remaining*HOUR);
+      remaining-=available;d=new Date(e);
+    }
+    // A 24:00 endpoint already belongs to the next day: do not skip that day.
+    d=nextWork(cal,d,true);
+  }
+  throw new Error('Duration exceeds the calendar calculation horizon.');
+}
+export function subtractWorkHours(cal,finish,hours){
+  let remaining=Math.max(0,num(hours)),d=nextWork(cal,finish,false);
+  if(remaining===0)return d;
+  for(let guard=0;guard<100000;guard++){
+    // At midnight, consume the preceding day's interval without losing 1 ms.
+    const probe=new Date(d);if(d.getHours()===0&&d.getMinutes()===0&&d.getSeconds()===0&&d.getMilliseconds()===0)probe.setTime(d.getTime()-1);
+    const intervals=intervalsFor(cal,probe);
+    for(let i=intervals.length-1;i>=0;i--){const [s,e]=intervals[i];if(d<=s)continue;const cur=d>e?e:d,available=(cur-s)/HOUR;if(available<=0)continue;
+      if(remaining<=available+1e-9)return new Date(cur.getTime()-remaining*HOUR);
+      remaining-=available;d=new Date(s);
+    }
+    d=nextWork(cal,d,false);
+  }
+  throw new Error('Duration exceeds the calendar calculation horizon.');
+}
+export function shiftWorkHours(cal,date,hours){const h=num(hours);if(h===0)return new Date(date);return h<0?subtractWorkHours(cal,date,-h):addWorkHours(cal,date,h)}
 export function workHoursBetween(cal,start,finish){if(!start||!finish)return 0;if(finish<start)return -workHoursBetween(cal,finish,start);let d=new Date(start),sum=0;for(let guard=0;guard<3700&&d<finish;guard++){for(const [s,e] of intervalsFor(cal,d)){const a=new Date(Math.max(start.getTime(),s.getTime())),b=new Date(Math.min(finish.getTime(),e.getTime()));if(b>a)sum+=(b-a)/HOUR}const x=new Date(d);x.setHours(24,0,0,0);d=x;}return sum}
 
 function relType(r){return String(r.pred_type||'PR_FS').replace(/^PR_/,'').toUpperCase()}
 function isComplete(t){return /COMPLETE/i.test(t.status_code||'')}
 function isStarted(t){return isComplete(t)||(/ACTIVE|START/i.test(t.status_code||'')&&!!t.act_start_date)}
-function duration(t){if(isComplete(t))return 0; const rem=num(t.remain_drtn_hr_cnt,NaN); return Number.isFinite(rem)?Math.max(0,rem):Math.max(0,num(t.target_drtn_hr_cnt||t.orig_drtn_hr_cnt));}
+function duration(t){if(isComplete(t))return 0; const rem=t.remain_drtn_hr_cnt==null||t.remain_drtn_hr_cnt===''?NaN:num(t.remain_drtn_hr_cnt,NaN); return Number.isFinite(rem)?Math.max(0,rem):Math.max(0,num(t.target_drtn_hr_cnt||t.orig_drtn_hr_cnt));}
 function expectedFinish(t){return p6Date(t.expect_end_date||t.expected_end_date||t.expected_finish_date||t.expect_finish_date)}
 function suspendDate(t){return p6Date(t.suspend_date||t.act_suspend_date)}
 function resumeDate(t){return p6Date(t.resume_date||t.restart_date||t.act_resume_date)}
@@ -53,10 +89,10 @@ function calculateNetwork(model,projId,inputOptions={}){
   const startOverrides=options.levelingStartOverrides||{};
   for(const id of order){const t=byId.get(id),cal=calFor(t);let dur=duration(t);const specs=constraintSpecs(t);let es;if(isComplete(t))es=p6Date(t.act_start_date)||p6Date(t.early_start_date)||nextWork(cal,dd,true);else if(isStarted(t)){let restart=resumeDate(t);const susp=suspendDate(t);if(options.suspendResumeMode!=='ignore'&&susp){if(!restart&&options.suspendResumeMode==='strict')throw new Error(`Activity ${t.task_code||id} is suspended but has no resume date.`);if(restart&&restart>dd)es=nextWork(cal,restart,true);else es=nextWork(cal,dd,true)}else es=nextWork(cal,restart&&restart>dd?restart:dd,true)}else es=nextWork(cal,dd,true);
     const ov=p6Date(startOverrides[id]);if(ov)es=maxDate(es,nextWork(cal,ov,true));
-    const bypassIncoming=options.outOfSequenceMode==='progressOverride'&&isStarted(t);
+    const bypassIncoming=isComplete(t)||(options.outOfSequenceMode==='progressOverride'&&isStarted(t));
     if(!bypassIncoming){for(const r of incoming.get(id)){const p=byId.get(r.pred_task_id),pe=early.get(p.task_id);if(!pe)continue;const lag=num(r.lag_hr_cnt),type=relType(r),lagCal=lagCalendar(options,p,t,calFor,projectDefaultCal);es=maxDate(es,relationCandidate(type,pe,lag,lagCal,cal,dur));}for(const r of externalIncoming.get(id)){const ep=externalEndpoint(model,r,options,dd);if(!ep){warnings.push(`External relationship ${r.pred_task_id} → ${id} was not used.`);continue}const p=model.find('TASK','task_id',r.pred_task_id),lagCal=lagCalendar(options,p,t,calFor,projectDefaultCal);es=maxDate(es,relationCandidate(relType(r),ep,num(r.lag_hr_cnt),lagCal,cal,dur));}}
     for(const c of specs){if(c.kind==='lowerStart')es=maxDate(es,nextWork(cal,c.date,true));if(c.kind==='lowerFinish')es=maxDate(es,subtractWorkHours(cal,nextWork(cal,c.date,true),dur))}const exactStart=specs.find(c=>c.kind==='exactStart'),exactFinish=specs.find(c=>c.kind==='exactFinish');if(exactStart)es=nextWork(cal,exactStart.date,true);
-    let ef;if(isComplete(t))ef=p6Date(t.act_end_date)||p6Date(t.early_end_date)||es;else ef=addWorkHours(cal,es,dur);
+    let ef;if(isComplete(t))ef=p6Date(t.act_end_date)||p6Date(t.early_end_date)||es;else {if(dur>0)es=nextWork(cal,es,true);ef=dur===0?new Date(es):addWorkHours(cal,es,dur);}
     const exp=expectedFinish(t);if(exp&&!isComplete(t)&&options.expectedFinishMode!=='ignore'){if(options.expectedFinishMode==='respect'){ef=nextWork(cal,exp,false);dur=Math.max(0,workHoursBetween(cal,es,ef))}else if(options.expectedFinishMode==='constrain'&&exp>ef)ef=nextWork(cal,exp,false)}if(exactFinish&&!isComplete(t)){ef=nextWork(cal,exactFinish.date,false);es=subtractWorkHours(cal,ef,dur)}
     const relStart=isStarted(t)?(p6Date(t.act_start_date)||es):es;let relFinish=isComplete(t)?(p6Date(t.act_end_date)||ef):ef;if(options.outOfSequenceMode==='actualDates'&&p6Date(t.act_end_date))relFinish=p6Date(t.act_end_date);early.set(id,{es,ef,dur,relStart,relFinish,expectedFinish:exp});
   }

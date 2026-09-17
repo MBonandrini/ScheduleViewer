@@ -82,7 +82,9 @@ function sameOrAfter(a,b){const da=p6Date(a),db=p6Date(b);return !!(da&&db&&da>=
 export function prepareP6ActivityPatch(model,projId,taskId,patch={},options={}){
   const task=model?.find?.('TASK','task_id',String(taskId));
   if(!task)throw new Error('Activity not found.');
-  const changed=new Set(Object.keys(patch));
+  if(String(task.proj_id)!==String(projId))throw new Error('Activity must belong to the selected project.');
+  if('task_code' in patch)patch={...patch,task_code:validateUniqueActivityCode(model,projId,taskId,patch.task_code)};
+  const changed=new Set(Object.keys(patch).filter(key=>String(patch[key]??'')!==String(task[key]??'')));
   const candidate={...task,...patch};
   const warnings=[];
 
@@ -131,11 +133,11 @@ export function prepareP6ActivityPatch(model,projId,taskId,patch={},options={}){
     if(!milestone&&pct>=100&&!actFinish)throw new Error('100% complete requires an Actual Finish. Enter the Actual Finish first.');
   }
 
-  if(pctType.includes('DRTN')&&!milestone){
+  if((pctType.includes('DRTN')||pctType.includes('DURATION'))&&!milestone){
     if(changed.has('phys_complete_pct')){
       remaining=planned<=0?0:Math.max(0,planned*(1-pct/100));
       candidate.remain_drtn_hr_cnt=String(Math.round(remaining*1000)/1000);
-    }else if(changed.has('remain_drtn_hr_cnt')){
+    }else if((changed.has('remain_drtn_hr_cnt')||changed.has('target_drtn_hr_cnt'))&&!isNotStartedActivity(candidate)){
       remaining=Math.max(0,num(candidate.remain_drtn_hr_cnt,0));
       pct=planned<=0?(isCompletedActivity(candidate)?100:0):clampPct((planned-remaining)/planned*100);
       candidate.phys_complete_pct=String(Math.round(pct*100)/100);

@@ -21,10 +21,10 @@ export function ensureTable(model,name,fields){
 }
 function nextNumericId(rows,field,start=1){let max=start-1; for(const r of rows){const n=Number(r[field]); if(Number.isFinite(n))max=Math.max(max,n)} return String(max+1)}
 
-export function updateTask(model,taskId,patch){const r=model.find('TASK','task_id',String(taskId)); if(!r)throw new Error('Activity not found'); Object.assign(r,patch); touch(model); return r;}
+export function updateTask(model,taskId,patch){const r=model.find('TASK','task_id',String(taskId)); if(!r)throw new Error('Activity not found'); ensureTable(model,'TASK',Object.keys(patch)); Object.assign(r,patch); touch(model); return r;}
 export function addTask(model,projId,defaults={}){
   const fields=['task_id','proj_id','wbs_id','clndr_id','task_code','task_name','status_code','task_type','target_drtn_hr_cnt','remain_drtn_hr_cnt','target_start_date','target_end_date','early_start_date','early_end_date','late_start_date','late_end_date','total_float_hr_cnt','free_float_hr_cnt','complete_pct_type','phys_complete_pct','cstr_type','cstr_date','cstr_type2','cstr_date2'];
-  const t=ensureTable(model,'TASK',fields); const task_id=nextNumericId(t.rows,'task_id',1); const row=Object.fromEntries(t.fields.map(f=>[f,'']));
+  const t=ensureTable(model,'TASK',[...fields,...Object.keys(defaults)]); const task_id=nextNumericId(t.rows,'task_id',1); const row=Object.fromEntries(t.fields.map(f=>[f,'']));
   Object.assign(row,{task_id,proj_id:String(projId),status_code:'TK_NotStart',task_type:'TT_Task',target_drtn_hr_cnt:'8',remain_drtn_hr_cnt:'8',complete_pct_type:'CP_Phys',phys_complete_pct:'0'},defaults); t.rows.push(row); touch(model); return row;
 }
 
@@ -70,8 +70,8 @@ function nextSiblingSeq(model,projId,parentWbsId=''){
 export function wbsDescendantIds(model,wbsId){
   const root=String(wbsId), rows=model.table('PROJWBS')||[], children=new Map();
   for(const r of rows){const p=String(r.parent_wbs_id||'');if(!children.has(p))children.set(p,[]);children.get(p).push(String(r.wbs_id));}
-  const out=[],stack=[...(children.get(root)||[])];
-  while(stack.length){const id=stack.pop();if(out.includes(id))continue;out.push(id);for(const c of children.get(id)||[])stack.push(c)}
+  const out=[],seen=new Set([root]),stack=[...(children.get(root)||[])];
+  while(stack.length){const id=stack.pop();if(seen.has(id))continue;seen.add(id);out.push(id);for(const c of children.get(id)||[])stack.push(c)}
   return out;
 }
 export function addWBS(model,projId,parentWbsId='',defaults={}){
@@ -92,13 +92,15 @@ export function updateWBS(model,wbsId,patch={}){
     patch={...patch,parent_wbs_id:parent};
     if(!('seq_num' in patch))patch.seq_num=nextSiblingSeq(model,w.proj_id,parent);
   }
-  Object.assign(w,patch); touch(model); return w;
+  ensureTable(model,'PROJWBS',Object.keys(patch)); Object.assign(w,patch); touch(model); return w;
 }
 export function moveWBS(model,wbsId,newParentWbsId=''){return updateWBS(model,wbsId,{parent_wbs_id:String(newParentWbsId||'')});}
 export function reassignTasksToWBS(model,taskIds,wbsId){
   const w=model.find('PROJWBS','wbs_id',String(wbsId)); if(!w)throw new Error('Destination WBS not found.');
-  let count=0; for(const id of taskIds){const t=model.find('TASK','task_id',String(id));if(!t)continue;if(String(t.proj_id)!==String(w.proj_id))throw new Error('Activity and destination WBS must belong to the same project.');t.wbs_id=String(wbsId);count++;}
-  touch(model); return count;
+  const tasks=taskIds.map(id=>model.find('TASK','task_id',String(id))).filter(Boolean);
+  if(tasks.some(t=>String(t.proj_id)!==String(w.proj_id)))throw new Error('Activity and destination WBS must belong to the same project.');
+  for(const t of tasks)t.wbs_id=String(wbsId);
+  touch(model); return tasks.length;
 }
 export function deleteWBS(model,wbsId,{mode='deleteSubtree',targetWbsId=null}={}){
   const id=String(wbsId), w=model.find('PROJWBS','wbs_id',id); if(!w)throw new Error('WBS element not found.');
@@ -155,7 +157,7 @@ export function updateRelationship(model,id,patch={}){
   const table=model.tables.get('TASKPRED');
   const duplicate=table?.rows?.some(x=>String(x.task_pred_id)!==String(id)&&String(x.proj_id)===String(candidate.proj_id)&&String(x.task_id)===String(candidate.task_id)&&String(x.pred_task_id)===String(candidate.pred_task_id)&&String(x.pred_type)===String(candidate.pred_type));
   if(duplicate)throw new Error('Relationship already exists.');
-  Object.assign(r,candidate,{lag_hr_cnt:String(candidate.lag_hr_cnt)}); touch(model); return r;
+  ensureTable(model,'TASKPRED',Object.keys(candidate));Object.assign(r,candidate,{lag_hr_cnt:String(candidate.lag_hr_cnt)}); touch(model); return r;
 }
 export function deleteRelationship(model,id){const t=model.tables.get('TASKPRED'); if(t)t.rows=t.rows.filter(r=>r.task_pred_id!==String(id)); touch(model);}
 
@@ -163,11 +165,11 @@ export function addResourceAssignment(model,taskId,rsrcId,values={}){
   const t=ensureTable(model,'TASKRSRC',['taskrsrc_id','task_id','rsrc_id','role_id','curv_id','target_qty','act_reg_qty','remain_qty','target_qty_per_hr','target_cost','act_reg_cost','remain_cost']);
   const row={taskrsrc_id:nextNumericId(t.rows,'taskrsrc_id',1),task_id:String(taskId),rsrc_id:String(rsrcId),role_id:'',target_qty:'0',act_reg_qty:'0',remain_qty:'0',target_cost:'0',act_reg_cost:'0',remain_cost:'0',...values}; t.rows.push(row); touch(model); return row;
 }
-export function updateResourceAssignment(model,id,patch){const r=model.find('TASKRSRC','taskrsrc_id',String(id)); if(!r)throw new Error('Resource assignment not found'); Object.assign(r,patch); touch(model); return r;}
+export function updateResourceAssignment(model,id,patch){const r=model.find('TASKRSRC','taskrsrc_id',String(id)); if(!r)throw new Error('Resource assignment not found'); ensureTable(model,'TASKRSRC',Object.keys(patch));Object.assign(r,patch); touch(model); return r;}
 export function deleteResourceAssignment(model,id){const t=model.tables.get('TASKRSRC'); if(t)t.rows=t.rows.filter(r=>r.taskrsrc_id!==String(id)); touch(model);}
 
-export function setProjectDataDate(model,projId,dateText){const p=model.find('PROJECT','proj_id',String(projId)); if(!p)throw new Error('Project not found'); if('last_recalc_date' in p)p.last_recalc_date=dateText; else p.data_date=dateText; touch(model);}
+export function setProjectDataDate(model,projId,dateText){const p=model.find('PROJECT','proj_id',String(projId)); if(!p)throw new Error('Project not found'); const field='last_recalc_date' in p?'last_recalc_date':'data_date';ensureTable(model,'PROJECT',[field]);p[field]=dateText; touch(model);}
 
 export function updateRow(model,tableName,rowIndex,field,value){const t=model.tables.get(tableName);if(!t||!t.rows[rowIndex])throw new Error('Row not found');if(!t.fields.includes(field))t.fields.push(field);t.rows[rowIndex][field]=value;touch(model);return t.rows[rowIndex];}
-export function addRow(model,tableName,values={}){const t=model.tables.get(tableName);if(!t)throw new Error('Table not found');const row=Object.fromEntries(t.fields.map(f=>[f,'']));Object.assign(row,values);t.rows.push(row);touch(model);return row;}
+export function addRow(model,tableName,values={}){const t=model.tables.get(tableName);if(!t)throw new Error('Table not found');ensureTable(model,tableName,Object.keys(values));const row=Object.fromEntries(t.fields.map(f=>[f,'']));Object.assign(row,values);t.rows.push(row);touch(model);return row;}
 export function deleteRow(model,tableName,rowIndex){const t=model.tables.get(tableName);if(!t||!t.rows[rowIndex])throw new Error('Row not found');const [row]=t.rows.splice(rowIndex,1);touch(model);return row;}

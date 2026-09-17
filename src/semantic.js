@@ -70,14 +70,22 @@ export function buildWBSTree(model, projId) {
   // P6 exports IDs as text, but imported/edited models can contain numeric values.
   // Normalize every key so parent-child hierarchy never degrades into false roots.
   const nodes = new Map(rows.map(r => [String(r.wbs_id??''), {...r, children:[]} ]));
-  const roots=[];
-  for (const n of nodes.values()) {
-    const id=String(n.wbs_id??''), parentId=String(n.parent_wbs_id??'');
-    const p = parentId ? nodes.get(parentId) : null;
-    if (p && String(p.wbs_id??'') !== id) p.children.push(n); else roots.push(n);
+  // Break corrupt parent cycles in the display tree only; retain raw data for diagnostics/export.
+  const parents=new Map([...nodes].map(([id,n])=>[id,String(n.parent_wbs_id??'')]));
+  const done=new Set();
+  for(const id of nodes.keys()){
+    const path=[],seen=new Set();let cur=id;
+    while(nodes.has(cur)&&!done.has(cur)){
+      if(seen.has(cur)){parents.set(cur,'');break;}
+      seen.add(cur);path.push(cur);cur=parents.get(cur);
+    }
+    for(const x of path)done.add(x);
   }
-  const sort = a => { a.children.sort((x,y)=>num(x.seq_num)-num(y.seq_num)||String(x.wbs_short_name||x.wbs_name||'').localeCompare(String(y.wbs_short_name||y.wbs_name||''),undefined,{numeric:true,sensitivity:'base'})); a.children.forEach(sort); };
-  roots.sort((x,y)=>num(x.seq_num)-num(y.seq_num)||String(x.wbs_short_name||x.wbs_name||'').localeCompare(String(y.wbs_short_name||y.wbs_name||''),undefined,{numeric:true,sensitivity:'base'})).forEach(sort);
+  const roots=[];
+  for(const [id,n] of nodes){const parent=nodes.get(parents.get(id));if(parent)parent.children.push(n);else roots.push(n);}
+  const compare=(x,y)=>num(x.seq_num)-num(y.seq_num)||String(x.wbs_short_name||x.wbs_name||'').localeCompare(String(y.wbs_short_name||y.wbs_name||''),undefined,{numeric:true,sensitivity:'base'});
+  roots.sort(compare);
+  for(const n of nodes.values())n.children.sort(compare);
   return roots;
 }
 

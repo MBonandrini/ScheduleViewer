@@ -1,0 +1,33 @@
+✔ physical percent-only edit never changes durations or dates (2.690051ms)
+✔ duration percent edit adjusts remaining duration without changing original (0.381099ms)
+✔ original duration edit keeps active remaining duration (0.992448ms)
+✔ not-started remaining-duration edit keeps original and remaining consistent (0.292607ms)
+✔ duration edit then F9 moves downstream activity and survives save/reopen (11.478968ms)
+✔ explicit start constraint survives F9, occupied slots are protected (1.186439ms)
+✔ invalid planning and duration input is rejected rather than silently clamped (0.323473ms)
+✔ duplicate activity code is rejected by central edit validation (0.225535ms)
+✔ failed recalculation does not pop prior undo edit or mutate inputs (0.493325ms)
+✔ calculation state is tracked separately for multiple projects (0.387121ms)
+✔ Save As xer normalises extension (0.271179ms)
+✔ Save As mspxml normalises extension (0.066174ms)
+✔ Save As package normalises extension (0.067557ms)
+✔ reject unsafe filename  (0.136842ms)
+✔ reject unsafe filename ../schedule (0.072234ms)
+✔ reject unsafe filename C:\schedule (0.04874ms)
+✔ reject unsafe filename CON (0.045182ms)
+✔ reject unsafe filename .. (0.099917ms)
+✔ Save As confirms success only after writer closes (0.843598ms)
+✔ cancelled Save As does not download or write (0.170785ms)
+✔ failed write aborts and never reports saved (0.242569ms)
+✔ download fallback is explicitly distinguished from confirmed save (0.096757ms)
+✔ wrong extension from file picker is rejected before writing (0.217833ms)
+✔ full status form does not let unchanged percent overwrite new remaining duration (0.181392ms)
+✔ XER export does not issue unrelated MSP conversion warnings (0.201867ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.036951

@@ -1,0 +1,23 @@
+{
+  "node": "v24.19.0",
+  "platform": "linux",
+  "repetitions": 3,
+  "statistic": "median after one warm-up",
+  "risk": {
+    "activities": 180,
+    "relationships": 179,
+    "iterations": 5000,
+    "beforeMs": 1706.3632639999996,
+    "afterMs": 50.6257599999999,
+    "speedup": 33.70543501964223,
+    "p80Unchanged": true
+  },
+  "wbs": {
+    "activities": 10000,
+    "levels": 100,
+    "beforeMs": 808.3283039999988,
+    "afterMs": 29.634134999998423,
+    "speedup": 27.276932631913898,
+    "rowsUnchanged": true
+  }
+}

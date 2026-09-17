@@ -41,6 +41,7 @@ export function calendarHours(periods=[]){return periods.reduce((sum,p)=>{const 
 
 export function updateCalendarDefinition(model,calendarId,{name,type,week,exceptions}={}){
   const c=model.find('CALENDAR','clndr_id',String(calendarId));if(!c)throw new Error('Calendar not found.');
+  ensureTable(model,'CALENDAR',['clndr_name','clndr_type','clndr_data','week_hr_cnt','day_hr_cnt']);
   if(name!=null)c.clndr_name=name;if(type!=null)c.clndr_type=type;
   if(week||exceptions){const current=calendarDefinition(model,calendarId),w=week||current.week,e=exceptions||current.exceptions;c.clndr_data=encodeCalendarData({week:w,exceptions:e});const weekly=DAY_NAMES.reduce((s,d)=>s+calendarHours(w[d]||[]),0);c.week_hr_cnt=String(weekly);const working=DAY_NAMES.map(d=>calendarHours(w[d]||[])).filter(h=>h>0);c.day_hr_cnt=String(working.length?Math.max(...working):0);}
   touch(model);return c;

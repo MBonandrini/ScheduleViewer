@@ -5,6 +5,7 @@
 export const P6_COMMANDS = [
   {id:'open',label:'Open Schedule…',group:'File',shortcut:'Ctrl+O'},
   {id:'save',label:'Save Schedule',group:'File',shortcut:'Ctrl+S',requiresModel:true},
+  {id:'saveAs',label:'Save As…',group:'File',shortcut:'Ctrl+Shift+S',requiresModel:true},
   {id:'saveXer',label:'Save as XER',group:'File',requiresModel:true},
   {id:'saveMsp',label:'Save as MSP XML',group:'File',requiresModel:true},
   {id:'openPackage',label:'Open Project Package…',group:'File'},

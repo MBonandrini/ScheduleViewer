@@ -1,12 +1,13 @@
 import { p6Date, num } from './parser.js';
 import { fmtP6, buildCalendar, workHoursBetween, addWorkHours } from './cpm.js';
+import { updateTask } from './editor.js';
 import { getDataDate } from './semantic.js';
 
 function pad(n){return String(n).padStart(2,'0');}
 export function datetimeLocalValue(value){const d=p6Date(value);if(!d)return '';return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;}
-export function p6FromDateInput(value){if(!value)return '';const d=new Date(value);if(Number.isNaN(d.getTime()))return '';return fmtP6(d);}
+export function p6FromDateInput(value){if(!value)return '';const d=p6Date(value);if(!d)return '';return fmtP6(d);}
 
-export function editableActivityDates(task){return {start:task?.target_start_date||task?.early_start_date||task?.act_start_date||'',finish:task?.target_end_date||task?.early_end_date||task?.act_end_date||''};}
+export function editableActivityDates(task){return {start:task?.act_start_date||task?.early_start_date||task?.target_start_date||'',finish:task?.act_end_date||task?.reend_date||task?.early_end_date||task?.target_end_date||''};}
 
 /** Build a Start/Finish/% planning patch without mutating the schedule.
  * This lets the P6-style validation layer inspect the complete proposed change
@@ -15,17 +16,19 @@ export function buildActivityPlanningPatch(model,projId,taskId,{start,finish,per
   const task=model.find('TASK','task_id',String(taskId));if(!task)throw new Error('Activity not found.');
   const current=editableActivityDates(task),startDate=p6Date(start??current.start),finishDate=p6Date(finish??current.finish);
   if(startDate&&finishDate&&finishDate<startDate)throw new Error('Finish must be on or after Start.');
+  for(const [key,value] of Object.entries({start,finish})){if(value!==undefined&&value!==''&&!p6Date(value))throw new Error(`${key} is not a valid date/time.`);}
+  if(percent!==undefined&&(!Number.isFinite(Number(percent))||Number(percent)<0||Number(percent)>100))throw new Error('Percent must be between 0 and 100.');
   const patch={};
   if(start!==undefined)patch.target_start_date=startDate?fmtP6(startDate):'';
   if(finish!==undefined)patch.target_end_date=finishDate?fmtP6(finishDate):'';
   let pct=percent===undefined?num(task.phys_complete_pct,0):Math.max(0,Math.min(100,num(percent,0)));
   if(percent!==undefined)patch.phys_complete_pct=String(Math.round(pct*100)/100);
-  if(startDate&&finishDate){
+  if((start!==undefined||finish!==undefined)&&startDate&&finishDate){
     const cal=buildCalendar(model,task.clndr_id,options),duration=Math.max(0,workHoursBetween(cal,startDate,finishDate));
     patch.target_drtn_hr_cnt=String(Math.round(duration*1000)/1000);
     const status=String(task.status_code||'').toUpperCase(),pctType=String(task.complete_pct_type||'').toUpperCase();
     if(/COMPLETE/.test(status))patch.remain_drtn_hr_cnt='0';
-    else if(/ACTIVE|START/.test(status)){
+    else if(/ACTIVE|PROGRESS|STARTED/.test(status)){
       const dd=p6Date(options.dataDate||getDataDate(model,projId)),remainingStart=dd&&dd>startDate?dd:startDate;
       patch.remain_drtn_hr_cnt=String(Math.max(0,Math.round(workHoursBetween(cal,remainingStart,finishDate)*1000)/1000));
     }else patch.remain_drtn_hr_cnt=String(Math.round(duration*1000)/1000);
@@ -44,20 +47,18 @@ export function buildActivityDurationPatch(model,projId,taskId,durationHours,opt
   const task=model.find('TASK','task_id',String(taskId));if(!task)throw new Error('Activity not found.');
   const milestone=/MILE/i.test(String(task.task_type||'')),summary=/TT_WBS|WBS.?SUMMARY/i.test(String(task.task_type||''));
   if(summary)throw new Error('WBS Summary duration is calculated and cannot be edited directly.');
-  let duration=Math.max(0,num(durationHours,0));
+  if(durationHours===''||!Number.isFinite(Number(durationHours))||Number(durationHours)<0)throw new Error('Duration must be a finite, non-negative number of hours.');
+  let duration=Number(durationHours);
   if(milestone)duration=0;
   const current=editableActivityDates(task),startDate=p6Date(current.start),cal=buildCalendar(model,task.clndr_id,options),patch={target_drtn_hr_cnt:String(Math.round(duration*1000)/1000)};
-  if(startDate){
-    const finishDate=addWorkHours(cal,startDate,duration);
+  if(startDate&&!/ACTIVE|COMPLETE/i.test(task.status_code||'')){
+    const finishDate=duration===0?startDate:addWorkHours(cal,startDate,duration);
     patch.target_end_date=fmtP6(finishDate);
   }
   const status=String(task.status_code||'').toUpperCase();
   if(/COMPLETE/.test(status))patch.remain_drtn_hr_cnt='0';
-  else if(!/ACTIVE|START/.test(status))patch.remain_drtn_hr_cnt=patch.target_drtn_hr_cnt;
-  else{
-    const pct=Math.max(0,Math.min(100,num(task.phys_complete_pct,0))),pctType=String(task.complete_pct_type||'').toUpperCase();
-    if(/DRTN|DURATION/.test(pctType))patch.remain_drtn_hr_cnt=String(Math.max(0,Math.round(duration*(1-pct/100)*1000)/1000));
-  }
+  else if(!/ACTIVE|PROGRESS|STARTED/.test(status))patch.remain_drtn_hr_cnt=patch.target_drtn_hr_cnt;
+
   return {task,patch,requiresSchedule:true};
 }
 
@@ -65,10 +66,23 @@ export function buildActivityDurationPatch(model,projId,taskId,durationHours,opt
  * F9 remains authoritative for calculated early/late dates. */
 export function applyActivityPlanningEdit(model,projId,taskId,values={},options={}){
   const result=buildActivityPlanningPatch(model,projId,taskId,values,options);
-  Object.assign(result.task,result.patch);model.indexes=new Map();return result;
+  updateTask(model,taskId,result.patch);return result;
 }
 
 export const constraintOptions=[
   ['', 'None'],['CS_MSO','Mandatory Start'],['CS_MEO','Mandatory Finish'],['CS_SNET','Start On or After'],['CS_SNLT','Start On or Before'],['CS_FNET','Finish On or After'],['CS_FNLT','Finish On or Before']
 ];
 export function constraintLabel(value){const row=constraintOptions.find(([v])=>String(v)===String(value));return row?.[1]||String(value||'None');}
+
+/** Explicit date constraints survive F9; never silently overwrite an existing constraint. */
+export function buildActivityConstraintPatch(model,taskId,field,value,{slot='primary'}={}){
+  const task=model.find('TASK','task_id',String(taskId));if(!task)throw new Error('Activity not found.');
+  if(!['start','finish'].includes(field))throw new Error('Choose Start or Finish.');
+  if(!['primary','secondary'].includes(slot))throw new Error('Choose a constraint slot.');
+  if(/TT_WBS|TT_LOE/.test(task.task_type||''))throw new Error('Summary and level-of-effort dates are calculated.');
+  if(/COMPLETE/.test(task.status_code||'')||(field==='start'&&task.act_start_date))throw new Error('Edit recorded actual dates in the Status detail.');
+  const date=p6Date(value);if(!date)throw new Error('Enter a valid date and time.');
+  const typeKey=slot==='secondary'?'cstr_type2':'cstr_type',dateKey=slot==='secondary'?'cstr_date2':'cstr_date';
+  if(task[typeKey]&&!/^(CS_NONE|NONE)$/.test(task[typeKey]))throw new Error('That constraint slot is already occupied. Edit or clear it in Status first.');
+  return {[typeKey]:field==='start'?'CS_SNET':'CS_FNLT',[dateKey]:fmtP6(date)};
+}
