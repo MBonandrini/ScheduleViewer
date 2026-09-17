@@ -1,5 +1,8 @@
-const CACHE='unified-schedule-studio-v6.3.8';
-const ASSETS=['./','./index.html','./styles.css','./manifest.webmanifest','./src/activity-editing.js','./src/activity-layout.js','./src/ai-context.js','./src/analysis-graphics.js','./src/analysis.js','./src/app.js','./src/audit-log.js','./src/baselines.js','./src/bim-advanced.js','./src/bim-links.js','./src/bim-viewer.js','./src/calc-audit.js','./src/calendar-editor.js','./src/calendar-tools.js','./src/canonical-schema.js','./src/codes-editor.js','./src/compare.js','./src/cpm.js','./src/critical-intelligence.js','./src/date-local.js','./src/date-move.js','./src/determinism.js','./src/diagnostics.js','./src/editor.js','./src/error-reporting.js','./src/evm.js','./src/export.js','./src/filters.js','./src/float-paths.js','./src/forensic-comparison.js','./src/forensic-reporting.js','./src/forensic-repository.js','./src/format-adapters.js','./src/gantt.js','./src/global-search.js','./src/import-diagnostics.js','./src/integrity.js','./src/layouts.js','./src/logger.js','./src/menu-controller.js','./src/p6-activity-validation.js','./src/p6-commands.js','./src/package-integrity.js','./src/parser.js','./src/productivity.js','./src/progress.js','./src/project-folder.js','./src/project-package.js','./src/relationship-tools.js','./src/resource-analysis.js','./src/resource-charts.js','./src/resource-intelligence.js','./src/resource-tools.js','./src/revision-history.js','./src/scenarios.js','./src/schedule-health.js','./src/scheduling-options.js','./src/semantic.js','./src/serializer.js','./src/transaction.js','./src/trend-forecast.js','./src/tutorial.js','./src/ui-labels.js','./src/wbs-tools.js','./src/workspace.js'];
+const CACHE_PREFIX=`schedule-studio-professional:${self.registration.scope}:`;
+const CACHE=CACHE_PREFIX+'v7.0.1';
+const ASSETS=['./', './index.html', './styles.css', './manifest.webmanifest', './src/activity-editing.js', './src/activity-layout.js', './src/ai-context.js', './src/analysis-graphics.js', './src/analysis.js', './src/app.js', './src/save-service.js', './src/schedule-controller.js', './src/risk-client.js', './src/risk-worker.js', './src/audit-log.js', './src/baselines.js', './src/bim-advanced.js', './src/bim-links.js', './src/bim-viewer.js', './src/calc-audit.js', './src/calendar-editor.js', './src/calendar-tools.js', './src/canonical-schema.js', './src/codes-editor.js', './src/compare.js', './src/cpm.js', './src/critical-intelligence.js', './src/date-local.js', './src/date-move.js', './src/determinism.js', './src/diagnostics.js', './src/editor.js', './src/error-reporting.js', './src/evm.js', './src/export.js', './src/filters.js', './src/float-paths.js', './src/forensic-comparison.js', './src/forensic-reporting.js', './src/forensic-repository.js', './src/format-adapters.js', './src/gantt.js', './src/global-search.js', './src/import-diagnostics.js', './src/integrity.js', './src/layouts.js', './src/logger.js', './src/menu-controller.js', './src/p6-activity-validation.js', './src/p6-commands.js', './src/package-integrity.js', './src/parser.js', './src/productivity.js', './src/progress.js', './src/project-folder.js', './src/project-package.js', './src/relationship-tools.js', './src/resource-analysis.js', './src/resource-charts.js', './src/resource-intelligence.js', './src/resource-tools.js', './src/revision-history.js', './src/scenarios.js', './src/schedule-health.js', './src/scheduling-options.js', './src/semantic.js', './src/serializer.js', './src/transaction.js', './src/trend-forecast.js', './src/tutorial.js', './src/ui-labels.js', './src/v7-command-registry.js', './src/v7-network-intelligence.js', './src/v7-progress-intelligence.js', './src/v7-revision-intelligence.js', './src/v7-risk-engine.js', './src/v7-schedule-assurance.js', './src/wbs-tools.js', './src/workspace.js',
+  './sample/sample-project.xer'
+];
 
 self.addEventListener('install',event=>{
   self.skipWaiting();
@@ -8,7 +11,7 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
     const keys=await caches.keys();
-    await Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)));
+    await Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE).map(key=>caches.delete(key)));
     await self.clients.claim();
   })());
 });
@@ -18,11 +21,13 @@ self.addEventListener('activate',event=>{
 // command handlers or Gantt code active after a new release is deployed.
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET')return;
+  const url=new URL(event.request.url),scope=new URL(self.registration.scope);
+  if(url.origin!==scope.origin||!url.pathname.startsWith(scope.pathname))return;
   event.respondWith((async()=>{
     const cache=await caches.open(CACHE);
     try{
       const response=await fetch(event.request,{cache:'no-cache'});
-      if(response?.ok)cache.put(event.request,response.clone());
+      if(response?.ok)await cache.put(event.request,response.clone()).catch(()=>{});
       return response;
     }catch(error){
       const cached=await cache.match(event.request);

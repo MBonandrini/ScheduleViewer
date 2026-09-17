@@ -1,12 +1,14 @@
 {
-  "name": "unified-schedule-studio",
-  "version": "6.3.1",
-  "private": true,
+  "name": "schedule-studio-professional",
+  "version": "7.0.1",
   "type": "module",
+  "private": true,
   "scripts": {
-    "test": "node --test",
-    "serve": "python3 -m http.server 8080",
-    "check": "node scripts/check-modules.mjs",
-    "verify": "npm run check && npm test"
+    "test": "node --test tests/*.test.mjs",
+    "test:syntax": "node tests/syntax-and-imports.mjs",
+    "test:exhaustive": "npm run test:syntax && npm run test:imports && npm run test:ui && npm test && node tests/package-contract.mjs",
+    "test:imports": "node tests/app-import-contract.mjs",
+    "test:ui": "node tests/static-ui-contract.mjs",
+    "test:browser": "node tests/browser-acceptance.mjs"
   }
 }
