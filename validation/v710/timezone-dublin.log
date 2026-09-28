@@ -1,0 +1,30 @@
+✔ activity multi-filters use union; All includes completed; empty selection has no matches (1.18584ms)
+✔ WBS names, ancestors, preorder and physical percent roll up without double-counting (1.469117ms)
+✔ duration type percent calculation is used in WBS performance (0.239221ms)
+✔ orphan WBS activities remain visible (0.202536ms)
+✔ cyclic WBS terminates and counts each leaf once (0.331871ms)
+✔ deep hierarchy rollup is iterative (15.729678ms)
+✔ grouped reports retain every detail row exactly once (0.67601ms)
+✔ day units: spreading conserves totals and forecast equals actual plus remaining (9.749964ms)
+✔ day cost: spreading conserves totals and forecast equals actual plus remaining (0.615089ms)
+✔ week units: spreading conserves totals and forecast equals actual plus remaining (0.559975ms)
+✔ week cost: spreading conserves totals and forecast equals actual plus remaining (0.442207ms)
+✔ month units: spreading conserves totals and forecast equals actual plus remaining (0.392212ms)
+✔ month cost: spreading conserves totals and forecast equals actual plus remaining (0.328886ms)
+✔ weekly and monthly distributions equal daily rollups, not equal portions per bucket (1.189645ms)
+✔ remaining quantities never spread before data date (0.572554ms)
+✔ resource curves preserve total under multiple bucket sizes (1.121212ms)
+✔ alternate planned schedule replaces only budget, preserves precision and source immutability (0.280053ms)
+✔ actual ends at data date; forecast starts at identical point and ends at full forecast (0.567457ms)
+✔ S-curve and histogram render grid toggles and no NaN (1.582969ms)
+✔ Gantt data date appears in body and header and can be hidden (8.681922ms)
+✔ invalid bucket is rejected instead of looping (0.415046ms)
+✔ planned filters match activity and resource business keys across different internal IDs (0.726837ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.421425

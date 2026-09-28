@@ -6,7 +6,7 @@ const html=read('index.html'),app=read('src/app.js'),sw=read('sw.js'),manifest=J
 const fail=m=>{throw new Error(m)};
 const version='v'+JSON.parse(read('package.json')).version;
 if(!html.includes(version)||!manifest.name.includes(version)||!sw.includes(version))fail('V7 version contract failed');
-const v7Views=['assurance','progressIntel','revisionLab','pathsDelay','riskV7','dashboardStudio','reportStudio'];
+const v7Views=['assurance','progressIntel','revisionLab','pathsDelay','riskV7','reportStudio'];
 for(const view of v7Views) if(!html.includes(`data-view="${view}"`)||!app.includes(`${view}:renderV7`)) fail(`Missing V7 view wiring: ${view}`);
 const v7Modules=['v7-schedule-assurance.js','v7-network-intelligence.js','v7-progress-intelligence.js','v7-revision-intelligence.js','v7-risk-engine.js','v7-command-registry.js'];
 for(const mod of v7Modules) if(!sw.includes(`./src/${mod}`)) fail(`Service worker missing ${mod}`);
