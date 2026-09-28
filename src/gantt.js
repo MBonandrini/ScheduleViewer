@@ -6,7 +6,7 @@ import { taskStart, taskFinish } from './semantic.js';
  * A shared rowModel may be supplied by the Activities grid. When present it is
  * the sole source of vertical ordering, which prevents table/Gantt row drift.
  */
-export function renderGantt(container,tasks,{hoursPerDay=8,selectedTaskId='',onSelect=()=>{},baselineMap=null,showBaseline=true,dataDate=null,showProgress=true,groupBy='',groupLabel=null,relationships=[],zoom=1,maxRelationshipLines=1500,rowModel=null,barSettings={}}={}) {
+export function renderGantt(container,tasks,{hoursPerDay=8,selectedTaskId='',onSelect=()=>{},baselineMap=null,showBaseline=true,dataDate=null,showProgress=true,groupBy='',groupLabel=null,relationships=[],zoom=1,maxRelationshipLines=1500,rowModel=null,rowHeights=null,barSettings={}}={}) {
   if (!tasks.length) { container.innerHTML='<div class="empty">No activities to display.</div>'; return; }
 
   const dated=tasks.map(t=>({t,s:taskStart(t),f:taskFinish(t)})).filter(x=>x.s&&x.f);
@@ -64,7 +64,7 @@ export function renderGantt(container,tasks,{hoursPerDay=8,selectedTaskId='',onS
     }
   }
 
-  container.innerHTML=`<div class="gantt-head">${ddHtml}${months.map(m=>`<span style="left:${m.left}%;width:${m.width}%">${m.label}</span>`).join('')}</div><div class="gantt-body">${rows.join('')}</div>`;
+  container.innerHTML=`<div class="gantt-head">${ddHtml}${months.map(m=>`<span style="left:${m.left}%;width:${m.width}%">${m.label}</span>`).join('')}</div><div class="gantt-body">${ddHtml}${rows.map((html,i)=>rowHeights?.[i]?html.replace(/^<div([^>]*)>/,(_,attrs)=>{const style=`--row:${rowHeights[i]}px;height:${rowHeights[i]}px;min-height:${rowHeights[i]}px;`;return `<div${attrs.includes('style="')?attrs.replace('style="',`style="${style}`):`${attrs} style="${style}"`}>`}):html).join('')}</div>`;
   const body=container.querySelector('.gantt-body');
   container.querySelectorAll('.gantt-row').forEach(el=>el.addEventListener('click',()=>onSelect(el.dataset.id)));
 
