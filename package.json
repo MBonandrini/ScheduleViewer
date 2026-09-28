@@ -1,6 +1,6 @@
 {
   "name": "schedule-studio-professional",
-  "version": "7.0.1",
+  "version": "7.1.0",
   "type": "module",
   "private": true,
   "scripts": {
@@ -9,6 +9,6 @@
     "test:exhaustive": "npm run test:syntax && npm run test:imports && npm run test:ui && npm test && node tests/package-contract.mjs",
     "test:imports": "node tests/app-import-contract.mjs",
     "test:ui": "node tests/static-ui-contract.mjs",
-    "test:browser": "node tests/browser-acceptance.mjs"
+    "test:browser": "node tests/browser-v710.mjs"
   }
 }

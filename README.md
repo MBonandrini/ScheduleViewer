@@ -1,4 +1,7 @@
-# Schedule Studio Professional v7.0.1
+# Schedule Studio Professional v7.1.0
+
+See [Release notes](RELEASE_NOTES_V710.md), [Validation](VALIDATION_V710.md) and [Version 8 assessment and questions](VERSION_8_ASSESSMENT.md).
+
 
 A static, single-user Primavera-style schedule viewer/editor and project-controls intelligence workbench for **Primavera P6 XER** and **Microsoft Project XML**.
 
@@ -26,7 +29,7 @@ Then open `http://localhost:8080` in a modern Chromium/Firefox browser.
 - Paths & Delay Navigator
 - Local QSRA / Monte Carlo
 - Resources & Cost profiles
-- Dashboard Designer
+- Reports selector, WBS progress Levels 2–4 and indented six-week lookahead
 - Report Studio
 
 ## Tests
