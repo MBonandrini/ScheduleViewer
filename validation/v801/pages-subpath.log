@@ -1,0 +1,28 @@
+PASS Open offers multiple-file selection
+PASS mixed XER/XML batch retains every valid file
+PASS failed file identified without stopping batch
+PASS first valid file remains active
+PASS first file parsed correctly
+PASS edit first file dependency
+PASS same IDs in second file do not inherit first file edits
+PASS second file retains independent model
+PASS status identifies selected file after switching
+PASS XML file parsed and selectable
+PASS pending calculation follows edited file
+PASS edit survives switching among files
+PASS undo history survives file switching
+PASS redo history survives file switching
+PASS Save As exports the selected file without cross-file contamination
+PASS AI repository receives all opened schedules
+PASS native MPP installer removed
+PASS personal provider key fields available
+PASS opening schedules and settings invokes no AI or external service
+PASS direct-provider network/CORS failure explained
+PASS deployed DWG decoder works at repository subpath
+PASS all-invalid batch preserves open documents
+PASS invalid batch leaves current schedule intact
+PASS same filename can contain a distinct schedule without overwriting earlier edits
+PASS original same-name schedule still available
+PASS no browser runtime errors: 
+PASS browser operation needs no localhost or external backend
+Pages browser PASS: 27 checks.

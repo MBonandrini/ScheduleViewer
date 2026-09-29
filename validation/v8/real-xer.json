@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "parseMs": 473,
+  "totalMs": 6184,
+  "projects": [
+    {
+      "project": "P3379-7 - B2-1",
+      "activities": 3814,
+      "relationships": 6739,
+      "analysisMs": 2397
+    },
+    {
+      "project": "P3379-7",
+      "activities": 3814,
+      "relationships": 6735,
+      "analysisMs": 2649
+    },
+    {
+      "project": "P3347-3",
+      "activities": 859,
+      "relationships": 1182,
+      "analysisMs": 170
+    },
+    {
+      "project": "P3347-5",
+      "activities": 860,
+      "relationships": 1223,
+      "analysisMs": 230
+    }
+  ]
+}

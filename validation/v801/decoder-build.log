@@ -1,0 +1,9 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> schedule-studio-professional@8.0.1 setup:dwg
+> node tools/setup-cad.mjs
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+added 1 package in 394ms
+DWG adapter installed locally (LibreDWG GPL-3.0).

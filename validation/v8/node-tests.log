@@ -1,0 +1,189 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> schedule-studio-professional@8.0.0 test:exhaustive
+> npm run test:syntax && npm run test:imports && npm run test:ui && npm test && node tests/package-contract.mjs
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> schedule-studio-professional@8.0.0 test:syntax
+> node tests/syntax-and-imports.mjs
+
+Syntax/import contract PASS: 128 JavaScript modules; optional DWG assets installed separately.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> schedule-studio-professional@8.0.0 test:imports
+> node tests/app-import-contract.mjs
+
+App import/export contract PASS: 76 modules, zero missing named exports.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> schedule-studio-professional@8.0.0 test:ui
+> node tests/static-ui-contract.mjs
+
+Static UI contract PASS: 57 unique IDs, balanced CSS, valid service-worker syntax.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> schedule-studio-professional@8.0.0 test
+> node --test tests/*.test.mjs
+
+✔ cloud adapter gemini sends configured model and parses text (6.182511ms)
+✔ cloud adapter grok sends configured model and parses text (0.984056ms)
+✔ cloud adapter openai sends configured model and parses text (0.698417ms)
+✔ cloud adapter anthropic sends configured model and parses text (0.704585ms)
+✔ cloud adapter deepseek sends configured model and parses text (0.634152ms)
+✔ cloud adapter nvidia sends configured model and parses text (0.632172ms)
+✔ cloud adapter custom sends configured model and parses text (2.298363ms)
+✔ cloud missing credentials fails before a network request (0.845727ms)
+✔ physical percent-only edit never changes durations or dates (4.379195ms)
+✔ duration percent edit adjusts remaining duration without changing original (0.49265ms)
+✔ original duration edit keeps active remaining duration (1.774936ms)
+✔ not-started remaining-duration edit keeps original and remaining consistent (0.513778ms)
+✔ duration edit then F9 moves downstream activity and survives save/reopen (17.54993ms)
+✔ explicit start constraint survives F9, occupied slots are protected (3.334791ms)
+✔ invalid planning and duration input is rejected rather than silently clamped (0.659967ms)
+✔ duplicate activity code is rejected by central edit validation (0.458506ms)
+✔ failed recalculation does not pop prior undo edit or mutate inputs (0.697375ms)
+✔ calculation state is tracked separately for multiple projects (0.679271ms)
+✔ Save As xer normalises extension (0.466644ms)
+✔ Save As mspxml normalises extension (0.327157ms)
+✔ Save As package normalises extension (0.144217ms)
+✔ reject unsafe filename  (0.154019ms)
+✔ reject unsafe filename ../schedule (0.155808ms)
+✔ reject unsafe filename C:\schedule (0.093008ms)
+✔ reject unsafe filename CON (0.070014ms)
+✔ reject unsafe filename .. (0.159288ms)
+✔ Save As confirms success only after writer closes (1.540491ms)
+✔ cancelled Save As does not download or write (0.311565ms)
+✔ failed write aborts and never reports saved (0.319729ms)
+✔ download fallback is explicitly distinguished from confirmed save (0.131404ms)
+✔ wrong extension from file picker is rejected before writing (0.168686ms)
+✔ full status form does not let unchanged percent overwrite new remaining duration (0.50695ms)
+✔ XER export does not issue unrelated MSP conversion warnings (0.528168ms)
+✔ reject impossible date 2026-02-30 (1.490584ms)
+✔ reject impossible date 2026-13-01 (0.316762ms)
+✔ reject impossible date 2026-00-01 (0.100787ms)
+✔ reject impossible date 2026-01-01 25:00 (0.086509ms)
+✔ reject impossible date 2026-01-01garbage (0.216158ms)
+✔ reject impossible date 2026/02/30 (0.225457ms)
+✔ valid leap date and explicit timezone (0.539455ms)
+✔ invalid Date formats safely (0.339411ms)
+✔ repeated XER sections preserve all fields (1.105242ms)
+✔ task edits to new fields survive export (0.792905ms)
+✔ data date addition survives export (3.648147ms)
+✔ WBS reassignment validates whole batch before mutation (0.543159ms)
+✔ cyclic WBS never hides activities (1.370076ms)
+✔ zero lag preserves finish boundary (2.008082ms)
+✔ FF zero lag activities finish together (3.620298ms)
+✔ QSRA rejects {"iterations":null} (0.495697ms)
+✔ QSRA rejects {"iterations":null} (0.124052ms)
+✔ QSRA rejects {"minFactor":2,"maxFactor":1} (0.116152ms)
+✔ QSRA rejects {"distribution":"unknown"} (0.084949ms)
+✔ QSRA rejects {"targetTaskId":"missing"} (0.404035ms)
+✔ empty QSRA has actionable error (0.098699ms)
+✔ completed activities have zero remaining simulation duration (1.575329ms)
+✔ numeric zero remaining does not use original duration (2.089348ms)
+✔ zero uncertainty stays constant for normal and PERT (2.325993ms)
+✔ risk worker executes production module on a real background thread (148.082079ms)
+✔ risk client cancellation terminates job and ignores late result (1.279837ms)
+✔ worker failure becomes actionable result (0.885895ms)
+✔ 20,000 level WBS renders iteratively and preserves task counts (170.419153ms)
+✔ collapsed WBS preserves totals and omits descendants (0.781093ms)
+✔ Gantt escapes imported labels and preserves shared row count (18.041626ms)
+✔ 100k activity Gantt avoids spread argument limit (866.485418ms)
+✔ editing, undo, redo and dependent deletion round-trip (2.178763ms)
+✔ service worker preserves other apps caches and ignores external traffic (2.783475ms)
+✔ service worker serves network response if cache quota is exceeded (1.49225ms)
+✔ CPM FS lag 0 forward/backward (7.284939ms)
+✔ CPM FS lag 8 forward/backward (2.334286ms)
+✔ CPM FS lag -8 forward/backward (1.226742ms)
+✔ CPM SS lag 0 forward/backward (1.000958ms)
+✔ CPM SS lag 8 forward/backward (1.205244ms)
+✔ CPM FF lag 0 forward/backward (0.740012ms)
+✔ CPM FF lag 8 forward/backward (0.953434ms)
+✔ CPM SF lag 16 forward/backward (2.073824ms)
+✔ FS finish milestone remains at predecessor finish (0.571665ms)
+✔ calendar split shifts, weekend and holiday arithmetic (11.498705ms)
+✔ finish-by date creates negative total float (0.47929ms)
+✔ cycles are rejected without mutating model (2.906547ms)
+✔ retained logic differs from progress override for started successor (1.746472ms)
+✔ completed actuals preserved by applyCPM (0.804309ms)
+✔ external predecessor stored dates and ignore modes (1.09987ms)
+✔ 200 randomized DAGs match independent 24h forward-pass oracle (315.488345ms)
+✔ Beta-PERT sample mean and lower-tail mass match expected shape (49.613265ms)
+✔ explicit all-nonworking calendar fails instead of inventing weekdays (3.04506ms)
+✔ constraint CS_SNET respected (1.714281ms)
+✔ constraint CS_FNET respected (0.355815ms)
+✔ constraint CS_MSO respected (0.187186ms)
+✔ constraint CS_MEO respected (0.162229ms)
+✔ suspended activity waits for explicit resume and strict mode rejects missing resume (0.590986ms)
+✔ resource leveling separates two tasks sharing one-unit capacity (1.621041ms)
+✔ sample XER round-trips without semantic mutation (3.966373ms)
+✔ sample deterministic CPM calculates without cycles (8.915019ms)
+✔ assurance catalogue catches explicit P6-style integrity defects (4.658594ms)
+✔ advanced filter operators cover text, sets, numeric ranges, dates and blanks (1.047832ms)
+✔ layout JSON round-trip preserves V7 bars, fields and widths (1.460967ms)
+✔ all V7 QSRA distributions produce ordered percentiles (13.78348ms)
+✔ parser tolerates 250 fuzzed record-value combinations without losing table structure (8.880153ms)
+✔ basic XER parser remains operational (5.828268ms)
+✔ V7 schedule assurance exposes a broad check catalogue and stable summary (6.712334ms)
+✔ network intelligence finds density, hotspots, components and paths (2.116684ms)
+✔ progress intelligence calculates planned/actual indicators (3.360521ms)
+✔ revision intelligence tracks history and changes (8.694958ms)
+✔ QSRA is deterministic for fixed seed and returns risk drivers (9.318294ms)
+✔ nested/advanced filters work (0.786372ms)
+✔ layout normalization includes V7 bar settings (0.4131ms)
+✔ command registry provides common command-bus semantics (1.603947ms)
+✔ 50k activity / ~100k relationship assurance and network stress (896.968737ms)
+✔ 5,000-iteration QSRA volume and determinism smoke (538.945835ms)
+✔ activity multi-filters use union; All includes completed; empty selection has no matches (2.100622ms)
+✔ WBS names, ancestors, preorder and physical percent roll up without double-counting (4.819132ms)
+✔ duration type percent calculation is used in WBS performance (0.483126ms)
+✔ orphan WBS activities remain visible (0.33763ms)
+✔ cyclic WBS terminates and counts each leaf once (0.889479ms)
+✔ deep hierarchy rollup is iterative (26.214104ms)
+✔ grouped reports retain every detail row exactly once (2.074682ms)
+✔ day units: spreading conserves totals and forecast equals actual plus remaining (14.494583ms)
+✔ day cost: spreading conserves totals and forecast equals actual plus remaining (0.710872ms)
+✔ week units: spreading conserves totals and forecast equals actual plus remaining (0.804335ms)
+✔ week cost: spreading conserves totals and forecast equals actual plus remaining (0.501122ms)
+✔ month units: spreading conserves totals and forecast equals actual plus remaining (0.530587ms)
+✔ month cost: spreading conserves totals and forecast equals actual plus remaining (0.400065ms)
+✔ weekly and monthly distributions equal daily rollups, not equal portions per bucket (2.151251ms)
+✔ remaining quantities never spread before data date (0.506548ms)
+✔ resource curves preserve total under multiple bucket sizes (1.018966ms)
+✔ alternate planned schedule replaces only budget, preserves precision and source immutability (0.352246ms)
+✔ actual ends at data date; forecast starts at identical point and ends at full forecast (0.568975ms)
+✔ S-curve and histogram render grid toggles and no NaN (2.353363ms)
+✔ Gantt data date appears in body and header and can be hidden (12.394499ms)
+✔ invalid bucket is rejected instead of looping (0.807077ms)
+✔ planned filters match activity and resource business keys across different internal IDs (1.251316ms)
+✔ multi-project XER keeps duplicate business IDs isolated and uses calendar hours (21.514731ms)
+✔ external links never become local links between same activity code (1.968522ms)
+✔ Nodes rejects cycle (0.817351ms)
+✔ Nodes rejects self (0.249504ms)
+✔ Nodes rejects missing (0.305273ms)
+✔ Nodes rejects duplicate (0.188969ms)
+✔ Nodes rejects lag (0.262431ms)
+✔ Nodes edits existing relationship without treating itself as a duplicate (0.208876ms)
+✔ contract profiles require provenance and explicit adoption (2.002562ms)
+✔ calibration preserves precise distance and area/volume units (0.863819ms)
+✔ measurement blocks invalid scale, crossing polygons and invalid depths (2.126431ms)
+✔ request classification covers requested disciplines (0.474671ms)
+✔ network path honors FS lag 0 (0.822871ms)
+✔ network path honors SS lag 0 (0.566654ms)
+✔ network path honors FF lag 0 (0.184844ms)
+✔ network path honors SF lag 0 (0.242982ms)
+✔ network path honors FS lag -2 (0.168057ms)
+✔ long chains avoid recursion and repeat graph allocation (42.863361ms)
+✔ DCMA emits 14 checks for a schedule with no baseline (5.739453ms)
+✔ builder draft transfers reviewed rows through Studio CPM (7.451087ms)
+✔ builder rejects missing references, duplicate IDs and cycles (0.75764ms)
+ℹ tests 152
+ℹ suites 0
+ℹ pass 152
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1718.391113
+Package contract PASS: 137 cached assets exist; 34 menu/toolbar commands and 34 visible views are wired; deployment is test-gated.

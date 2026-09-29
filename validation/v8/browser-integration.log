@@ -1,0 +1,44 @@
+PASS separate viewer projects in shared repository
+PASS baseline is not automatically inferred
+PASS four Contract Manager outputs
+PASS AI remains off by default
+PASS Contract report output
+PASS Contract graphic output
+PASS Contract data output
+PASS Contract audio output
+PASS report renders toolkit:progress-integrity
+PASS report renders toolkit:floatpaths
+PASS report renders toolkit:dcma
+PASS report renders toolkit:whymove
+PASS report renders toolkit:delay
+PASS report renders toolkit:forensic
+PASS report renders toolkit:windows
+PASS report renders toolkit:calendar
+PASS report renders toolkit:forecast
+PASS report renders toolkit:timemachine
+PASS report renders toolkit:milestones
+PASS report renders toolkit:resourceforensics
+PASS no duplicate report buttons
+PASS Nodes adds dependency
+PASS Nodes rejects cycle without mutation
+PASS dragged node position persisted
+PASS unapproved contract profile not treated as pass
+PASS adopted contractual rule assessed
+PASS AI module manpower
+PASS AI module risk
+PASS AI module claims
+PASS AI module builder
+PASS AI module settings
+PASS AI module drawing
+PASS PDF rendered locally
+PASS calibrated 10 metre quantity
+PASS quantity export retains calibration and source hash
+PASS backup contains document bytes and measured rows
+PASS AI backup restores evidence and quantities
+PASS Ollama transport with mocked response
+PASS Save As package includes AI evidence, Nodes layout and contract profile
+PASS project package restores AI evidence
+PASS native save adapter writes a complete evidence package
+PASS native cancellation leaves Save As open without fallback download
+PASS no browser runtime errors: 
+Browser v8 PASS: 43 checks.
