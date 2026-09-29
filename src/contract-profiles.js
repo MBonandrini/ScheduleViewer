@@ -1,0 +1,34 @@
+import {escapeHtml as esc} from './parser.js';
+export const CONTRACT_METRICS={negativeLags:'Negative-lag relationships',openEnds:'Activities with open ends (excluding milestones)',longDuration:'Activities exceeding duration limit (hours)',negativeFloat:'Activities with negative float',manual:'Manual evidence requirement'};
+export function validateContractProfile(profile){
+ if(!profile||typeof profile.name!=='string'||!profile.name.trim()||!Array.isArray(profile.rules))throw new Error('A named profile and rules array are required.');
+ if(profile.rules.length>200)throw new Error('Limit a profile to 200 rules.');
+ for(const r of profile.rules){if(!CONTRACT_METRICS[r.metric])throw new Error('Unknown metric: '+r.metric);if(!r.source||!r.clause)throw new Error('Each rule needs a source and clause/page.');if(r.metric!=='manual'&&(!Number.isFinite(Number(r.maximum))||Number(r.maximum)<0))throw new Error('Maximum must be non-negative.');if(r.metric==='longDuration'&&(!Number.isFinite(Number(r.limitHours))||Number(r.limitHours)<=0))throw new Error('Duration limit must be positive hours.');}
+ return profile;
+}
+export function assessContract(profile,tasks,relationships){
+ validateContractProfile(profile);const ids=new Set(tasks.map(t=>t.task_id));const rels=relationships.filter(r=>ids.has(r.task_id)&&ids.has(r.pred_task_id));
+ const preds=new Set(rels.map(r=>r.task_id)),succs=new Set(rels.map(r=>r.pred_task_id));
+ return profile.rules.map(r=>{
+  let findings=[];
+  if(r.metric==='negativeLags')findings=rels.filter(x=>Number(x.lag_hr_cnt)<0).map(x=>`${x.pred_task_id} → ${x.task_id}: ${x.lag_hr_cnt} h`);
+  if(r.metric==='negativeFloat')findings=tasks.filter(x=>Number(x.total_float_hr_cnt)<0).map(x=>x.task_code);
+  if(r.metric==='longDuration')findings=tasks.filter(x=>Number(x.target_drtn_hr_cnt)>Number(r.limitHours)).map(x=>x.task_code);
+  if(r.metric==='openEnds')findings=tasks.filter(x=>!/Mile/.test(x.task_type)&&(!preds.has(x.task_id)||!succs.has(x.task_id))).map(x=>x.task_code);
+  const applicable=profile.adopted===true&&r.applicable!==false;
+  return {...r,findings,count:r.metric==='manual'?null:findings.length,status:!applicable?'Not adopted':r.metric==='manual'?'Review required':findings.length<=Number(r.maximum)?'Pass':'Fail'};
+ });
+}
+export function renderContractProfile(container,{key,tasks,relationships}){
+ let profile={name:'Project contractual requirements',client:'',adopted:false,rules:[]};try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(saved)profile=validateContractProfile(saved)}catch{}
+ const save=()=>{validateContractProfile(profile);localStorage.setItem(key,JSON.stringify(profile));render()};
+ const download=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(profile,null,2)],{type:'application/json'}));a.download='contractual-profile.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+ function render(){const rows=assessContract(profile,tasks,relationships);container.innerHTML=`<section class="panel"><div class="panel-head"><h2>Contractual Compliance</h2></div><div class="panel-body"><p>Contractual requirements are assessed here. DCMA remains a separate report. Reference documents are not automatically adopted for this project.</p><div class="node-toolbar"><label>Profile name<input id="contractName" value="${esc(profile.name)}"></label><label>Client / contract<input id="contractClient" value="${esc(profile.client||'')}"></label><label><span>Applicability confirmed for this project</span><input id="contractAdopted" type="checkbox" ${profile.adopted?'checked':''}></label><button id="contractSave">Save profile</button><button id="contractExport">Export profile</button><label>Import profile<input id="contractImport" type="file" accept=".json"></label></div><p id="contractFeedback" role="status"></p><div class="table-wrap"><table><thead><tr><th>Requirement</th><th>Source / revision / clause</th><th>Severity</th><th>Maximum</th><th>Found</th><th>Status</th><th>Evidence</th><th></th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${esc(CONTRACT_METRICS[r.metric])}</td><td>${esc(r.source)} · ${esc(r.revision||'')} · ${esc(r.clause)}</td><td>${esc(r.severity||'Major')}</td><td>${r.metric==='manual'?'—':esc(r.maximum)}</td><td>${r.count??'—'}</td><td>${esc(r.status)}</td><td><details><summary>${r.findings.length} findings</summary>${esc(r.findings.join(', ')||r.evidence||'No automatic evidence required')}</details></td><td><button data-remove-rule="${i}">Remove</button></td></tr>`).join('')||'<tr><td colspan="8">No contractual rules adopted. Add the applicable client requirements below.</td></tr>'}</tbody></table></div><h3>Add a requirement</h3><div class="node-toolbar"><label>Metric<select id="contractMetric">${Object.entries(CONTRACT_METRICS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label><label>Source document<input id="contractSource"></label><label>Revision<input id="contractRevision"></label><label>Clause / page<input id="contractClause"></label><label>Maximum findings<input id="contractMaximum" type="number" min="0" value="0"></label><label>Duration limit (hours)<input id="contractLimit" type="number" value="160"></label><label>Severity<select id="contractSeverity"><option>Major</option><option>Minor</option><option>Advisory</option></select></label><label>Evidence / precedence note<input id="contractEvidence"></label><button id="contractAdd">Add rule</button></div><p>Manual requirements (approval, schedule plan, exhibits, departures) remain “Review required”. Record conflicting clauses and their agreed precedence in the evidence note; the software does not resolve contract interpretation.</p></div></section>`;
+ const $=id=>container.querySelector('#'+id);const guard=fn=>()=>{try{fn()}catch(e){$('contractFeedback').textContent=e.message}};
+ $('contractSave').onclick=guard(()=>{profile={...profile,name:$('contractName').value,client:$('contractClient').value,adopted:$('contractAdopted').checked};save()});$('contractExport').onclick=download;
+ $('contractAdd').onclick=guard(()=>{const rule={metric:$('contractMetric').value,source:$('contractSource').value,revision:$('contractRevision').value,clause:$('contractClause').value,maximum:Number($('contractMaximum').value),limitHours:Number($('contractLimit').value),severity:$('contractSeverity').value,evidence:$('contractEvidence').value,applicable:true};validateContractProfile({...profile,rules:[...profile.rules,rule]});profile.rules.push(rule);save()});
+ $('contractImport').onchange=async e=>{try{const candidate=validateContractProfile(JSON.parse(await e.target.files[0].text()));profile=candidate;save()}catch(error){$('contractFeedback').textContent=error.message}};
+ container.querySelectorAll('[data-remove-rule]').forEach(b=>b.onclick=guard(()=>{profile.rules.splice(Number(b.dataset.removeRule),1);save()}));
+ }
+ render();
+}
