@@ -4,7 +4,7 @@ import {pathToFileURL} from 'node:url';
 
 const root=path.resolve(new URL('..',import.meta.url).pathname);
 const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8');
-const importRe=/import\s*\{([\s\S]*?)\}\s*from\s*['"](\.\/[^'"]+)['"];?/g;
+const importRe=/import\s*\{([^}]*?)\}\s*from\s*['"](\.\.?\/[^'"]+)['"];?/g;
 let m,count=0;
 const missing=[];
 while((m=importRe.exec(app))){
