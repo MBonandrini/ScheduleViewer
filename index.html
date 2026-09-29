@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#dfe9f4" />
-  <title>Schedule Studio Professional v7.1.0</title>
+  <title>Schedule Studio Professional v8.0.1</title>
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=7.1.0" />
+  <link rel="stylesheet" href="./styles.css?v=8.0.1" />
 </head>
 <body class="p6-desktop">
   <header class="p6-titlebar">
-    <div class="p6-product"><span class="p6-mark">SS</span><strong>Schedule Studio Professional <span class="version-badge">v7.1.0</span></strong><span id="titleProject">Single-User Project Controls Workbench</span></div>
+    <div class="p6-product"><span class="p6-mark">SS</span><strong>Schedule Studio Professional <span class="version-badge">v8.0.1</span></strong><span id="titleProject">Single-User Project Controls Workbench</span></div>
     <div class="p6-user"><span>Local Planner</span><span class="dot">•</span><span>Single User</span><span class="dot">•</span><span>Browser Local</span></div>
   </header>
 
@@ -36,6 +36,7 @@
     <details><summary>Reports</summary><div class="p6-menu">
       <button data-view="reportStudio">Report Studio</button><button data-view="reporting">Narrative & Lookahead</button><button data-view="resourceProfiles">Histogram / S-Curve</button><button data-view="progressEvm">EVM & Productivity</button><button data-view="analysis">Schedule Health Report</button><button data-view="compare">Comparison Report</button><button data-command="export">Export Current View</button>
     </div></details>
+    <details><summary>AI Studio</summary><div class="p6-menu"><button data-view="aiStudio" data-ai="contracts">Contract Manager</button><button data-view="aiStudio" data-ai="drawing">Drawing Measurement</button><button data-view="aiStudio" data-ai="manpower">Manpower Breakout</button><button data-view="aiStudio" data-ai="risk">Risk Analysis</button><button data-view="aiStudio" data-ai="claims">Claims &amp; Forensics</button><button data-view="aiStudio" data-ai="builder">Schedule Builder</button><button data-view="aiStudio" data-ai="settings">AI Settings</button></div></details>
     <details><summary>Help</summary><div class="p6-menu"><button data-view="tutorial">Tutorial</button><button data-command="about">About Schedule Studio</button></div></details>
   </nav>
 
@@ -48,12 +49,12 @@
     <div class="p6-tool-sep"></div>
     <div class="p6-tool-group"><button id="baselineToolBtn" data-command="baselines" class="tool" disabled title="Maintain Baselines"><span>═</span><small>Baseline</small></button><button id="compareBtn" data-command="compare" class="tool" disabled title="Compare Revisions"><span>Δ</span><small>Compare</small></button><button id="traceToolBtn" data-command="traceLogic" class="tool" disabled title="Trace Logic"><span>⇢</span><small>Trace</small></button><button id="resourceToolBtn" data-command="resourceProfiles" class="tool" disabled title="Resource Profiles"><span>▥</span><small>Resources</small></button><button id="calcAuditBtn" data-command="calculationAudit" class="tool" disabled title="Imported P6 vs Calculated"><span>≠</span><small>Calc Diff</small></button></div>
     <div class="p6-tool-sep"></div>
-    <div class="p6-tool-group p6-project-selector"><label>Project <select id="projectSelect" disabled><option>No schedule loaded</option></select></label></div>
+    <div class="p6-tool-group p6-project-selector"><label>File <select id="documentSelect" aria-label="Open schedule file" disabled><option>No schedule loaded</option></select></label><label>Project <select id="projectSelect" disabled><option>No schedule loaded</option></select></label></div>
     <div class="p6-tool-group p6-zoom"><label>Gantt <select id="ganttZoom"><option value="1">Fit</option><option value="1.5">150%</option><option value="2">200%</option><option value="4">400%</option></select></label></div>
     <div class="p6-toolbar-spacer"></div>
     <button id="themeBtn" class="tool icon-only" title="Toggle theme">◐</button>
     <button id="savePackageBtn" hidden disabled></button><button id="openPackageBtn" hidden></button>
-    <input id="fileInput" type="file" accept=".xer,.xml,text/plain,application/xml" hidden />
+    <input id="fileInput" type="file" multiple accept=".xer,.xml,text/plain,application/xml" hidden />
     <input id="projectFolderInput" type="file" accept=".xer,.xml,text/plain,application/xml" webkitdirectory directory multiple hidden />
     <input id="compareInput" type="file" accept=".xer,.xml,text/plain,application/xml" hidden />
     <input id="baselineInput" type="file" accept=".xer,.xml,text/plain,application/xml" multiple hidden />
@@ -71,15 +72,17 @@
     
     
     <button data-view="reportStudio"><span>Reports</span></button>
+    <button data-view="aiStudio"><span>AI Studio</span></button>
   </nav>
 
   <div id="dropOverlay" class="drop-overlay">Drop a P6 .XER or Microsoft Project .XML schedule here</div>
   <main class="p6-main">
     <section class="p6-viewbar">
       <div><h1 id="viewTitle">Activities</h1><div id="crumb" class="crumb">Open a schedule to begin</div></div>
+      <p id="importSummary" role="status" hidden></p>
       <div class="p6-view-actions"><input id="globalSearch" type="search" placeholder="Find activity…" /><button id="exportBtn" disabled>Export</button></div>
     </section>
-    <section id="view" class="view"><div class="welcome"><div class="hero-icon">SS</div><h2>Schedule Studio Professional <span class="version-badge welcome-version">v7.1.0</span></h2><p>A single-user Primavera-style schedule intelligence, editing, forensic analysis and reporting workbench. Open a P6 XER or Microsoft Project XML schedule to begin.</p><label for="fileInput" id="welcomeOpen" class="primary large p6-file-open-control welcome-open-control" role="button" tabindex="0">Open schedule file</label><div class="feature-grid"><span>Activities + Gantt</span><span>WBS & Logic</span><span>Resources</span><span>Baselines</span><span>Critical Paths</span><span>50+ Schedule Assurance Checks</span><span>Revision Intelligence</span><span>Paths & Delay Navigator</span><span>QSRA / Risk</span></div></div></section>
+    <section id="view" class="view"><div class="welcome"><div class="hero-icon">SS</div><h2>Schedule Studio Professional <span class="version-badge welcome-version">v8.0.1</span></h2><p>A single-user Primavera-style schedule intelligence, editing, forensic analysis and reporting workbench. Open a P6 XER or Microsoft Project XML schedule to begin.</p><label for="fileInput" id="welcomeOpen" class="primary large p6-file-open-control welcome-open-control" role="button" tabindex="0">Open schedule file</label><div class="feature-grid"><span>Activities + Gantt</span><span>WBS & Logic</span><span>Resources</span><span>Baselines</span><span>Critical Paths</span><span>50+ Schedule Assurance Checks</span><span>Revision Intelligence</span><span>Paths & Delay Navigator</span><span>QSRA / Risk</span></div></div></section>
   </main>
 
   <footer class="p6-statusbar"><span id="fileStatus">No file loaded</span><span id="statusDataDate">Data Date: —</span><span id="statusBaseline">Baseline: —</span><span id="offlineStatus">Local browser database</span><span>User: Local Planner</span></footer>
@@ -119,6 +122,6 @@
       if(detail)detail.textContent=event.message||'The application could not start.';
     });
   </script>
-  <script type="module" src="./src/app.js?v=7.1.0"></script>
+  <script type="module" src="./src/app.js?v=8.0.1"></script>
 </body>
 </html>

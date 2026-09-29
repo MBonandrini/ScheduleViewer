@@ -1,6 +1,6 @@
 {
   "name": "schedule-studio-professional",
-  "version": "7.1.0",
+  "version": "8.0.1",
   "type": "module",
   "private": true,
   "scripts": {
@@ -9,6 +9,13 @@
     "test:exhaustive": "npm run test:syntax && npm run test:imports && npm run test:ui && npm test && node tests/package-contract.mjs",
     "test:imports": "node tests/app-import-contract.mjs",
     "test:ui": "node tests/static-ui-contract.mjs",
-    "test:browser": "node tests/browser-v710.mjs"
+    "test:browser": "node tests/browser-v710.mjs",
+    "start": "node tools/serve.mjs",
+    "setup:dwg": "node tools/setup-cad.mjs",
+    "test:browser:v8": "node tests/browser-v8.mjs",
+    "test:cad": "node tests/browser-cad.mjs",
+    "test:reference": "node tests/real-xer-v8.mjs",
+    "build:pages": "node tools/build-pages.mjs",
+    "test:pages": "node tests/browser-pages.mjs"
   }
 }

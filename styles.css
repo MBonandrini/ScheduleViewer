@@ -697,3 +697,17 @@ html.resizing-column,html.resizing-column *{cursor:col-resize!important;user-sel
 @media print{.report-selector,.report-tabs,.profile-filter-grid,.profile-series{display:none!important}.report-resizable td{white-space:normal}.resource-audit-scroll,.v7-report-sheet .table-wrap{max-height:none;overflow:visible}}
 .wrap-descriptions .p6-grid-pane tbody tr,.wrap-descriptions .p6-grid-pane tbody tr td{height:auto!important;max-height:none!important}
 .report-resizer{padding:0!important;min-width:0!important;width:8px!important;border:0!important;border-radius:0!important;background:transparent!important}.report-resizer:hover{border-right:2px solid var(--blue)!important}
+
+#toolkitHost[hidden]{display:none}#toolkitFrame{width:100%;height:calc(100vh - 230px);min-height:650px;border:1px solid var(--line);background:var(--panel)}#toolkitHost>p{font-size:11px;margin:5px 0}.node-canvas{height:580px;overflow:auto;border:1px solid var(--line);background:var(--panel2)}.node-canvas svg{touch-action:none}.node-canvas g{cursor:grab}.node-canvas text{fill:var(--text);font-size:12px;pointer-events:none}.node-canvas rect{fill:var(--panel);stroke:var(--accent)}.node-canvas path{fill:none;stroke:var(--muted);stroke-width:1.5}.node-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:10px}.node-toolbar label{display:flex;flex-direction:column;max-width:280px}.node-toolbar select{max-width:280px}
+
+.p6-main.toolkit-active{grid-template-rows:var(--p6-viewbar-h) auto minmax(0,1fr)}
+.toolkit-active>.view{min-height:46px;overflow:visible;padding:6px}
+#toolkitHost{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#toolkitHost[hidden]{display:none}#toolkitFrame{flex:1;width:100%;height:100%;min-height:0}
+
+/* Multi-file session controls keep file and project names within the toolbar. */
+#documentSelect { max-width: 240px; text-overflow: ellipsis; }
+#importSummary { margin: 4px 12px; font-size: 12px; color: var(--muted, #526477); }
+#importSummary { max-width: 35vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.p6-project-selector { flex-direction: column; align-items: flex-end; gap: 1px; }
+.p6-project-selector select { height: 22px; max-width: 240px; }
