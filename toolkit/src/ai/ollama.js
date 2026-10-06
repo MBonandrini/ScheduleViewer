@@ -1,3 +1,4 @@
+import {assertAIStudioScope} from './scope.js';
 /**
  * Local Ollama adapter and diagnostics for browser-to-loopback model access.
  */
@@ -105,6 +106,7 @@ export async function probeOllama( {
 }
 async function request(path, options = {
 }, timeoutMs = 120000) {
+  assertAIStudioScope();
   const cfg = ollamaConfig(),
   base = normalizeBase(cfg.baseUrl),
   urls = [`${base}/api${path}`],
@@ -123,6 +125,7 @@ async function request(path, options = {
         credentials: "omit",
         referrerPolicy: "no-referrer"
       };
+      assertAIStudioScope();
       return await fetch(url, opts);
     } catch (e) {
       last = e

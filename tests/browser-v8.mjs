@@ -4,6 +4,7 @@ const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');const
 const server=http.createServer(async(req,res)=>{try{let p=path.join(root,decodeURIComponent(new URL(req.url,'http://local').pathname));if(p===root+path.sep)p=path.join(root,'index.html');res.setHeader('Content-Type',/\.m?js$/.test(p)?'text/javascript':p.endsWith('.css')?'text/css':p.endsWith('.wasm')?'application/wasm':p.endsWith('.pdf')?'application/pdf':p.endsWith('.html')?'text/html':'text/plain');res.end(await fs.readFile(p))}catch{res.statusCode=404;res.end('Not found')}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({headless:true,args:process.env.CHROMIUM_ARGS?JSON.parse(process.env.CHROMIUM_ARGS):['--no-sandbox'],executablePath:process.env.CHROMIUM_EXECUTABLE||undefined});let checks=0;const check=(v,m)=>{assert.ok(v,m);checks++;console.log('PASS '+m)};const errors=[];
 try{
+ await fs.mkdir(path.join(root,'validation/v8'),{recursive:true});
  const page=await browser.newPage({viewport:{width:1600,height:1100},acceptDownloads:true});await page.addInitScript(()=>{window.showSaveFilePicker=undefined});page.on('pageerror',e=>errors.push(e.message));page.on('dialog',async d=>{if(d.type()==='alert')console.log('ALERT '+d.message());return d.type()==='prompt'?d.accept('critical activities'):d.accept()});
  await page.goto(`http://127.0.0.1:${server.address().port}/`);await page.locator('#openBtn').waitFor();
  const fixture=model([{task_id:'1',task_code:'A',task_name:'Concrete',proj_id:'P',target_drtn_hr_cnt:'80',remain_drtn_hr_cnt:'40'},{task_id:'2',task_code:'B',task_name:'Pipework',proj_id:'P'},{task_id:'3',task_code:'A',task_name:'Baseline concrete',proj_id:'Q'}],[],{PROJECT:[{proj_id:'P',proj_short_name:'Current',last_recalc_date:'2026-01-05 08:00'},{proj_id:'Q',proj_short_name:'Baseline',last_recalc_date:'2025-12-01 08:00'}]});
@@ -21,6 +22,27 @@ try{
  await page.locator('#reportChoice').selectOption('contract');await page.locator('#contractSource').fill('Example client requirements');await page.locator('#contractClause').fill('2.1');await page.locator('#contractAdd').click();check((await page.locator('#view').innerText()).includes('Not adopted'),'unapproved contract profile not treated as pass');await page.locator('#contractAdopted').check();await page.locator('#contractSave').click();check((await page.locator('#view table').innerText()).includes('Pass'),'adopted contractual rule assessed');
  await page.locator('#nav [data-view="aiStudio"]').click();await page.waitForFunction(()=>document.querySelector('#toolkitHost>p')?.textContent.startsWith('Schedule snapshots synchronised'));
  for(const module of ['manpower','risk','claims','builder','settings','drawing']){await page.locator('#aiModuleChoice').selectOption(module);await page.waitForFunction(()=>document.querySelector('#toolkitHost>p')?.textContent.startsWith('Schedule snapshots synchronised'));check((await frame.locator('#workspace').innerText()).length>100,'AI module '+module)}
+
+ check(await page.locator('#toolkitHost>p').isHidden(),'completed synchronization occupies no visible row');
+ await fs.mkdir(path.join(root,'validation/v802'),{recursive:true});
+ check(await frame.locator('#calibratedTakeoff fieldset').count()===3,'drawing controls grouped into three labelled sections');
+ await frame.locator('#calibratedTakeoff').screenshot({path:path.join(root,'validation/v802/drawing-controls.png')});
+ await page.setViewportSize({width:900,height:1000});
+ check(await frame.locator('#calibratedTakeoff').evaluate(el=>el.scrollWidth<=el.clientWidth+1),'drawing form fits narrower workspace without horizontal overflow');
+ await page.setViewportSize({width:1600,height:1100});
+ await page.locator('#nav [data-view="reportStudio"]').click();await page.locator('#reportChoice').selectOption('toolkit:dcma');
+ await page.waitForFunction(()=>document.querySelector('#toolkitHost>p')?.textContent.startsWith('Schedule snapshots synchronised'));
+ check(await frame.locator('#chatInput,#chatSend,input[type=password]').count()===0,'Reports contains no AI chat or credential controls');
+ const blocked=await child.evaluate(async()=>{
+  const cloud=await import('./src/ai/cloud.js'),ollama=await import('./src/ai/ollama.js'),browser=await import('./src/ai/browser.js'),runtime=await import('./src/ai/runtime.js');
+  cloud.saveCloudConfig('custom',{apiKey:'synthetic-key',model:'test',baseUrl:'https://example.invalid'});
+  const saved=fetch;let calls=0;globalThis.fetch=async()=>{calls++;throw Error('unexpected network')};const messages=[];
+  try{for(const run of [()=>cloud.cloudChat('custom',[]),()=>ollama.chat([]),()=>browser.browserCPU([]),()=>runtime.askAI({question:'test'})]){try{await run();messages.push('allowed')}catch(e){messages.push(e.message)}}return {calls,messages};}finally{globalThis.fetch=saved;cloud.clearCloudKey('custom')}
+ });
+ check(blocked.calls===0&&blocked.messages.every(m=>m.includes('only in AI Studio')),'cloud, Ollama, browser model and AI runtime blocked from Reports before network calls');
+ await page.locator('#nav [data-view="activities"]').click();
+ check(await child.evaluate(async()=>{try{(await import('./src/ai/scope.js')).assertAIStudioScope();return false}catch{return true}}),'hidden AI workspace cannot initiate AI from Activities');
+ await page.locator('#nav [data-view="aiStudio"]').click();await page.waitForFunction(()=>document.querySelector('#toolkitHost>p')?.textContent.startsWith('Schedule snapshots synchronised'));
  await frame.locator('#fileInput').setInputFiles(path.join(root,'tests/fixtures/takeoff.pdf'));await frame.locator('.repo-file').filter({hasText:'takeoff.pdf'}).waitFor();
  // Re-enter to make the new repository file available to take-off controls.
  await page.locator('#aiModuleChoice').selectOption('contracts');await page.waitForFunction(()=>document.querySelector('#toolkitHost>p')?.textContent.startsWith('Schedule snapshots synchronised'));await page.locator('#aiModuleChoice').selectOption('drawing');await page.waitForFunction(()=>document.querySelector('#toolkitHost>p')?.textContent.startsWith('Schedule snapshots synchronised'));

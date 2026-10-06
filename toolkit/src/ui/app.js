@@ -480,6 +480,7 @@ async function renderRepository() {
   });
 }
 function render() {
+  document.documentElement.dataset.studioView=state.view;
   document.querySelectorAll("#tabs [data-view]").forEach(b => b.classList.toggle("active", b.dataset.view===state.view));
   $("repositoryPane").style.display = noRepoViews.has(state.view)? "none": "block";
   $("workspace").classList.toggle("workspace-fixed", state.view==="contracts");
@@ -1009,7 +1010,7 @@ function renderDrawing() {
     state.quantityRows.push(row);localStorage.setItem(workspaceKey('quantities'),JSON.stringify(state.quantityRows));
     $('takeoffCount').textContent=state.quantityRows.length+' quantities in register (Refresh register to show new rows)';
   }});
-  $('calibratedTakeoff').insertAdjacentHTML('beforeend','<p id="takeoffCount"></p><button id="refreshTakeoffRegister">Refresh register</button><button id="exportTakeoffAudit">Export take-off audit JSON</button>');
+  $('calibratedTakeoff').insertAdjacentHTML('beforeend','<div class="takeoff-register-actions"><p id="takeoffCount" role="status"></p><div><button class="btn" id="refreshTakeoffRegister">Refresh register</button><button class="btn" id="exportTakeoffAudit">Export audit JSON</button></div></div>');
   $('refreshTakeoffRegister').onclick=renderDrawing;
   $('exportTakeoffAudit').onclick=()=>downloadBlob(new Blob([JSON.stringify(state.quantityRows,null,2)],{type:'application/json'}),'drawing-takeoff-audit.json');
   document.querySelectorAll("[data-drawing-file]").forEach(x => x.onchange = () => {
@@ -3286,6 +3287,7 @@ window.addEventListener('message', event => {
   if (event.source !== window.parent || event.origin !== location.origin || event.data?.channel !== 'studio8') return;
   if (event.data.type === 'print') { window.print(); return; }
   if (event.data.type !== 'open') return;
+  document.body.classList.toggle('studio-report-mode',event.data.view==='assessment');
   const request = event.data;
   studioQueue = studioQueue.catch(() => {}).then(async () => {
     await studioReady;

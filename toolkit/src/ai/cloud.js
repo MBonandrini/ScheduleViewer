@@ -1,3 +1,4 @@
+import {assertAIStudioScope} from './scope.js';
 /**
  * Bring-your-own-key cloud AI adapters.
  *
@@ -55,6 +56,7 @@ function friendlyFetchError(provider, error) {
   return msg || `${name} request failed.`;
 }
 async function request(url, options, provider) {
+  assertAIStudioScope();
   let res;
   try { res = await fetch(url, options); } catch (error) { throw new Error(friendlyFetchError(provider, error)); }
   const text = await res.text();

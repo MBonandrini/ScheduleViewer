@@ -1,3 +1,4 @@
+import {assertAIStudioScope} from './scope.js';
 /**
  * Unified AI runtime. Routes prompts to the selected provider/model and builds a
  * bounded, evidence-referenced project context from explicit repository selections.
@@ -109,6 +110,7 @@ function budgetFor(entry) {
 export async function askAI( {
   question, role = "Project Controls Manager", current = null, previous = null, revisions = [], history = [], contextFileIds = null
 }) {
+  assertAIStudioScope();
   if (!question?.trim())throw new Error("Question required");
   const entry = aiEntry(preferredAI()),
   compat = aiCompatibility(entry.value);
@@ -158,6 +160,7 @@ ${repo.text}`;
     role: "user", content: question
   }];
   const onProgress = x => progress(x);
+  assertAIStudioScope();
   let out;
   if (entry.engine==="cpu")out = await browserCPU(messages, {
     model: entry.model, dtype: entry.dtype || "q4", onProgress

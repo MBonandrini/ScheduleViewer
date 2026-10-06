@@ -1,3 +1,4 @@
+import {assertAIStudioScope} from './scope.js';
 /**
  * Browser-local model adapters (WASM/WebGPU). Model loading is lazy to keep normal
  * page startup light when AI is not selected.
@@ -57,6 +58,7 @@ export async function browserCPU(messages, {
 }
 = {
 }) {
+  assertAIStudioScope();
   try {
     if (!cpuRuntime || cpuModel!==model) {
       cpuRuntime = null;
@@ -76,6 +78,7 @@ export async function browserCPU(messages, {
     onProgress?.( {
       title: "Generating AI response", detail: model, indeterminate: true
     });
+    assertAIStudioScope();
     const output = await cpuRuntime(messages, {
       max_new_tokens: Math.max(32, Math.min(768, Number(maxTokens) || 384)), temperature: Number(temperature), do_sample: Number(temperature)>0, return_full_text: false
     });
@@ -100,6 +103,7 @@ export async function browserTransformersGPU(messages, {
 }
 = {
 }) {
+  assertAIStudioScope();
   try {
     await ensureWebGPU();
     if (!gpuTransformersRuntime || gpuTransformersModel!==model) {
@@ -120,6 +124,7 @@ export async function browserTransformersGPU(messages, {
     onProgress?.( {
       title: "Generating AI response", detail: model, indeterminate: true
     });
+    assertAIStudioScope();
     const output = await gpuTransformersRuntime(messages, {
       max_new_tokens: Math.max(32, Math.min(768, Number(maxTokens) || 384)), temperature: Number(temperature), do_sample: Number(temperature)>0, return_full_text: false
     });
@@ -144,6 +149,7 @@ export async function browserMLC(messages, {
 }
 = {
 }) {
+  assertAIStudioScope();
   try {
     await ensureWebGPU();
     if (!mlcRuntime || mlcModel!==model) {
@@ -168,6 +174,7 @@ export async function browserMLC(messages, {
     onProgress?.( {
       title: "Generating AI response", detail: model, indeterminate: true
     });
+    assertAIStudioScope();
     const out = await mlcRuntime.chat.completions.create( {
       messages, temperature: Number(temperature), max_tokens: Math.max(32, Math.min(1024, Number(maxTokens) || 512)), stream: false
     });
