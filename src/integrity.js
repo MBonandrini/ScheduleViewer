@@ -1,3 +1,10 @@
+export function isExternalWBSRoot(model,w){
+ const rows=model.table('PROJWBS'),ids=new Set(rows.map(x=>String(x.wbs_id)));
+ if(!w.parent_wbs_id||ids.has(String(w.parent_wbs_id)))return false;
+ if(String(w.proj_node_flag).toUpperCase()==='Y')return true;
+ const roots=rows.filter(x=>String(x.proj_id)===String(w.proj_id)&&(!x.parent_wbs_id||!ids.has(String(x.parent_wbs_id))));
+ return roots.length===1&&roots[0]===w;
+}
 /**
  * Cross-table schedule integrity validation.
  * These checks deliberately validate domain references rather than vendor formatting.
@@ -20,7 +27,7 @@ export function validateModelIntegrity(model,{projectId=null,maxIssues=5000}={})
   for(const w of rows('PROJWBS')){
     if(projects.size && w.proj_id && !projects.has(String(w.proj_id))) add('error','WBS_PROJECT_MISSING',`WBS ${w.wbs_short_name||w.wbs_id} references missing project ${w.proj_id}.`,{wbs_id:w.wbs_id,proj_id:w.proj_id});
     const p=String(w.parent_wbs_id||'');
-    if(p && !wbs.has(p)) add('error','WBS_PARENT_MISSING',`WBS ${w.wbs_short_name||w.wbs_id} references missing parent WBS ${p}.`,{wbs_id:w.wbs_id,parent_wbs_id:p});
+    if(p && !wbs.has(p)) add(isExternalWBSRoot(model,w)?'warning':'error',isExternalWBSRoot(model,w)?'WBS_EXTERNAL_PARENT':'WBS_PARENT_MISSING',`WBS ${w.wbs_short_name||w.wbs_id} references missing parent WBS ${p}.`,{wbs_id:w.wbs_id,parent_wbs_id:p});
     if(p===String(w.wbs_id)) add('error','WBS_SELF_PARENT',`WBS ${w.wbs_short_name||w.wbs_id} is its own parent.`,{wbs_id:w.wbs_id});
   }
   // iterative WBS cycle detection

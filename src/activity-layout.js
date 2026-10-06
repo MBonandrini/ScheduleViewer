@@ -12,9 +12,18 @@ function taskRange(tasks){let start=null,finish=null;for(const t of tasks){start
  * This is intentionally the source of truth for vertical ordering so selection,
  * WBS hierarchy and Gantt bars can never drift into different row orders.
  */
-export function buildActivityRowModel(model,projId,tasks,{groupBy='',sort={field:'task_code',dir:1},wbsExpanded={}}={}){
+export function buildActivityRowModel(model,projId,tasks,{groupBy='',sort={field:'task_code',dir:1},wbsExpanded={},codeGroups=[]}={}){
   const input=[...tasks];
   if(!groupBy)return sortTasks(input,sort).map(t=>({kind:'activity',key:`task:${t.task_id}`,task:t,depth:0}));
+  if(groupBy==='activity_codes'){
+    if(!codeGroups.length)return sortTasks(input,sort).map(task=>({kind:'activity',key:`task:${task.task_id}`,task,depth:0}));
+    const codes=new Map(model.table('ACTVCODE').map(c=>[String(c.actv_code_id),c])),links=new Map();
+    for(const link of model.table('TASKACTV')){const c=codes.get(String(link.actv_code_id));if(!c)continue;const key=String(link.task_id)+':'+String(c.actv_code_type_id);links.set(key,c);}
+    const out=[];const visit=(items,depth,path)=>{if(depth===codeGroups.length){for(const task of sortTasks(items,sort))out.push({kind:'activity',key:`task:${task.task_id}`,task,depth});return;}
+      const buckets=new Map();for(const task of items){const c=links.get(String(task.task_id)+':'+codeGroups[depth]),key=String(c?.actv_code_id||'');if(!buckets.has(key))buckets.set(key,{code:c,tasks:[]});buckets.get(key).tasks.push(task);}
+      for(const [key,b] of [...buckets].sort((a,b)=>cmpValue(a[1].code?.short_name,b[1].code?.short_name))){const branch=path+'/'+codeGroups[depth]+':'+key;out.push({kind:'group',key:'code:'+branch,label:b.code?.actv_code_name||b.code?.short_name||'Unassigned',depth,count:b.tasks.length,...taskRange(b.tasks)});visit(b.tasks,depth+1,branch);}
+    };visit(input,0,'');return out;
+  }
   if(groupBy!=='wbs_id'){
     const grouped=new Map();
     for(const t of input){const key=String(t?.[groupBy]??'');if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(t);}

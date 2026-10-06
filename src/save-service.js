@@ -1,6 +1,7 @@
+import {XERModel} from './parser.js';
 import {exportXER,exportMSPXML,conversionAudit} from './format-adapters.js';
 import {serializeProjectPackage} from './project-package.js';
-import {validateModelIntegrity,integritySummary} from './integrity.js';
+import {validateModelIntegrity,integritySummary,isExternalWBSRoot} from './integrity.js';
 
 export const SAVE_FORMATS={
   xer:{label:'Primavera P6 XER',extension:'.xer',mime:'text/plain',scope:'All loaded projects and shared dictionaries'},
@@ -24,7 +25,10 @@ export function prepareSave(model,{format='xer',fileName='schedule',projectId=nu
   if(format==='mspxml'&&!model.find('PROJECT','proj_id',String(projectId)))throw new Error('Choose a project before exporting Microsoft Project XML.');
   const check=validateModelIntegrity(model,{projectId:format==='xer'?null:projectId});
   if(!check.ok)throw new Error(`Save stopped because the schedule contains structural errors.\n${integritySummary(check)}\nA project package can still be saved for recovery.`);
-  const text=format==='xer'?exportXER(model):exportMSPXML(model,projectId);
+  const exportModel=new XERModel({header:[...(model.header||[])],tables:new Map([...model.tables].map(([name,t])=>[name,{...t,fields:[...t.fields],rows:t.rows.map(r=>({...r}))}])),warnings:[],sourceText:''});exportModel.sourceFormat=model.sourceFormat;
+  const exportedWbsIds=new Set(exportModel.table('PROJWBS').map(w=>String(w.wbs_id)));
+  for(const w of exportModel.table('PROJWBS'))if(w.parent_wbs_id&&!exportedWbsIds.has(String(w.parent_wbs_id))&&isExternalWBSRoot(exportModel,w))w.parent_wbs_id='';
+  const text=format==='xer'?exportXER(exportModel):exportMSPXML(exportModel,projectId);
   const warnings=conversionAudit(model,format).warnings;
   return {name,format,...spec,text,warnings};
 }

@@ -3,6 +3,7 @@
  * call these command IDs; business logic remains in app services/handlers.
  */
 export const P6_COMMANDS = [
+  {id:'closeAll',label:'Close all schedules',group:'File',requiresModel:true},
   {id:'open',label:'Open Schedule…',group:'File',shortcut:'Ctrl+O'},
   {id:'save',label:'Save Schedule',group:'File',shortcut:'Ctrl+S',requiresModel:true},
   {id:'saveAs',label:'Save As…',group:'File',shortcut:'Ctrl+Shift+S',requiresModel:true},

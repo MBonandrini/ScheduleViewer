@@ -6,10 +6,10 @@ import { taskStart, taskFinish } from './semantic.js';
  * A shared rowModel may be supplied by the Activities grid. When present it is
  * the sole source of vertical ordering, which prevents table/Gantt row drift.
  */
-export function renderGantt(container,tasks,{hoursPerDay=8,selectedTaskId='',onSelect=()=>{},baselineMap=null,showBaseline=true,dataDate=null,showProgress=true,groupBy='',groupLabel=null,relationships=[],zoom=1,maxRelationshipLines=1500,rowModel=null,rowHeights=null,barSettings={}}={}) {
+export function renderGantt(container,tasks,{hoursPerDay=8,selectedTaskId='',onSelect=()=>{},baselineMap=null,showBaseline=true,dataDate=null,showProgress=true,groupBy='',groupLabel=null,relationships=[],zoom=1,maxRelationshipLines=1500,rowModel=null,rangeTasks=tasks,rowHeights=null,barSettings={}}={}) {
   if (!tasks.length) { container.innerHTML='<div class="empty">No activities to display.</div>'; return; }
 
-  const dated=tasks.map(t=>({t,s:taskStart(t),f:taskFinish(t)})).filter(x=>x.s&&x.f);
+  const dated=rangeTasks.map(t=>({t,s:taskStart(t),f:taskFinish(t)})).filter(x=>x.s&&x.f);
   if(!dated.length){container.innerHTML='<div class="empty">No valid activity dates are available.</div>';return;}
 
   const baselineDates=baselineMap?[...baselineMap.values()].flatMap(x=>[x.start,x.finish]).filter(Boolean):[];

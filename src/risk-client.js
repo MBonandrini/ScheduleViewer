@@ -11,8 +11,8 @@ export function startRiskSimulation(model,projectId,options,{WorkerClass=globalT
     worker.onmessageerror=()=>finish({error:'Could not read the risk simulation result.',iterations:0});
     const tables=['TASK','TASKPRED'].map(name=>[name,{name,fields:model.fields(name),rows:model.table(name)}]);
     // Do not send the previous result or unrelated schedules' resources/notes.
-    const {iterations,seed,distribution,minFactor,modeFactor,maxFactor,targetTaskId}=options;
-    worker.postMessage({tables,projectId,options:{iterations,seed,distribution,minFactor,modeFactor,maxFactor,targetTaskId}});
+    const {iterations,seed,distribution,minFactor,modeFactor,maxFactor,targetTaskId,riskRegister,targetDays}=options;
+    worker.postMessage({tables,projectId,options:{iterations,seed,distribution,minFactor,modeFactor,maxFactor,targetTaskId,riskRegister,targetDays}});
   }catch(error){finish({error:error.message,iterations:0});}
   return {promise,cancel:()=>finish({cancelled:true,iterations:0})};
 }
