@@ -1,6 +1,10 @@
 const CACHE_PREFIX=`schedule-studio-professional:${self.registration.scope}:`;
-const CACHE=CACHE_PREFIX+'v8.0.1-integrated';
+const CACHE=CACHE_PREFIX+'v8.1.0-integrated';
 const ASSETS=[
+ "./src/risk-register.js", "./src/risk-presentation.js",
+  "./src/duration-display.js",
+  "./src/activity-paging.js",
+  "./toolkit/src/ai/scope.js",
   "./",
   "./index.html",
   "./styles.css",

@@ -711,3 +711,34 @@ html.resizing-column,html.resizing-column *{cursor:col-resize!important;user-sel
 #importSummary { max-width: 35vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .p6-project-selector { flex-direction: column; align-items: flex-end; gap: 1px; }
 .p6-project-selector select { height: 22px; max-width: 240px; }
+
+/* Completed synchronization consumes no work area; errors remain visible. */
+#toolkitHost>p[hidden]{display:none}
+#toolkitHost>p:not([hidden]){margin:0;padding:4px 10px;font-size:11px}
+.toolkit-active>.view{min-height:0;padding:4px 6px}
+
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}.form-grid label{display:flex;flex-direction:column;gap:7px;min-width:0}.form-grid input,.form-grid select{width:100%;box-sizing:border-box}.code-group-list{display:flex;gap:8px;flex-wrap:wrap;padding:14px;border:1px dashed #8ca5ba;min-height:42px}.code-group-list button{cursor:grab}.risk-register input{min-width:85px;width:100%;box-sizing:border-box}.risk-register{overflow:auto}.risk-charts svg{width:100%;height:auto;max-height:320px}.risk-metrics{display:flex;gap:10px;flex-wrap:wrap}.risk-metrics div{background:#edf3f8;padding:12px;min-width:110px}.risk-metrics b{display:block;font-size:20px}
+.bands-blue .p6-grid-pane .wbs-band.wbs-level-0 td{background:#b3cee3!important;color:#182b3a!important}
+.bands-blue .p6-grid-pane .wbs-band.wbs-level-1 td{background:#c8dceb!important;color:#182b3a!important}
+.bands-blue .p6-grid-pane .wbs-band.wbs-level-2 td{background:#dbe8f2!important;color:#182b3a!important}
+.bands-blue .p6-grid-pane .wbs-band.wbs-level-3 td{background:#eaf2f8!important;color:#182b3a!important}
+.bands-blue .p6-grid-pane .wbs-band.wbs-level-4 td{background:#eaf2f8!important;color:#182b3a!important}
+.bands-blue .p6-grid-pane .wbs-band.wbs-level-5 td{background:#eaf2f8!important;color:#182b3a!important}
+.bands-blue .p6-grid-pane .wbs-band.wbs-level-6 td{background:#eaf2f8!important;color:#182b3a!important}
+.bands-blue .p6-grid-pane .wbs-band.wbs-level-7 td{background:#eaf2f8!important;color:#182b3a!important}
+.bands-green .p6-grid-pane .wbs-band.wbs-level-0 td{background:#b4d3bb!important;color:#182b3a!important}
+.bands-green .p6-grid-pane .wbs-band.wbs-level-1 td{background:#cbe0ce!important;color:#182b3a!important}
+.bands-green .p6-grid-pane .wbs-band.wbs-level-2 td{background:#deebdf!important;color:#182b3a!important}
+.bands-green .p6-grid-pane .wbs-band.wbs-level-3 td{background:#eef5ef!important;color:#182b3a!important}
+.bands-green .p6-grid-pane .wbs-band.wbs-level-4 td{background:#eef5ef!important;color:#182b3a!important}
+.bands-green .p6-grid-pane .wbs-band.wbs-level-5 td{background:#eef5ef!important;color:#182b3a!important}
+.bands-green .p6-grid-pane .wbs-band.wbs-level-6 td{background:#eef5ef!important;color:#182b3a!important}
+.bands-green .p6-grid-pane .wbs-band.wbs-level-7 td{background:#eef5ef!important;color:#182b3a!important}
+.bands-grey .p6-grid-pane .wbs-band.wbs-level-0 td{background:#bfc8d1!important;color:#182b3a!important}
+.bands-grey .p6-grid-pane .wbs-band.wbs-level-1 td{background:#d2d9df!important;color:#182b3a!important}
+.bands-grey .p6-grid-pane .wbs-band.wbs-level-2 td{background:#e2e7eb!important;color:#182b3a!important}
+.bands-grey .p6-grid-pane .wbs-band.wbs-level-3 td{background:#f0f3f5!important;color:#182b3a!important}
+.bands-grey .p6-grid-pane .wbs-band.wbs-level-4 td{background:#f0f3f5!important;color:#182b3a!important}
+.bands-grey .p6-grid-pane .wbs-band.wbs-level-5 td{background:#f0f3f5!important;color:#182b3a!important}
+.bands-grey .p6-grid-pane .wbs-band.wbs-level-6 td{background:#f0f3f5!important;color:#182b3a!important}
+.bands-grey .p6-grid-pane .wbs-band.wbs-level-7 td{background:#f0f3f5!important;color:#182b3a!important}
