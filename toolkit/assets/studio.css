@@ -16,3 +16,6 @@ html,body{height:100%;overflow:hidden}.app-shell{height:100vh;min-height:0;overf
 .takeoff-panel{font-family:"Segoe UI",Arial,sans-serif}.takeoff-panel h2{font-size:16px}.takeoff-panel .btn{font-family:inherit;font-size:12px;font-weight:600}.takeoff-register-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--line,#cad5e0)}.takeoff-register-actions p{margin:0;font-size:12px}.takeoff-register-actions>div{display:flex;gap:8px;flex-wrap:wrap}
 
 .studio-report-mode .repository{display:none!important}.studio-report-mode .app-shell{grid-template-columns:minmax(0,1fr)}
+
+/* Assessment reports always occupy the complete workspace, including after rerenders. */
+.studio-report-mode .app-shell{grid-template-columns:minmax(0,1fr)!important}.studio-report-mode .workspace{grid-column:1/-1;width:100%;box-sizing:border-box}.studio-report-mode .workspace>*{max-width:none}

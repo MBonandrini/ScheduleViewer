@@ -481,10 +481,13 @@ async function renderRepository() {
 }
 function render() {
   document.documentElement.dataset.studioView=state.view;
+  document.documentElement.dataset.studioReport=state.assessmentReport || "";
   document.querySelectorAll("#tabs [data-view]").forEach(b => b.classList.toggle("active", b.dataset.view===state.view));
-  $("repositoryPane").style.display = noRepoViews.has(state.view)? "none": "block";
+  const hideRepository = state.view === "assessment" || noRepoViews.has(state.view);
+  document.body.classList.toggle("studio-report-mode", state.view === "assessment");
+  $("repositoryPane").style.display = hideRepository ? "none" : "block";
   $("workspace").classList.toggle("workspace-fixed", state.view==="contracts");
-  document.querySelector(".app-shell").style.gridTemplateColumns = noRepoViews.has(state.view)? "1fr": "285px 1fr";
+  document.querySelector(".app-shell").style.gridTemplateColumns = hideRepository ? "minmax(0,1fr)" : "285px minmax(0,1fr)";
   const map = {
     dashboard: renderDashboard,
     contracts: renderContracts,
@@ -3287,7 +3290,6 @@ window.addEventListener('message', event => {
   if (event.source !== window.parent || event.origin !== location.origin || event.data?.channel !== 'studio8') return;
   if (event.data.type === 'print') { window.print(); return; }
   if (event.data.type !== 'open') return;
-  document.body.classList.toggle('studio-report-mode',event.data.view==='assessment');
   const request = event.data;
   studioQueue = studioQueue.catch(() => {}).then(async () => {
     await studioReady;
