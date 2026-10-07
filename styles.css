@@ -742,3 +742,12 @@ html.resizing-column,html.resizing-column *{cursor:col-resize!important;user-sel
 .bands-grey .p6-grid-pane .wbs-band.wbs-level-5 td{background:#f0f3f5!important;color:#182b3a!important}
 .bands-grey .p6-grid-pane .wbs-band.wbs-level-6 td{background:#f0f3f5!important;color:#182b3a!important}
 .bands-grey .p6-grid-pane .wbs-band.wbs-level-7 td{background:#f0f3f5!important;color:#182b3a!important}
+
+.bands-mixed .p6-grid-pane .wbs-band.mixed-level-0 td{background:#a6c8ee!important;color:#172d41!important}
+.bands-mixed .p6-grid-pane .wbs-band.mixed-level-1 td{background:#b6d9b5!important;color:#172d41!important}
+.bands-mixed .p6-grid-pane .wbs-band.mixed-level-2 td{background:#ffe49a!important;color:#172d41!important}
+.bands-mixed .p6-grid-pane .wbs-band.mixed-level-3 td{background:#cdd2d9!important;color:#172d41!important}
+.bands-mixed .p6-grid-pane .wbs-band.mixed-level-4 td{background:#d4b1e1!important;color:#172d41!important}
+.bands-mixed .p6-grid-pane .wbs-band.mixed-level-5 td{background:#ffbe9c!important;color:#172d41!important}
+.bands-mixed .p6-grid-pane .wbs-band.mixed-level-6 td{background:#97d8dc!important;color:#172d41!important}
+.bands-mixed .p6-grid-pane .wbs-band.mixed-level-7 td{background:#eaaac5!important;color:#172d41!important}
