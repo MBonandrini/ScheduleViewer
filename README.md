@@ -1,4 +1,4 @@
-# Schedule Studio Professional 8.1.1
+# Schedule Studio Professional 8.2.0
 
 Complete browser application, source code and automated build/tests. Visitors need only a modern browser. Personal AI keys are optional and AI is off by default. No application backend is required.
 
@@ -39,3 +39,15 @@ The outcome includes frequency and cumulative-probability charts, percentiles, m
 The Monte Carlo engine uses 24-hour-equivalent duration approximations. It does not simulate calendars, constraints or dated progress and does not reproduce Primavera risk-engine finish dates. Criticality follows one driving path per iteration; tied paths are not all counted. These limitations are shown in the reports.
 
 165 Node tests and 253 browser checks passed, including all 12 embedded report layouts and the standalone Monte Carlo print layout. Third-party license notices and required DWG source are included.
+
+## Version 8.2.0 report and engine update
+
+The website is a separate product from the native Windows Excel add-in package. No Office task pane or Excel source is deployed by this website.
+
+Schedule Comparison now provides explicit previous/current project selection, 18 selectable comparison categories, additions/deletions/field changes, top-level metrics, retained column widths and standalone HTML download. Records are matched by business identifiers; ambiguous keys and absent tables/fields are surfaced instead of treated as equivalent. Project budget compares available WBS cost/budget fields. Notebook, expense, step and UDF sections require their source tables.
+
+Why Date Moved now provides finish-movement metrics, largest-movement and WBS charts, previous/current dates and observed change evidence. These are calendar-day movements and diagnostic associations, not a causal allocation of delay.
+
+Selected numeric functions are compiled to WebAssembly. Source, precompiled binary and API instructions are in `engine/`; `src/wasm-engine.js` exposes the validated API. This does not hide all website code or replace the calendar CPM engine. The deployment build excludes C source and build scripts.
+
+The report manual is supplied separately as a Word document. The Excel source/builder is supplied as its own independent ZIP; it is not part of this site's assets.

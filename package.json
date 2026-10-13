@@ -1,6 +1,6 @@
 {
   "name": "schedule-studio-professional",
-  "version": "8.1.1",
+  "version": "8.2.0",
   "type": "module",
   "private": true,
   "scripts": {
@@ -17,6 +17,7 @@
     "test:reference": "node tests/real-xer-v8.mjs",
     "build:pages": "node tools/build-pages.mjs",
     "test:pages": "node tests/browser-pages.mjs",
-    "test:browser:v810": "node tests/browser-v810.mjs"
+    "test:browser:v810": "node tests/browser-v810.mjs",
+    "test:browser:v820": "node tests/browser-v820.mjs"
   }
 }

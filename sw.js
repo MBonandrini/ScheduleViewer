@@ -1,5 +1,5 @@
 const CACHE_PREFIX=`schedule-studio-professional:${self.registration.scope}:`;
-const CACHE=CACHE_PREFIX+'v8.1.1-integrated';
+const CACHE=CACHE_PREFIX+'v8.2.0-integrated';
 const ASSETS=[
  "./src/risk-register.js", "./src/risk-presentation.js",
   "./src/duration-display.js",
@@ -142,7 +142,11 @@ const ASSETS=[
   "./toolkit/assets/studio.css",
   "./toolkit/vendor/pdfjs/pdf.mjs",
   "./toolkit/vendor/pdfjs/pdf.worker.mjs",
-  "./toolkit/index.html"
+  "./toolkit/index.html",
+  "./src/comparison-report.js",
+  "./src/comparison-view.js",
+  "./src/wasm-engine.js",
+  "./engine/schedule_core.wasm",
 ];
 
 self.addEventListener('install',event=>{
