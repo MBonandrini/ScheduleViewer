@@ -1,3 +1,4 @@
+import {numericSummary} from './wasm-engine.js';
 import {compileRisks} from './risk-register.js';
 import { num } from './parser.js';
 import { taskRows, predRows } from './semantic.js';
@@ -94,6 +95,7 @@ export function runQSRA(model,projId=null,{iterations=1000,seed=42,distribution=
   const min=finishes[0],max=finishes.at(-1),bins=20,step=Math.max(.001,(max-min)/bins);
   const histogram=Array.from({length:bins},(_,i)=>({from:min+i*step,to:min+(i+1)*step,count:0}));
   for(const x of finishes)histogram[Math.min(bins-1,Math.floor((x-min)/step))].count++;
-  const stdDevDays=Math.sqrt(finishes.reduce((sum,x)=>sum+(x-mean)**2,0)/iterations);
+  const compiledSummary=numericSummary(finishes);
+  const stdDevDays=compiledSummary?.standardDeviation??Math.sqrt(finishes.reduce((sum,x)=>sum+(x-mean)**2,0)/iterations);
   return {baselineDays,stdDevDays,p95:q(95),contingencyP80:q(80)-baselineDays,targetDays:targetDays===null||targetDays===''?null:Number(targetDays),targetConfidence:targetDays===null||targetDays===''?null:100*finishes.filter(x=>x<=Number(targetDays)).length/iterations,cdf:Array.from({length:101},(_,p)=>({probability:p,days:q(p)})),riskEvents:risks.map((r,i)=>({id:r.id,description:r.description,activities:r.activities,probability:r.probability,minimum:r.minimum,likely:r.likely,maximum:r.maximum,occurrences:occurrences[i],observedProbability:100*occurrences[i]/iterations,meanImpactDays:occurrences[i]?impactSums[i]/occurrences[i]:0})),iterations,seed,distribution,meanDays:mean,p10:q(10),p20:q(20),p50:q(50),p80:q(80),p90:q(90),minDays:min,maxDays:max,drivers:drivers.slice(0,50),histogram,assumptions:{minFactor,modeFactor,maxFactor,targetTaskId:target||'Project finish',ignoredRelationships:graph.ignored,calendarBasis:`24-hour equivalent forward-pass approximation for risk deltas; deterministic CPM remains the authoritative schedule engine. Calendars, constraints and dated progress are not simulated. ${graph.ignored} external or unresolved relationships excluded. Criticality follows one driving path per iteration; tied paths are not all counted.`}};
 }
