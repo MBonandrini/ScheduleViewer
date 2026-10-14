@@ -1,3 +1,7 @@
+import {CODING_FIELDS,CODING_HEADERS,DISCIPLINES as BOQ_DISCIPLINES,CONFIDENCE,normaliseCoding,codingValues} from '../measurement/boq-coding.js';
+import {RESOURCE_TAXONOMY} from '../measurement/resource-taxonomy.js';
+import {aiConnectionReady,confirmAIConnection} from '../ai/runtime.js';
+import {installReportGuidance} from '../../../src/report-guidance.js';
 import {mountTakeoff} from '../measurement/takeoff.js';
 /**
  * Project Controls AI Suite — application controller.
@@ -480,6 +484,11 @@ async function renderRepository() {
   });
 }
 function render() {
+  if(!['assessment','settings'].includes(state.view)&&!aiConnectionReady()){
+   const notify=state.view!=='dashboard';state.view='settings';if(notify)alert('AI Studio is disabled until a connection is confirmed. Select your model in AI Settings and run Test selected AI. Scheduling and reports remain available without AI.');
+  }
+  window.parent?.postMessage({channel:'studio8',type:'aiState',ready:aiConnectionReady(),view:state.view},location.origin);
+
   document.documentElement.dataset.studioView=state.view;
   document.documentElement.dataset.studioReport=state.assessmentReport || "";
   document.querySelectorAll("#tabs [data-view]").forEach(b => b.classList.toggle("active", b.dataset.view===state.view));
@@ -501,6 +510,7 @@ function render() {
     settings: renderSettings
   };
   map[state.view]?.();
+  if(state.view==='assessment')installReportGuidance($('reportBody'),state.assessmentReport);
   // Chart controls are bound after each view render. The binder is idempotent,
   // so re-rendering a report never duplicates event handlers.
   queueMicrotask(() => bindInteractiveCharts(document));
@@ -935,10 +945,10 @@ async function measurementAlignmentIndex(fileId) {
   return index;
 }
 function alignedNewBoqCsv() {
-  const headers = ["Discipline", "Category", "Item", "Unit", "Quantity", "BOQ Item", RECOMMENDED_HEADER, "Activity ID", "Norm h/unit", "Calculated hours"];
-  const rows = state.quantityRows.map(r => [r.discipline, r.category, r.item, r.unit, r.quantity, r.boq, r.recommendedActivityIds || "", r.activityId, r.norm, (r.quantity || 0) * (r.norm || 0)]);
-  return toCSV(headers, rows);
+ const headers=[...CODING_HEADERS,'Category','Item','Unit','Quantity','BOQ Item',RECOMMENDED_HEADER,'Activity ID','Norm h/unit','Calculated hours','Source file','Page','Source SHA256'];
+ return toCSV(headers,state.quantityRows.map(r=>[...codingValues(r),r.category,r.item,r.unit,r.quantity,r.boq,r.recommendedActivityIds||'',r.activityId,r.norm,(r.quantity||0)*(r.norm||0),r.trace?.name||'',r.trace?.page||'',r.trace?.sha256||'']));
 }
+
 async function applyMeasurementAlignment(index) {
   state.quantityRows = alignMeasurementRows(state.quantityRows, index);
   localStorage.setItem(workspaceKey("quantities"), JSON.stringify(state.quantityRows));
@@ -966,6 +976,7 @@ async function applyMeasurementAlignment(index) {
   return result;
 }
 function renderDrawing() {
+  state.quantityRows=state.quantityRows.map(normaliseCoding);
   state.measurement = normaliseMeasurementState(state.measurement);
   const fileIds = new Set(state.files.map(f => String(f.id))),
   validBoqIds = new Set(state.files.filter(f => BOQ_EXT.test(f.name || "")).map(f => String(f.id))),
@@ -980,10 +991,10 @@ function renderDrawing() {
   const c = state.measurement.config,
   target = state.measurement.boqMode==="existing"? state.files.find(f => String(f.id)===String(state.measurement.boqFileId))?.name || "Existing BOQ": "NEW BOQ Document";
   $("workspace").innerHTML = `${viewHead("Drawing Measurement", "Choose drawing sources and one BOQ destination, then configure measurement and allocation.", `<button class="btn" id="addQty">Add row</button><button class="btn" id="exportQty">Export CSV</button>`)}
-  <section class="panel takeoff-panel" id="calibratedTakeoff"></section>
+  <p class="report-help">Workflow: 1 Choose drawing sources and BOQ destination → 2 Open and calibrate a drawing, then measure → 3 Code and review the quantity register → 4 Export. Unknown location and drawing identifiers remain blank for review.</p><section class="panel takeoff-panel" id="calibratedTakeoff"></section>
   <section class="panel measurement-source-panel">
     <div class="measurement-source-grid">
-      <div class="measurement-source-box"><div class="measurement-box-head"><div><h2>Drawings to be measured</h2><p>Select one or more files from the Project Repository.</p></div><div class="measurement-count" id="drawingSelectionCount">${state.measurement.drawingIds.length} selected</div></div><div class="measurement-tree">${measurementFileTree(state.files, {
+      <div class="measurement-source-box"><div class="measurement-box-head"><div><h2>1. Drawing source files</h2><p>Select reference files for BOQ preparation. This selection alone does not measure geometry. Use the calibrated workspace below to measure actual lengths, areas and counts.</p></div><div class="measurement-count" id="drawingSelectionCount">${state.measurement.drawingIds.length} selected</div></div><div class="measurement-tree">${measurementFileTree(state.files, {
     mode: "drawings"
   })}</div></div>
       <div class="measurement-source-box"><div class="measurement-box-head"><div><h2>BOQ</h2><p>Select the single BOQ that receives the allocation, or create a new one.</p></div><div class="measurement-count">1 target</div></div><label class="measurement-new-boq"><input type="radio" name="measurementBoq" id="newBoqTarget" ${state.measurement.boqMode!=="existing"? "checked": ""}><span>＋</span><strong>NEW BOQ Document</strong></label><div class="measurement-tree boq-tree">${measurementFileTree(state.files, {
@@ -999,7 +1010,7 @@ function renderDrawing() {
   </section>
   <section class="panel measurement-settings"><div class="measurement-section-head"><div><h2>Measurement & allocation settings</h2><p>Configure how quantities are measured, grouped and allocated before generation.</p></div></div><div class="form measurement-config-grid">
     <label>Measurement mode<select data-measure-config="measurementMode">${["Quantity take-off & allocation", "Quantity take-off only", "BOQ allocation only", "Verification / remeasurement"].map(x => `<option ${c.measurementMode===x? "selected": ""}>${x}</option>`).join("")}</select></label>
-    <label>Discipline<select data-measure-config="discipline">${["All disciplines", "Electrical", "Mechanical", "CSA / Civil", "Instrumentation & Controls", "Process", "Architectural"].map(x => `<option ${c.discipline===x? "selected": ""}>${x}</option>`).join("")}</select></label>
+    <label>Discipline<select data-measure-config="discipline">${["All disciplines", ...BOQ_DISCIPLINES].map(x => `<option ${c.discipline===x? "selected": ""}>${x}</option>`).join("")}</select></label>
     <label>Default unit<select data-measure-config="defaultUnit">${["Auto-detect", "m", "m²", "m³", "nr", "kg", "t", "lot"].map(x => `<option ${c.defaultUnit===x? "selected": ""}>${x}</option>`).join("")}</select></label>
     <label>Decimal precision<select data-measure-config="precision">${[0, 1, 2, 3, 4].map(x => `<option value="${x}" ${Number(c.precision)===x? "selected": ""}>${x}</option>`).join("")}</select></label>
     <label>Allocation method<select data-measure-config="allocationMode">${["BOQ item first", "Drawing category first", "Activity / WBS first", "Manual review first"].map(x => `<option ${c.allocationMode===x? "selected": ""}>${x}</option>`).join("")}</select></label>
@@ -1009,6 +1020,8 @@ function renderDrawing() {
     <label class="measurement-toggle"><input type="checkbox" data-measure-config="includeUnallocated" ${c.includeUnallocated? "checked": ""}><span>Keep unallocated measurements for review</span></label>
   </div></section>
   <section class="panel measurement-register"><div class="measurement-section-head"><div><h2>Measurement & allocation register</h2><p>Generated quantities and manual adjustments are maintained here.</p></div><div class="muted">${state.quantityRows.length} row${state.quantityRows.length===1? "": "s"}</div></div>${table(["Discipline", "Category", "Item", "Unit", "Quantity", "BOQ Item", ...(state.measurement.alignToSchedule? ["Recommended Activity ID(s)"]: []), "Activity ID", "Norm h/unit", "Calculated hours", ""], state.quantityRows.map((r, i) => [`<input data-q="${i}:discipline" value="${esc(r.discipline || "")}">`, `<input data-q="${i}:category" value="${esc(r.category || "")}">`, `<input data-q="${i}:item" value="${esc(r.item || "")}">`, `<input data-q="${i}:unit" value="${esc(r.unit || "")}">`, `<input type="number" data-q="${i}:quantity" value="${r.quantity || 0}">`, `<input data-q="${i}:boq" value="${esc(r.boq || "")}">`, ...(state.measurement.alignToSchedule? [`<input value="${esc(r.recommendedActivityIds || "")}" readonly title="Recommended from selected schedule">`]: []), `<input data-q="${i}:activityId" value="${esc(r.activityId || "")}">`, `<input type="number" data-q="${i}:norm" value="${r.norm || 0}">`, ((r.quantity || 0) * (r.norm || 0)).toFixed(2), `<button data-delq="${i}">×</button>`]))}</section>`;
+  $('workspace').insertAdjacentHTML('beforeend',`<section class="panel"><h2>3. BOQ classification & confidence</h2><p>Code every quantity by discipline, service, installation step and location. Confidence is a reviewer assessment: Unrated = unknown; Low = inference; Medium = partial evidence; High = clear source evidence; Verified = checked by a reviewer. Missing fields stay blank. Drawing numbers must come from the drawing title block; filenames are retained separately.</p><datalist id="boqServices">${[...new Set(RESOURCE_TAXONOMY.map(r=>r.service))].map(x=>`<option value="${esc(x)}">`).join('')}</datalist><datalist id="boqSteps">${[...new Set(RESOURCE_TAXONOMY.map(r=>r.step))].map(x=>`<option value="${esc(x)}">`).join('')}</datalist>${table(['Item',...CODING_HEADERS],state.quantityRows.map((r,i)=>[esc(r.item||'Quantity '+(i+1)),...CODING_FIELDS.flatMap(([key,label])=>[key==='discipline'?`<select data-coding="${i}:${key}"><option value="">Unspecified</option>${BOQ_DISCIPLINES.map(x=>`<option ${r[key]===x?'selected':''}>${esc(x)}</option>`).join('')}</select>`:`<input data-coding="${i}:${key}" ${key==='service'?'list="boqServices"':key==='step'?'list="boqSteps"':''} value="${esc(r[key]||'')}" aria-label="${esc(label)} for item ${i+1}">`,`<select data-coding="${i}:${key}Confidence">${CONFIDENCE.map(x=>`<option ${r[key+'Confidence']===x?'selected':''}>${x}</option>`).join('')}</select>`])]),{resizable:true,resizeKey:'boqCoding'})}<details><summary>Measurement definitions from the supplied resource standard</summary>${table(['Service','Step','Unit','Measurement basis'],RESOURCE_TAXONOMY.map(r=>[esc(r.service),esc(r.step),esc(r.unit),esc(r.basis)]))}</details></section>`);
+  document.querySelectorAll('[data-coding]').forEach(el=>el.onchange=()=>{const [i,k]=el.dataset.coding.split(':');state.quantityRows[Number(i)][k]=el.value;localStorage.setItem(workspaceKey('quantities'),JSON.stringify(state.quantityRows));});
   mountTakeoff($('calibratedTakeoff'),{files:state.files,getBlob:getFileBlob,activities:activeSchedule()?.activities||[],onCommit:row=>{
     state.quantityRows.push(row);localStorage.setItem(workspaceKey('quantities'),JSON.stringify(state.quantityRows));
     $('takeoffCount').textContent=state.quantityRows.length+' quantities in register (Refresh register to show new rows)';
@@ -1053,6 +1066,7 @@ function renderDrawing() {
             at: new Date().toISOString(), scheduleFileId: state.measurement.alignmentScheduleFileId, scheduleName: rec?.name || "Schedule", matched: alignment.matched, total: alignment.total
           }; await refreshData()
         }
+        if(!state.measurement.alignToSchedule){if(state.measurement.boqMode==='existing'){const rec=state.files.find(f=>String(f.id)===String(state.measurement.boqFileId)),blob=await getFileBlob(rec.id);if(!blob)throw Error('BOQ file unavailable');const result=await alignBoqFile(asNamedFile(blob,rec),[]);await updateFileBlob(rec.id,result.blob,{name:rec.name,type:result.blob.type});downloadBlob(result.blob,result.name);}else downloadBlob(new Blob([alignedNewBoqCsv()],{type:'text/csv'}),'NEW-BOQ-coded.csv');}
         state.measurement.lastGenerated = {
           at: new Date().toISOString(), drawingIds: [...state.measurement.drawingIds], boqMode: state.measurement.boqMode, boqFileId: state.measurement.boqFileId, alignToSchedule: state.measurement.alignToSchedule, alignmentScheduleFileId: state.measurement.alignmentScheduleFileId, config: {
             ...state.measurement.config
@@ -1073,14 +1087,12 @@ function renderDrawing() {
   });
   $("addQty").onclick = () => {
     state.quantityRows.push( {
-      id: uid("qty"), discipline: "Electrical", category: "", item: "", unit: "m", quantity: 0, boq: "", recommendedActivityIds: "", activityId: "", norm: 0
+      id: uid("qty"), discipline: "E&I", category: "", item: "", unit: "m", quantity: 0, boq: "", recommendedActivityIds: "", activityId: "", norm: 0
     });
     localStorage.setItem(workspaceKey("quantities"), JSON.stringify(state.quantityRows));
     renderDrawing()
   };
-  $("exportQty").onclick = () => downloadBlob(new Blob([toCSV(["Discipline", "Category", "Item", "Unit", "Quantity", "BOQ", RECOMMENDED_HEADER, "Activity ID", "Norm", "Hours", "Size", "Service", "Specification", "Source", "Page", "Revision", "Source SHA256", "Measured quantity", "Manual override"], state.quantityRows.map(r => [r.discipline, r.category, r.item, r.unit, r.quantity, r.boq, r.recommendedActivityIds || "", r.activityId, r.norm, (r.quantity || 0) * (r.norm || 0),r.size||"",r.service||"",r.specification||"",r.trace?.name||"",r.trace?.page||"",r.trace?.revision||"",r.trace?.sha256||"",r.measuredQuantity??"",r.trace?.manualOverrideAt||""]))], {
-    type: "text/csv"
-  }), "drawing-measurements.csv");
+  $("exportQty").onclick = () => downloadBlob(new Blob([alignedNewBoqCsv()],{type:'text/csv'}),'drawing-measurements-coded.csv');
 }
 
 // -----------------------------------------------------------------------------
@@ -1304,6 +1316,7 @@ function renderAssessment() {
   $("printReport").onclick = () => window.print();
   $("exportReportCsv").onclick = () => exportVisibleTables();
   bindAssessmentControls(fs);
+  installReportGuidance($("reportBody"),state.assessmentReport);
 }
 function pairToolbar(prefix, a, b, {
   labelA = "Schedule A / reference", labelB = "Schedule B / comparison"
@@ -1592,7 +1605,7 @@ function windowsAnalysisMarkup() {
   const selected = state.windowsScheduleIds.map(scheduleById).filter(Boolean);
   if (selected.length < 2) return `<section class="panel"><h2>Windows Analysis</h2><p class="muted">Select at least two contemporaneous schedule updates in chronological order. Each adjacent pair becomes a forensic analysis window.</p>${scheduleSlots("windowsSlot",state.windowsScheduleIds,8,{label:"Update"})}${scheduleSelectionMessage("Select at least two schedule updates.")}</section>`;
   const w = windowsAnalysis(selected), chartRows = w.windows.map(x => ({label:x.label,finish:x.finishMovementDays,progress:x.progressPoints,logic:x.logicAdded+x.logicRemoved,resources:x.resourceChanges}));
-  return `<section class="panel"><h2>Contemporaneous Windows Analysis</h2><p class="muted">Each adjacent selected update is treated as one analysis window. This identifies schedule movement and change evidence; it does not assign contractual responsibility automatically.</p>${scheduleSlots("windowsSlot",state.windowsScheduleIds,8,{label:"Update"})}</section><section class="panel"><h2>Window movement</h2>${interactiveBarChart(chartRows,{labelKey:"label",series:[{key:"finish",label:"Finish movement (d)"},{key:"progress",label:"Progress Δ (pts)"},{key:"logic",label:"Logic changes"},{key:"resources",label:"Resource changes"}],rotateLabels:true,title:"Revision-window profile"})}</section>${w.windows.map(x=>`<details class="forensic-transition-box"><summary><span><strong>${esc(x.label)}</strong><small>${x.finishMovementDays>=0?"+":""}${x.finishMovementDays}d finish · ${x.progressPoints>=0?"+":""}${x.progressPoints.toFixed(1)} pts progress · ${x.adverse.length} adverse/activity-change records</small></span><span>Inspect</span></summary><div class="forensic-transition-body"><div class="metrics">${metric("Finish Δ",`${x.finishMovementDays>=0?"+":""}${x.finishMovementDays}d`)}${metric("Activities + / -",`${x.activitiesAdded} / ${x.activitiesRemoved}`)}${metric("Logic + / -",`${x.logicAdded} / ${x.logicRemoved}`)}${metric("Calendar changes",x.calendarChanges)}${metric("Resource changes",x.resourceChanges)}${metric("Critical entered / left",`${x.criticalEntered} / ${x.criticalLeft}`)}</div>${table(["Activity","Start Δ","Finish Δ","Duration Δ","Calendar","Resources","Constraint"],x.adverse.slice(0,1000).map(a=>[activityLink(a.id,`${a.id} · ${a.name}`),signedNumber(a.startDays,"d",true),signedNumber(a.finishDays,"d",true),signedNumber(a.durationDays,"d",true),a.calendarChanged?badge("Changed","warn"):"—",a.resourceChanged?badge("Changed","warn"):"—",a.constraintChanged?badge("Changed","warn"):"—"]),{resizable:true,resizeKey:`window-${x.index}`})}</div></details>`).join("")}`;
+  return `<section class="panel"><h2>Contemporaneous Windows Analysis</h2><p class="muted">Each adjacent selected update is treated as one analysis window. This identifies schedule movement and change evidence; it does not assign contractual responsibility automatically.</p>${scheduleSlots("windowsSlot",state.windowsScheduleIds,8,{label:"Update"})}</section><section class="panel"><h2>Window movement</h2>${interactiveBarChart(chartRows,{labelKey:"label",series:[{key:"finish",label:"Finish movement (calendar days)"}],rotateLabels:true,title:"Finish movement by analysis window"})}<div class="grid grid2"><section><h3>Progress movement (percentage points)</h3>${interactiveBarChart(chartRows,{labelKey:'label',series:[{key:'progress',label:'Percentage points'}],title:'Recorded progress change'})}</section><section><h3>Change volume (records)</h3>${interactiveBarChart(chartRows,{labelKey:'label',series:[{key:'logic',label:'Logic changes'},{key:'resources',label:'Resource changes'}],title:'Change evidence'})}</section></div></section>${w.windows.map(x=>`<details class="forensic-transition-box"><summary><span><strong>${esc(x.label)}</strong><small>${x.finishMovementDays>=0?"+":""}${x.finishMovementDays}d finish · ${x.progressPoints>=0?"+":""}${x.progressPoints.toFixed(1)} pts progress · ${x.adverse.length} adverse/activity-change records</small></span><span>Inspect</span></summary><div class="forensic-transition-body"><p>${x.finishMovementDays>0?"Slippage observed: investigate progress, logic and scope changes below.":x.finishMovementDays<0?"Recovery observed: verify the improvement is supported by actual progress and achievable logic.":"No net project-finish movement; individual activities may still have changed."} These changes are evidence, not an allocation of responsibility.</p><div class="metrics">${metric("Finish Δ",`${x.finishMovementDays>=0?"+":""}${x.finishMovementDays}d`)}${metric("Activities + / -",`${x.activitiesAdded} / ${x.activitiesRemoved}`)}${metric("Logic + / -",`${x.logicAdded} / ${x.logicRemoved}`)}${metric("Calendar changes",x.calendarChanges)}${metric("Resource changes",x.resourceChanges)}${metric("Critical entered / left",`${x.criticalEntered} / ${x.criticalLeft}`)}</div>${table(["Activity","Start Δ","Finish Δ","Duration Δ","Calendar","Resources","Constraint"],x.adverse.slice(0,1000).map(a=>[activityLink(a.id,`${a.id} · ${a.name}`),signedNumber(a.startDays,"d",true),signedNumber(a.finishDays,"d",true),signedNumber(a.durationDays,"d",true),a.calendarChanged?badge("Changed","warn"):"—",a.resourceChanged?badge("Changed","warn"):"—",a.constraintChanged?badge("Changed","warn"):"—"]),{resizable:true,resizeKey:`window-${x.index}`})}</div></details>`).join("")}`;
 }
 function logicChangesMarkup() {
   const a=scheduleById(state.logicAId), b=scheduleById(state.logicBId), toolbar=pairToolbar("logicDiff",state.logicAId,state.logicBId,{labelA:"Earlier / reference",labelB:"Later / comparison"});
@@ -1785,7 +1798,7 @@ function assessmentReport(s) {
       const w=windowsAnalysis(ordered), transitions=w.windows.map(x=>({label:x.label,addedActivities:x.activitiesAdded,deletedActivities:x.activitiesRemoved,logicAdded:x.logicAdded,logicRemoved:x.logicRemoved,resourceChanges:x.resourceChanges,finishMove:x.finishMovementDays,criticalEntered:x.criticalEntered}));
       const mixed=[...new Set(ordered.map(x=>x.projectName).filter(Boolean))].length>1?`<div class="analysis-warning">Selected schedules report different project names. ID-based comparison still runs because the selection was explicit; interpret results carefully.</div>`:"";
       const detail=w.windows.flatMap(x=>x.adverse.slice(0,250).map(a=>[esc(x.label),activityLink(a.id,`${a.id} · ${a.name}`),signedNumber(a.finishDays,"d",true),signedNumber(a.durationDays,"d",true),a.calendarChanged?"Yes":"No",a.resourceChanged?"Yes":"No",a.constraintChanged?"Yes":"No"]));
-      return `<section class="panel"><div class="panel-head-row"><div><h2>Forensic Review · up to 10 schedules</h2><p class="muted">Adjacent revisions are compared across activities, progress/actuals, logic, calendars, resources, critical-path migration and forecast movement.</p></div><button class="btn primary" id="exportEvidencePack" type="button">Export Evidence Pack ZIP</button></div>${selectors}${mixed}</section><section class="panel"><h2>Change profile across revisions</h2>${interactiveBarChart(transitions,{labelKey:"label",series:[{key:"addedActivities",label:"Activities added"},{key:"deletedActivities",label:"Activities removed"},{key:"logicAdded",label:"Logic added"},{key:"logicRemoved",label:"Logic removed"},{key:"resourceChanges",label:"Resource changes"}],rotateLabels:true,title:"Forensic transition profile"})}</section><section class="panel"><h2>Revision-to-revision summary</h2>${table(["Transition","Finish Δ","Activities + / -","Logic + / -","Resource changes","Entered critical"],transitions.map(x=>[esc(x.label),signedNumber(x.finishMove,"d",true),`${x.addedActivities} / ${x.deletedActivities}`,`${x.logicAdded} / ${x.logicRemoved}`,x.resourceChanges,x.criticalEntered]),{resizable:true,resizeKey:"forensicSummary"})}</section><section class="panel"><h2>Material activity changes</h2>${table(["Transition","Activity","Finish Δ","Duration Δ","Calendar","Resources","Constraint"],detail,{resizable:true,resizeKey:"forensicMaterial"})}</section>${forensicEvidencePanels(ordered)}${forensicRevisionMatrixMarkup(ordered)}`;
+      return `<section class="panel"><div class="panel-head-row"><div><h2>Forensic Review · up to 10 schedules</h2><p class="muted">Adjacent revisions are compared across activities, progress/actuals, logic, calendars, resources, critical-path migration and forecast movement.</p></div><button class="btn primary" id="exportEvidencePack" type="button">Export Evidence Pack ZIP</button></div>${selectors}${mixed}<div class="metrics">${metric('Activities added',transitions.reduce((n,x)=>n+x.addedActivities,0),'Across adjacent transitions')}${metric('Activities removed',transitions.reduce((n,x)=>n+x.deletedActivities,0),'Across adjacent transitions')}${metric('Logic changes',transitions.reduce((n,x)=>n+x.logicAdded+x.logicRemoved,0),'Added + removed relationships')}${metric('Net finish movement',transitions.reduce((n,x)=>n+x.finishMove,0)+' d','Calendar days across selected transitions')}</div></section><section class="panel"><h2>Change profile across revisions</h2>${interactiveBarChart(transitions,{labelKey:"label",series:[{key:"addedActivities",label:"Activities added"},{key:"deletedActivities",label:"Activities removed"},{key:"logicAdded",label:"Logic added"},{key:"logicRemoved",label:"Logic removed"},{key:"resourceChanges",label:"Resource changes"}],rotateLabels:true,title:"Forensic transition profile"})}</section><section class="panel"><h2>Revision-to-revision summary</h2>${table(["Transition","Finish Δ","Activities + / -","Logic + / -","Resource changes","Entered critical"],transitions.map(x=>[esc(x.label),signedNumber(x.finishMove,"d",true),`${x.addedActivities} / ${x.deletedActivities}`,`${x.logicAdded} / ${x.logicRemoved}`,x.resourceChanges,x.criticalEntered]),{resizable:true,resizeKey:"forensicSummary"})}</section><section class="panel"><h2>Material activity changes</h2>${table(["Transition","Activity","Finish Δ","Duration Δ","Calendar","Resources","Constraint"],detail,{resizable:true,resizeKey:"forensicMaterial"})}</section>${forensicEvidencePanels(ordered)}${forensicRevisionMatrixMarkup(ordered)}`;
     }
     case "windows": return windowsAnalysisMarkup();
     case "whymove": {
@@ -1896,15 +1909,15 @@ function assessmentReport(s) {
       id = state.timeActivityId || source?.activities.find(a => a.milestone)?.id || source?.activities[0]?.id || "",
       hist = ordered.length && id? activityHistory(ordered, id): [],
       vals = hist.map((x, i) => ( {
-        x: i, y: parseDate(x.finish)?.getTime() / 86400000 || 0
+        x: i, y: parseDate(x.finish)&&hist.find(h=>parseDate(h.finish))? (parseDate(x.finish)-parseDate(hist.find(h=>parseDate(h.finish)).finish))/86400000 : null
       }));
       return`<section class="panel"><h2>Schedule Time Machine</h2><p><strong>Purpose:</strong> track one activity or milestone through a revision sequence to see how its forecast start, finish, float, progress and critical status changed over time. The tool uses only the schedules you explicitly select below, so unrelated projects are never automatically mixed.</p>${scheduleSlots("timeSlot", state.timeMachineScheduleIds, 8, {
         label: "Revision", blank: "Not selected"
       })}${source? `<div class="filterbar" style="margin-top:10px"><label>Activity <select id="timeActivity">${source.activities.slice(0, 10000).map(a => `<option value="${esc(a.id)}" ${a.id===id? "selected": ""}>${esc(a.id)} · ${esc(a.name)}</option>`).join("")}</select></label></div>${lineChart([ {
-        name: "Forecast finish (serial day)", values: vals
+        name: "Finish movement from first forecast (calendar days)", values: vals.filter(v=>v.y!==null)
       }], {
         xLabels: hist.map(x => isoDate(x.dataDate)), rotateLabels: true
-      })}${table(["Revision", "Data date", "Start", "Finish", "TF", "Progress", "Critical"], hist.map(x => [esc(x.scheduleName), isoDate(x.dataDate), isoDate(x.start), isoDate(x.finish), Number(x.totalFloat).toFixed(1), `${Number(x.percent).toFixed(1)}%`, x.critical? "Yes": "No"]))}`: scheduleSelectionMessage("Select one or more schedules; two or more are recommended for trend analysis.")}</section>`;
+      })}<p>Vertical axis: calendar days relative to the first valid finish forecast. Zero = initial forecast; positive = later, negative = earlier. Horizontal axis: selected revision data dates.</p><div class="grid grid2"><section><h3>Float trend (days)</h3>${lineChart([{name:'Total float (days)',values:hist.map((x,i)=>({x:i,y:Number(x.totalFloat)||0}))}],{xLabels:hist.map(x=>isoDate(x.dataDate))})}</section><section><h3>Reported completion (%)</h3>${lineChart([{name:'Completion (%)',values:hist.map((x,i)=>({x:i,y:Number(x.percent)||0}))}],{xLabels:hist.map(x=>isoDate(x.dataDate))})}</section></div>${table(["Revision", "Data date", "Start", "Finish", "TF", "Progress", "Critical"], hist.map(x => [esc(x.scheduleName), isoDate(x.dataDate), isoDate(x.start), isoDate(x.finish), Number(x.totalFloat).toFixed(1), `${Number(x.percent).toFixed(1)}%`, x.critical? "Yes": "No"]))}`: scheduleSelectionMessage("Select one or more schedules; two or more are recommended for trend analysis.")}</section>`;
     }
     case "milestones": {
       const revisionSet = state.dashboardLineageIds.map(scheduleById).filter(Boolean),
@@ -1912,7 +1925,7 @@ function assessmentReport(s) {
       ms = s.activities.filter(isMilestoneActivity),
       hist = milestoneHistory(revs);
       return`<section class="panel"><h2>Milestone Control Centre</h2><p class="muted">Movement/confidence uses the explicit Dashboard Revision Lineage selection when present; otherwise it uses only the active schedule.</p>${table(["Milestone", "Forecast", "Previous", "Movement", "Float", "Confidence"], ms.map(a => {
-        const hh = hist.find(x => x.id===a.id)?.history || [], p = hh.length>1? hh.at( - 2): null, move = p? daysBetween(p.finish, a.currentFinish || a.finish): 0, conf = forecastConfidence(revs, a.id); return[`${esc(a.id)} · ${esc(a.name)}`, isoDate(a.currentFinish || a.finish), isoDate(p?.finish), p? `${move>=0? "+": ""}${move}d`: "—", a.totalFloat.toFixed(1), `${conf.score}% ${conf.label}`]
+        const hh = hist.find(x => x.id===a.id)?.history || [], p = hh.length>1? hh.at( - 2): null, move = p? daysBetween(p.finish, a.currentFinish || a.finish): 0, conf = forecastConfidence(revs, a.id); return[`${esc(a.id)} · ${esc(a.name)}`, isoDate(a.currentFinish || a.finish), isoDate(p?.finish), p? `${move>=0? "+": ""}${move}d`: "—", a.totalFloat.toFixed(1), `<span tabindex="0" title="Heuristic score = health − 2 × finish-movement standard deviation − 1.5 × average positive slip − 2 × max(0, 10 − milestone float days), clamped 0–100. High ≥80, Moderate ≥60, Low ≥40, Very Low below 40. Not a statistical probability. History: ${revs.length} revisions.">${conf.score}/100 ${conf.label}</span>`]
       }))}</section>`;
     }
     case "forecast": {
@@ -2549,6 +2562,9 @@ function renderRisk() {
   <div class="grid grid2"><section class="panel"><h2>Risk Register</h2>${table(["ID", "Risk", "Probability", "Impact days", "Mapped activities", "Mitigation"], risks.map(r => [esc(r.code || r.id), esc(r.title), `${Number(r.probability || 0)}%`, Number(r.impactDays || 0), r.activities.map(a => esc(a.id)).join(", "), esc(r.mitigation || "")]))}
   <form id="riskForm" class="form"><label>Risk title<input name="title" required></label><label>Probability %<input name="probability" type="number" min="0" max="100" value="30"></label><label>Impact days<input name="impactDays" type="number" value="10"></label><label>Activity IDs (comma separated)<input name="activityIds"></label><label>Mitigation<textarea name="mitigation"></textarea></label><button class="btn primary">Add Risk</button></form></section>
   <section class="panel"><h2>Quantitative Schedule Risk Analysis</h2>${!s? `<div class="muted">Import/select a schedule to run Monte Carlo analysis. The risk register and CSV import/export remain available without a schedule.</div>`: state.monte? renderMonte(state.monte): `<div class="muted">Run Monte Carlo to calculate P10/P50/P80/P90 and criticality.</div>`}</section></div>`;
+  $('workspace').insertAdjacentHTML('afterbegin','<section class="panel"><h2>AI-assisted risk discovery</h2><p>Analyse the explicitly selected schedule to suggest risks with activity evidence and mitigation. Suggestions require planner review; probability and impact are not verified facts.</p><button class="btn primary" id="discoverScheduleRisks">Analyse selected schedule with AI</button><pre id="riskDiscovery" style="white-space:pre-wrap" role="status"></pre></section>');
+  $('discoverScheduleRisks').disabled=!s||!aiConnectionReady();
+  $('discoverScheduleRisks').onclick=async()=>{const b=$('discoverScheduleRisks');b.disabled=true;try{const evidence=s.activities.slice(0,500).map(a=>({id:a.id,name:a.name,float:a.totalFloat,duration:a.remainingDuration,finish:a.currentFinish||a.finish,calendar:a.calendarName}));const out=await askAI({question:'Identify potential schedule risks from this evidence. Return a reviewable table: risk, activity IDs, evidence, likelihood rationale, potential impact, mitigation, confidence and missing information. Distinguish observations from assumptions. Do not invent probabilities. Sample coverage: '+evidence.length+' of '+s.activities.length+' activities. '+JSON.stringify(evidence),role:'Schedule Risk Analyst',current:s,contextFileIds:[]});$('riskDiscovery').textContent=out.text;}catch(err){$('riskDiscovery').textContent=err.message;}finally{b.disabled=false;}};
   $("riskForm").onsubmit = async e => {
     e.preventDefault();
     const fd = new FormData(e.target);
@@ -3088,7 +3104,7 @@ function renderSettings() {
       <div class="actions"><button class="btn primary" id="save${cap}">Save locally</button><button class="btn" id="test${cap}">Test ${esc(meta.label)}</button>${["openai-chat","openai-responses"].includes(cfg.protocol)?`<button class="btn" id="models${cap}" type="button">Refresh models</button>`:""}<button class="btn" id="clear${cap}">Clear key</button></div>
       <div id="${provider}Diag" class="muted">${cfg.apiKey? "API key is stored locally in this browser.": `No ${esc(meta.label)} API key stored.`}</div></div></div>`;
   }).join("");
-  $("workspace").innerHTML = `${viewHead("Settings", "Personal AI keys and project-controls settings")}
+  $("workspace").innerHTML = `${viewHead("AI Settings", "Personal AI keys and project-controls settings")}<div class="panel" role="status">${aiConnectionReady()?"AI connection confirmed for this session.":"AI Studio is disabled until you select a model and successfully run Test selected AI. Reports and scheduling remain available without AI."}</div>
   <div class="grid grid2 settings-grid">
     <section class="panel"><h2>Global AI Model</h2>
       <p class="muted"><strong>No AI is the default.</strong> Nothing is downloaded or invoked until you explicitly select and apply a model here.</p>
@@ -3110,7 +3126,7 @@ function renderSettings() {
   const refreshSelectedCard = () => {
     const selected = selectedAIInfo();
     $("selectedAiCard").innerHTML = `<div class="ai-config-title">${esc(aiLabel())}</div><div class="ai-config-meta"><span>${esc(selected.engine==="none"? "Disabled": selected.engine==="ollama"? "Ollama": cloudProviderIds().includes(selected.engine)? `${cloudProviderMeta(selected.engine).label} API`: selected.engine==="cpu"? "CPU / WASM": selected.engine==="gpu-transformers"? "WebGPU / Transformers.js": "WebGPU / WebLLM")}</span><span>${esc(selected.memory || "")}</span></div><div class="${selected.compatible? "ai-ok": "ai-warning"}">${selected.engine==="none"? "No AI calls will be made.": selected.compatible? "Compatible with this browser.": esc(selected.compatibilityMessage)}</div>`;
-    $("testSelectedAI").disabled = selected.engine==="none" || selected.engine==="ollama" || !selected.compatible;
+    $("testSelectedAI").disabled = selected.engine==="none" || !selected.compatible;
   };
   refreshSelectedCard();
   $("applyAiModel").onclick = async() => {
@@ -3194,6 +3210,7 @@ function renderSettings() {
       });
       diag.textContent = `Testing ${display}…`;
       const r = await testCloudAI(provider);
+      if(selectedAIInfo().engine===provider)confirmAIConnection(r.ok);
       diag.textContent = r.ok? `✓ ${r.message}`: `✕ ${r.message}`
     };
     $("models" + cap)?.addEventListener("click", async () => {
@@ -3272,6 +3289,7 @@ function renderSettings() {
       d.textContent = r.ok? `✓ Ollama ready: ${r.selectedModel}`: `✕ ${r.message}`;
       if (r.ok) {
         await setPreferredAI("ollama:auto");
+        confirmAIConnection(true);
         renderAIModelDisplay()
       } else showOllamaHelp(r)
     } catch (e) {

@@ -1,3 +1,4 @@
+import {CODING_HEADERS} from './boq-coding.js';
 /**
  * BOQ file updater. Adds/updates the Recommended Activity ID(s) column in CSV or
  * spreadsheet BOQs while preserving the source workbook structure where possible.
@@ -40,7 +41,7 @@ export async function alignBoqFile(file, index) {
     const text = await file.text(),
     rows = csvObjects(text);
     if (!rows.length)return {
-      blob: new Blob([text], {
+      blob: new Blob([toCSV([...CODING_HEADERS,RECOMMENDED_HEADER],[])], {
         type: "text/csv"
       }),
       name: alignedName(file.name),
@@ -48,10 +49,10 @@ export async function alignBoqFile(file, index) {
       total: 0
     };
     const headers = [...new Set(rows.flatMap(r => Object.keys(r)))];
-    if (!headers.includes(RECOMMENDED_HEADER))headers.push(RECOMMENDED_HEADER);
+    for(const h of [...CODING_HEADERS,RECOMMENDED_HEADER])if(!headers.some(x=>String(x).trim().toLowerCase()===h.toLowerCase()))headers.push(h);
     let matched = 0;
     const body = rows.map(r => {
-      const ids = recommendActivityIds(rowQuery(r), index).join("; "); if (ids)matched++; return headers.map(h => h===RECOMMENDED_HEADER? ids: (r[h] ?? ""))
+      const ids = recommendActivityIds(rowQuery(r), index).join("; "); if (ids)matched++; return headers.map(h => h===RECOMMENDED_HEADER? (ids||r[h]||""): (r[h] ?? ""))
     });
     return {
       blob: new Blob([toCSV(headers, body)], {
@@ -74,6 +75,8 @@ export async function alignBoqFile(file, index) {
     }),
     hi = detectHeaderRow(aoa),
     headers = aoa[hi] || [];
+    for(const h of CODING_HEADERS)if(!headers.some(x=>String(x).trim().toLowerCase()===h.toLowerCase()))headers.push(h);
+    aoa[hi]=headers;
     let ci = headers.findIndex(x => String(x).trim()===RECOMMENDED_HEADER);
     if (ci<0) {
       ci = headers.length;
@@ -86,7 +89,7 @@ export async function alignBoqFile(file, index) {
       if (!row.some(x => String(x || "").trim()))continue;
       total++;
       const ids = recommendActivityIds(rowQuery(row), index).join("; ");
-      row[ci] = ids;
+      if(ids||row[ci]==null)row[ci] = ids;
       if (ids)matched++;
       aoa[i] = row
     }

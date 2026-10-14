@@ -5,7 +5,7 @@ import {assertAIStudioScope} from './scope.js';
  */
 import {
   chat as ollamaChat,
-  ollamaConfig
+  ollamaConfig, testOllama
 } from "./ollama.js";
 import {
   browserCPU,
@@ -111,6 +111,7 @@ export async function askAI( {
   question, role = "Project Controls Manager", current = null, previous = null, revisions = [], history = [], contextFileIds = null
 }) {
   assertAIStudioScope();
+  if(!aiConnectionReady())throw new Error('AI is locked. Open AI Settings, select a model and pass Test selected AI first.');
   if (!question?.trim())throw new Error("Question required");
   const entry = aiEntry(preferredAI()),
   compat = aiCompatibility(entry.value);
@@ -188,7 +189,7 @@ ${repo.text}`;
     structuredTool: call?.name || null
   };
 }
-export async function testSelectedAI( {
+async function performConnectionTest( {
   onProgress = null
 }
 = {
@@ -205,11 +206,7 @@ export async function testSelectedAI( {
     message: compat.reason,
     entry
   };
-  if (entry.engine==="ollama")return {
-    ok: true,
-    message: "Use the Ollama Test & Save control in Settings for a full local-server test.",
-    entry
-  };
+  if (entry.engine==="ollama")return testOllama({model:ollamaConfig().model});
   if (cloudProviderIds().includes(entry.engine)) {
     const r = await testCloudAI(entry.engine);
     return {
@@ -234,3 +231,9 @@ export async function testSelectedAI( {
     }
   }
 }
+
+let verifiedConfiguration=null;
+function connectionConfiguration(){const entry=aiEntry(preferredAI());return JSON.stringify({value:entry.value,config:cloudProviderIds().includes(entry.engine)?cloudConfig(entry.engine):entry.engine==='ollama'?ollamaConfig():entry.value});}
+export function aiConnectionReady(){return aiEntry(preferredAI()).engine!=='none'&&verifiedConfiguration===connectionConfiguration();}
+export function confirmAIConnection(ok){verifiedConfiguration=ok&&aiEntry(preferredAI()).engine!=='none'?connectionConfiguration():null;window.parent?.postMessage({channel:'studio8',type:'aiState',ready:aiConnectionReady()},location.origin);}
+export async function testSelectedAI(options={}){confirmAIConnection(false);const tested=connectionConfiguration();try{const r=await performConnectionTest(options);if(tested!==connectionConfiguration())return {ok:false,message:'Settings changed during the test. Test the selected configuration again.'};confirmAIConnection(r.ok);return r;}catch(error){confirmAIConnection(false);return {ok:false,message:error.message};}}

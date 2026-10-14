@@ -19,7 +19,7 @@ export async function syncStudioSources(sources, projectId) {
       for(const s of await db.all('schedules')) if(s.sourceFileId===id&&!scheduleIds.has(s.id)) await db.del('schedules',s.id);
       await db.put('files',{id,projectId:workspace.id,name:source.name,source:'studio',category:source.role||'Viewer schedule',checked:old?.checked??true,fingerprint,blob:new Blob([source.text],{type:'text/plain'}),size:new Blob([source.text]).size,relativePath:source.name,updatedAt:new Date().toISOString()});
     }
-    if(source.id==='current') selected=`${id}:${projectId}`;
+    if(source.active||source.id==='current') selected=`${id}:${projectId}`;
   }
   // Never remove uploaded evidence, risks, claims or standalone schedules.
   for(const f of existing) if(f.projectId===workspace.id&&f.source==='studio'&&!keep.has(f.id)){

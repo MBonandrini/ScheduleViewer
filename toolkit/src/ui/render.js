@@ -31,7 +31,7 @@ export function lineChart(series, {
   min = Math.min(...all),
   max = Math.max(...all),
   span = max - min || 1;
-  const n = Math.max(2, ...series.map(s => s.values?.length || 0)),
+  const n = Math.max(2, ...series.map(s => Math.max(0,...(s.values||[]).map((v,i)=>Number.isFinite(v.x)?v.x:i))+1)),
   left = 42,
   right = 18,
   top = 22,
@@ -46,7 +46,7 @@ export function lineChart(series, {
     const y = top + i / 4 * plotH, val = max - i / 4 * span; return`<line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" class="chart-grid"/><text x="5" y="${y + 3}" class="chart-axis-label">${Number(val).toFixed(1)}</text>`
   }).join("");
   const paths = series.map((s, si) => {
-    const pts = (s.values || []).map((v, i) => `${xAt(i)},${yAt(v.y)}`).join(" "); const points = (s.values || []).map((v, i) => `<circle cx="${xAt(i)}" cy="${yAt(v.y)}" r="3.5" class="chart-point chart-series-${si % 6}"><title>${esc(xLabels[i] || String(v.x ?? i))} · ${esc(s.name || s.label || `Series ${si + 1}`)}: ${Number(v.y).toFixed(2)}${esc(valueSuffix)}</title></circle>`).join(""); return`<polyline points="${pts}" fill="none" class="chart-line chart-series-${si % 6}" stroke-width="${si? 2: 3}"/>${points}`;
+    const pts = (s.values || []).map((v, i) => `${xAt(Number.isFinite(v.x)?v.x:i)},${yAt(v.y)}`).join(" "); const points = (s.values || []).map((v, i) => `<circle cx="${xAt(Number.isFinite(v.x)?v.x:i)}" cy="${yAt(v.y)}" r="3.5" class="chart-point chart-series-${si % 6}"><title>${esc(xLabels[Number.isFinite(v.x)?v.x:i] || String(v.x ?? i))} · ${esc(s.name || s.label || `Series ${si + 1}`)}: ${Number(v.y).toFixed(2)}${esc(valueSuffix)}</title></circle>`).join(""); return`<polyline points="${pts}" fill="none" class="chart-line chart-series-${si % 6}" stroke-width="${si? 2: 3}"/>${points}`;
   }).join("");
   const step = Math.max(1, Math.ceil(n / 16));
   const labels = Array.from( {
