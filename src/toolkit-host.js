@@ -9,6 +9,7 @@ export class ToolkitHost {
     document.querySelector('#view').after(this.element);
     window.addEventListener('message',e=>{
       if(e.source!==this.frame.contentWindow||e.origin!==location.origin||e.data?.channel!=='studio8') return;
+      if(e.data.type==='aiState'){this.aiReady=!!e.data.ready;window.dispatchEvent(new CustomEvent('studio-ai-state',{detail:e.data}));}
       if(e.data.type==='ready'){this.ready=true;if(this.pending)this.send(this.pending);}
       if(e.data.type==='complete'&&e.data.requestId===this.sequence){this.status.textContent='Schedule snapshots synchronised. Choose references explicitly in the repository or report.';this.status.hidden=true;}
       if(e.data.type==='error'){this.status.hidden=false;this.status.textContent='Could not synchronise: '+e.data.message;this.onError(e.data.message);}

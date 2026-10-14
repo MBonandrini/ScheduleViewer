@@ -68,10 +68,12 @@ export function runQSRA(model,projId=null,{iterations=1000,seed=42,distribution=
   });
   if(base.some(d=>!Number.isFinite(d*maxFactor)))return fail('Duration factors exceed the supported numeric range.');
   const rand=rng(seed),finishes=[],counts=new Uint32Array(tasks.length),es=new Float64Array(tasks.length),ef=new Float64Array(tasks.length),chosen=new Int32Array(tasks.length);
+  const sampled=new Float64Array(tasks.length),sumD=new Float64Array(tasks.length),sumD2=new Float64Array(tasks.length),sumDF=new Float64Array(tasks.length);let sumF=0,sumF2=0;
   let baselineDays=0;const occurrences=new Uint32Array(risks.length),impactSums=new Float64Array(risks.length);
+  const contributionEnabled=risks.length*(tasks.length+predRows(model,projId).length)*iterations<=20000000,contributions=new Float64Array(risks.length),counterStart=new Float64Array(tasks.length),counterFinish=new Float64Array(tasks.length),riskTargets=risks.map(r=>new Set(r.targets));
   for(let it=-1;it<iterations;it++){
-    const impacts=new Float64Array(tasks.length);
-    if(it>=0)risks.forEach((risk,j)=>{if(rand()*100<risk.probability){const impact=sample('triangular',risk.minimum,risk.likely,risk.maximum,rand)/24;occurrences[j]++;impactSums[j]+=impact;for(const i of risk.targets)if(base[i]>0)impacts[i]+=impact;}});
+    const impacts=new Float64Array(tasks.length),eventImpacts=new Float64Array(risks.length);
+    if(it>=0)risks.forEach((risk,j)=>{if(rand()*100<risk.probability){const impact=sample('triangular',risk.minimum,risk.likely,risk.maximum,rand)/24;occurrences[j]++;impactSums[j]+=impact;eventImpacts[j]=impact;for(const i of risk.targets)if(base[i]>0)impacts[i]+=impact;}});
     let latest=-Infinity,endpoint=graph.order[0];
     for(const i of graph.order){
       const dur=it<0?base[i]:sample(distribution,base[i]*minFactor,base[i]*modeFactor,base[i]*maxFactor,rand)+impacts[i];let start=0,driver=-1;
@@ -79,23 +81,32 @@ export function runQSRA(model,projId=null,{iterations=1000,seed=42,distribution=
         const cand=type==='SS'?es[p]+lag:type==='FF'?ef[p]+lag-dur:type==='SF'?es[p]+lag-dur:ef[p]+lag;
         if(cand>start){start=cand;driver=p;}
       }
-      es[i]=start;ef[i]=start+dur;chosen[i]=driver;
+      sampled[i]=dur;es[i]=start;ef[i]=start+dur;chosen[i]=driver;
       if(ef[i]>latest){latest=ef[i];endpoint=i;}
     }
     if(targetIndex!==null)endpoint=targetIndex;
     if(!Number.isFinite(ef[endpoint]))return fail('Simulation overflowed; reduce duration factors or check schedule durations.');
     if(it<0){baselineDays=ef[endpoint];continue;}
-    finishes.push(ef[endpoint]);
+    const finish=ef[endpoint];finishes.push(finish);sumF+=finish;sumF2+=finish*finish;for(let i=0;i<tasks.length;i++){sumD[i]+=sampled[i];sumD2[i]+=sampled[i]*sampled[i];sumDF[i]+=sampled[i]*finish;}
+    if(contributionEnabled)for(let j=0;j<risks.length;j++)if(eventImpacts[j]){
+      let counterLatest=0;
+      for(const i of graph.order){const dur=sampled[i]-(base[i]>0&&riskTargets[j].has(i)?eventImpacts[j]:0);let start=0;
+        for(const {p,lag,type} of graph.incoming[i])start=Math.max(start,type==='SS'?counterStart[p]+lag:type==='FF'?counterFinish[p]+lag-dur:type==='SF'?counterStart[p]+lag-dur:counterFinish[p]+lag);
+        counterStart[i]=start;counterFinish[i]=start+dur;counterLatest=Math.max(counterLatest,counterFinish[i]);
+      }
+      contributions[j]+=finish-(targetIndex===null?counterLatest:counterFinish[targetIndex]);
+    }
     // DAG validation guarantees termination without allocating per-iteration Sets.
     for(let cur=endpoint;cur>=0;cur=chosen[cur])counts[cur]++;
   }
   finishes.sort((a,b)=>a-b);
   const q=p=>finishes[Math.round(p/100*(finishes.length-1))],mean=finishes.reduce((s,x)=>s+x/iterations,0);
   const drivers=tasks.flatMap((t,i)=>counts[i]?[{taskId:String(t.task_id),activity:t.task_code||String(t.task_id),name:t.task_name||'',criticalityIndex:100*counts[i]/iterations}]:[]).sort((a,b)=>b.criticalityIndex-a.criticalityIndex);
+  const sensitivity=tasks.map((t,i)=>{const variance=(iterations*sumD2[i]-sumD[i]**2)*(iterations*sumF2-sumF**2);return {taskId:String(t.task_id),activity:t.task_code||String(t.task_id),name:t.task_name||'',wbsId:String(t.wbs_id||''),criticalityIndex:100*counts[i]/iterations,correlation:variance>1e-12?Math.max(-1,Math.min(1,(iterations*sumDF[i]-sumD[i]*sumF)/Math.sqrt(variance))):null};}).sort((a,b)=>Math.abs(b.correlation||0)-Math.abs(a.correlation||0));
   const min=finishes[0],max=finishes.at(-1),bins=20,step=Math.max(.001,(max-min)/bins);
   const histogram=Array.from({length:bins},(_,i)=>({from:min+i*step,to:min+(i+1)*step,count:0}));
   for(const x of finishes)histogram[Math.min(bins-1,Math.floor((x-min)/step))].count++;
   const compiledSummary=numericSummary(finishes);
   const stdDevDays=compiledSummary?.standardDeviation??Math.sqrt(finishes.reduce((sum,x)=>sum+(x-mean)**2,0)/iterations);
-  return {baselineDays,stdDevDays,p95:q(95),contingencyP80:q(80)-baselineDays,targetDays:targetDays===null||targetDays===''?null:Number(targetDays),targetConfidence:targetDays===null||targetDays===''?null:100*finishes.filter(x=>x<=Number(targetDays)).length/iterations,cdf:Array.from({length:101},(_,p)=>({probability:p,days:q(p)})),riskEvents:risks.map((r,i)=>({id:r.id,description:r.description,activities:r.activities,probability:r.probability,minimum:r.minimum,likely:r.likely,maximum:r.maximum,occurrences:occurrences[i],observedProbability:100*occurrences[i]/iterations,meanImpactDays:occurrences[i]?impactSums[i]/occurrences[i]:0})),iterations,seed,distribution,meanDays:mean,p10:q(10),p20:q(20),p50:q(50),p80:q(80),p90:q(90),minDays:min,maxDays:max,drivers:drivers.slice(0,50),histogram,assumptions:{minFactor,modeFactor,maxFactor,targetTaskId:target||'Project finish',ignoredRelationships:graph.ignored,calendarBasis:`24-hour equivalent forward-pass approximation for risk deltas; deterministic CPM remains the authoritative schedule engine. Calendars, constraints and dated progress are not simulated. ${graph.ignored} external or unresolved relationships excluded. Criticality follows one driving path per iteration; tied paths are not all counted.`}};
+  return {sensitivity,baselineDays,stdDevDays,p95:q(95),contingencyP80:q(80)-baselineDays,targetDays:targetDays===null||targetDays===''?null:Number(targetDays),targetConfidence:targetDays===null||targetDays===''?null:100*finishes.filter(x=>x<=Number(targetDays)).length/iterations,cdf:Array.from({length:101},(_,p)=>({probability:p,days:q(p)})),riskEvents:risks.map((r,i)=>({id:r.id,description:r.description,activities:r.activities,probability:r.probability,minimum:r.minimum,likely:r.likely,maximum:r.maximum,occurrences:occurrences[i],observedProbability:100*occurrences[i]/iterations,meanFinishContributionDays:contributionEnabled?contributions[i]/iterations:null,meanImpactDays:occurrences[i]?impactSums[i]/occurrences[i]:0})),iterations,seed,distribution,meanDays:mean,p10:q(10),p20:q(20),p50:q(50),p80:q(80),p90:q(90),minDays:min,maxDays:max,drivers:drivers.slice(0,50),histogram,assumptions:{minFactor,modeFactor,maxFactor,targetTaskId:target||'Project finish',ignoredRelationships:graph.ignored,calendarBasis:`24-hour equivalent forward-pass approximation for risk deltas; deterministic CPM remains the authoritative schedule engine. Calendars, constraints and dated progress are not simulated. ${graph.ignored} external or unresolved relationships excluded. Criticality follows one driving path per iteration; tied paths are not all counted.`}};
 }

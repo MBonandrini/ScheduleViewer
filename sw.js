@@ -1,6 +1,7 @@
 const CACHE_PREFIX=`schedule-studio-professional:${self.registration.scope}:`;
-const CACHE=CACHE_PREFIX+'v8.2.0-integrated';
+const CACHE=CACHE_PREFIX+'v8.3.0-integrated';
 const ASSETS=[
+"./api.html","./src/api-bridge.js","./src/public-api.js","./src/enterprise-data.js","./src/enterprise-views.js","./src/report-guidance.js","./src/risk-insights.js","./toolkit/src/measurement/boq-coding.js","./toolkit/src/measurement/resource-taxonomy.js",
  "./src/risk-register.js", "./src/risk-presentation.js",
   "./src/duration-display.js",
   "./src/activity-paging.js",

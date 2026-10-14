@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Schedule Studio · Browser API</title><style>body{font:16px system-ui;color:#19364c;background:#f2f6f9;margin:0}main{max-width:1000px;margin:auto;padding:40px}pre{overflow:auto;background:#142c41;color:#deedf6;padding:20px;border-radius:8px}code{font-size:14px}h1{font-size:36px}p,li{line-height:1.7}section{background:white;padding:24px;margin:20px 0;border:1px solid #d4e0e8}a{color:#126d97}</style></head><body><main><a href="./">← Schedule Studio</a><h1>Reports & results API</h1><p>This is a browser service on GitHub Pages. It calculates from the XER/XML text you supply and returns JSON results plus downloadable HTML. It is not a server-side HTTP/REST endpoint. Website users need no installation.</p><section><h2>Direct JavaScript module</h2><pre><code>import {generateReport, listSchedules} from './src/public-api.js';
+const source = {text: await file.text(), name: file.name, scheduleIndex: 1};
+const schedules = listSchedules(source);
+const {result, html} = await generateReport({
+  report: 'progress', source, options: {metric: 'activities'}
+});</code></pre><p>Available report names: <code>summary, revision-changes, progress, resources, lookahead, calendar, risk</code>. XER schedule indices follow PROJECT record order. Use index 1 for single-project XML. Inputs are caller-owned; the API cannot read open website schedules, saved AI keys or repository files.</p></section><section><h2>Embed from another website</h2><p>Replace the URL with your GitHub Pages address. Validate both the message source and origin. Every response echoes your request ID. JSON results are in <code>data.payload.result</code>, and the printable document is in <code>data.payload.html</code>.</p><pre><code>const frame = document.createElement('iframe');
+const apiURL = new URL('https://YOUR-NAME.github.io/YOUR-REPO/api.html');
+frame.src = apiURL.href;
+frame.hidden = true;
+document.body.append(frame);
+window.addEventListener('message', event => {
+  if (event.origin !== apiURL.origin || event.source !== frame.contentWindow) return;
+  if (event.data.channel !== 'schedule-studio-api') return;
+  if (event.data.type === 'ready') frame.contentWindow.postMessage({
+    channel: 'schedule-studio-api', id: 'report-1', type: 'generate',
+    payload: {report: 'summary', source: {text: xerText, name: 'project.xer', scheduleIndex: 1}}
+  }, apiURL.origin);
+  if (event.data.id === 'report-1') console.log(event.data);
+});</code></pre></section><section><h2>Options</h2><ul><li>Revision changes: supply <code>reference</code> with the same fields as source. Returns the complete multi-category comparison.</li><li>Progress: <code>metric: activities | time | physical | units</code>. Units require <code>resourceId</code>.</li><li>Resources: <code>level: 2, resourceId: ''</code>. All resources remain separate.</li><li>Lookahead: <code>start: '2026-10-01', weeks: 6, wbsId: '', codeIds: [], status: 'all', search: ''</code>.</li><li>Calendar: <code>calendarId</code> and <code>year</code> are required.</li><li>Risk: <code>iterations, seed, minFactor, modeFactor, maxFactor, targetTaskId, targetDays, riskRegister</code>. Returns duration percentiles and sensitivity, with model assumptions.</li></ul><p>Errors return <code>{ok:false,error}</code>. Success returns <code>{ok:true,payload}</code>. Inputs are limited to 20 MiB each and risk simulations to 20 million task-trials. Processing runs in the caller's browser; large reports can briefly occupy its main thread. No report data is stored by this API page.</p></section></main><script type="module" src="./src/api-bridge.js"></script></body></html>
