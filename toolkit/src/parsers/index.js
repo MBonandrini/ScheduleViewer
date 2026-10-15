@@ -1,10 +1,1 @@
-/** Browser-only schedule import: no native converters or local services. */
-import {parseXER} from './xer.js';
-import {parseMSProjectXML} from './mspxml.js';
-export async function parseScheduleFile(file) {
- const ext=(file.name.split('.').pop()||'').toLowerCase();
- if(ext==='mpp')throw new Error('MPP is not supported. Export the schedule as XML or XER and open that file.');
- if(!['xer','xml'].includes(ext))throw new Error(`Unsupported schedule format: .${ext}`);
- const text=await file.text();
- return ext==='xer'?parseXER(text,file.name):parseMSProjectXML(text,file.name);
-}
+(function(_0x20bea0,_0x52e7f8){const _0x482f5e=_0x1dc1;const _0x32cff5=_0x20bea0();while(!![]){try{const _0x49654c=parseInt(_0x482f5e(0x1d0))/0x1+parseInt(_0x482f5e(0x1d6))/0x2*(-parseInt(_0x482f5e(0x1d1))/0x3)+parseInt(_0x482f5e(0x1d9))/0x4*(parseInt(_0x482f5e(0x1d3))/0x5)+-parseInt(_0x482f5e(0x1db))/0x6*(parseInt(_0x482f5e(0x1d4))/0x7)+-parseInt(_0x482f5e(0x1da))/0x8*(parseInt(_0x482f5e(0x1d8))/0x9)+-parseInt(_0x482f5e(0x1d5))/0xa+parseInt(_0x482f5e(0x1d2))/0xb;if(_0x49654c===_0x52e7f8){break;}else{_0x32cff5['push'](_0x32cff5['shift']());}}catch(_0x3f1c83){_0x32cff5['push'](_0x32cff5['shift']());}}}(_0x2487,0x8cbec));function _0x2487(){const _0x1223aa=['40925BECTwN','173037YvGNob','32607586azkykx','244120AdDZmD','49WfmdoD','5665460QjqWuA','38KmvUsq','name','9xKIYnq','12KvYWaI','934904WeRUEo','682218vrGWwr'];_0x2487=function(){return _0x1223aa;};return _0x2487();}import{parseXER as _0x23dab8}from'./xer.js';import{parseMSProjectXML as _0x11ce6d}from'./mspxml.js';async function a(_0x8696d8){const _0x324c40=_0x1dc1;const _0xcc3bc9=(_0x8696d8['name']['split']('.')['pop']()||'')['toLowerCase']();if(_0xcc3bc9==='mpp')throw new Error('MPP\x20is\x20not\x20supported.\x20Export\x20the\x20schedule\x20as\x20XML\x20or\x20XER\x20and\x20open\x20that\x20file.');if(!['xer','xml']['includes'](_0xcc3bc9))throw new Error('Unsupported\x20schedule\x20format:\x20.'+_0xcc3bc9);const _0x251610=await _0x8696d8['text']();return _0xcc3bc9==='xer'?_0x23dab8(_0x251610,_0x8696d8['name']):_0x11ce6d(_0x251610,_0x8696d8[_0x324c40(0x1d7)]);}function _0x1dc1(_0x58e963,_0x389101){_0x58e963=_0x58e963-0x1d0;const _0x248759=_0x2487();let _0x1dc187=_0x248759[_0x58e963];return _0x1dc187;}export{a as parseScheduleFile};

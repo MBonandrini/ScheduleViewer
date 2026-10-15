@@ -9,3 +9,5 @@ DWG decoder: @mlightcad/libredwg-web 0.7.14, GPL-3.0. The build installs the pin
 Optional browser-AI and spreadsheet adapters retain their upstream dependency URLs and licenses. These download only when used and are not represented as bundled/offline features. Native MPP conversion is removed.
 
 No user schedules, contract PDFs, credentials or model weights are included. Decoder source archives include upstream test assets. A separate browser smoke test used upstream test/test-data/2000/entities-2d.dwg; it did not use a user's drawing.
+
+Microsoft Authentication Library (MSAL Browser) 5.25.1 — Microsoft Corporation, MIT. Full licence: vendor/MSAL-LICENSE.txt.
