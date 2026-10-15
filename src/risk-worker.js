@@ -1,11 +1,1 @@
-import {initializeWasm} from './wasm-engine.js';
-const engineReady=initializeWasm();
-import {XERModel} from './parser.js';
-import {runQSRA} from './v7-risk-engine.js';
-self.onmessage=async({data})=>{
-  await engineReady;
-  try{
-    const model=new XERModel({header:[],warnings:[],sourceText:'',tables:new Map(data.tables)});
-    self.postMessage(runQSRA(model,data.projectId,data.options));
-  }catch(error){self.postMessage({error:error.message||String(error),iterations:0});}
-};
+const _0x2b02d5=_0x2889;(function(_0x2cbce8,_0x3e0379){const _0x32ca7f=_0x2889;const _0x5350f8=_0x2cbce8();while(!![]){try{const _0x30e5bc=parseInt(_0x32ca7f(0x131))/0x1*(parseInt(_0x32ca7f(0x12b))/0x2)+-parseInt(_0x32ca7f(0x133))/0x3+parseInt(_0x32ca7f(0x134))/0x4*(-parseInt(_0x32ca7f(0x12d))/0x5)+parseInt(_0x32ca7f(0x132))/0x6+-parseInt(_0x32ca7f(0x130))/0x7+-parseInt(_0x32ca7f(0x12c))/0x8+parseInt(_0x32ca7f(0x135))/0x9;if(_0x30e5bc===_0x3e0379){break;}else{_0x5350f8['push'](_0x5350f8['shift']());}}catch(_0x53bf09){_0x5350f8['push'](_0x5350f8['shift']());}}}(_0x3307,0xbc7ac));import{initializeWasm as _0x5f23b4}from'./wasm-engine.js';function _0x3307(){const _0x5d5bf1=['2455137mVJptg','5317264sKMAOt','19986048AnXiYE','tables','2088978fcBiXU','4256040OVgzZo','5ViXShZ','options','onmessage','9099706OAdTPc','1YPZSIo','8919054ZVpivD'];_0x3307=function(){return _0x5d5bf1;};return _0x3307();}function _0x2889(_0x30be9d,_0x3e0705){_0x30be9d=_0x30be9d-0x12a;const _0x330763=_0x3307();let _0x288950=_0x330763[_0x30be9d];return _0x288950;}const r=_0x5f23b4();import{XERModel as _0x3160e2}from'./parser.js';import{runQSRA as _0x1e6cd6}from'./v7-risk-engine.js';self[_0x2b02d5(0x12f)]=async({data:_0x1cc0e4})=>{const _0x3f944f=_0x2b02d5;await r;try{const _0x56e554=new _0x3160e2({'header':[],'warnings':[],'sourceText':'','tables':new Map(_0x1cc0e4[_0x3f944f(0x12a)])});self['postMessage'](_0x1e6cd6(_0x56e554,_0x1cc0e4['projectId'],_0x1cc0e4[_0x3f944f(0x12e)]));}catch(_0x444270){self['postMessage']({'error':_0x444270['message']||String(_0x444270),'iterations':0x0});}};

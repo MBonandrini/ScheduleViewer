@@ -1,11 +1,1 @@
-export function globalScheduleSearch(model,query,{limit=500}={}){
-  const q=String(query||'').trim().toLowerCase();if(!q)return [];
-  const out=[];
-  for(const tableName of model.tableNames()){
-    const rows=model.table(tableName),fields=model.fields(tableName);
-    for(let i=0;i<rows.length;i++){
-      const row=rows[i];for(const field of fields){const value=row[field];if(value!==undefined&&String(value).toLowerCase().includes(q)){out.push({table:tableName,row:i+1,field,value:String(value),task_id:row.task_id||row.fk_id||'',record:row});break}}if(out.length>=limit)return out;
-    }
-  }
-  return out;
-}
+(function(_0x1bb069,_0x3528e9){const _0x5b4c87=_0x5518;const _0x28824d=_0x1bb069();while(!![]){try{const _0x1726d0=parseInt(_0x5b4c87(0x10d))/0x1+-parseInt(_0x5b4c87(0x102))/0x2*(-parseInt(_0x5b4c87(0x10b))/0x3)+-parseInt(_0x5b4c87(0x10a))/0x4*(parseInt(_0x5b4c87(0x106))/0x5)+-parseInt(_0x5b4c87(0x10c))/0x6+parseInt(_0x5b4c87(0x105))/0x7*(parseInt(_0x5b4c87(0x104))/0x8)+parseInt(_0x5b4c87(0x103))/0x9+parseInt(_0x5b4c87(0x109))/0xa*(-parseInt(_0x5b4c87(0x101))/0xb);if(_0x1726d0===_0x3528e9){break;}else{_0x28824d['push'](_0x28824d['shift']());}}catch(_0x5a0eab){_0x28824d['push'](_0x28824d['shift']());}}}(_0x1b0c,0xadd27));function _0x5518(_0x139d89,_0x5d8fad){_0x139d89=_0x139d89-0x101;const _0x1b0c2e=_0x1b0c();let _0x5518e3=_0x1b0c2e[_0x139d89];return _0x5518e3;}function d(_0x13f804,_0x2192bc,{limit:_0x2dfc13=0x1f4}={}){const _0x52ad7f=_0x5518;const _0x198703=String(_0x2192bc||'')['trim']()['toLowerCase']();if(!_0x198703)return[];const _0x47a716=[];for(const _0x2932e6 of _0x13f804['tableNames']()){const _0x14a9c6=_0x13f804['table'](_0x2932e6),_0x36105b=_0x13f804[_0x52ad7f(0x10e)](_0x2932e6);for(let _0x4d3ef9=0x0;_0x4d3ef9<_0x14a9c6['length'];_0x4d3ef9++){const _0x333237=_0x14a9c6[_0x4d3ef9];for(const _0x1f3060 of _0x36105b){const _0x2817ff=_0x333237[_0x1f3060];if(_0x2817ff!==void 0x0&&String(_0x2817ff)[_0x52ad7f(0x108)]()['includes'](_0x198703)){_0x47a716[_0x52ad7f(0x107)]({'table':_0x2932e6,'row':_0x4d3ef9+0x1,'field':_0x1f3060,'value':String(_0x2817ff),'task_id':_0x333237['task_id']||_0x333237['fk_id']||'','record':_0x333237});break;}}if(_0x47a716['length']>=_0x2dfc13)return _0x47a716;}}return _0x47a716;}function _0x1b0c(){const _0x593159=['3164765oqsyGP','push','toLowerCase','20aXgAcb','4QhgHwC','3SsuacS','2323296cHmsSw','1019047tNCvZv','fields','6165599dJGRMh','1958646hGcggP','615681NLltgN','8FVpaex','5504681nLRrjr'];_0x1b0c=function(){return _0x593159;};return _0x1b0c();}export{d as globalScheduleSearch};
