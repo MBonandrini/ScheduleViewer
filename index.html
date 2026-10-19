@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#dfe9f4" />
-  <title>Schedule Studio Professional v8.5.0</title>
+  <title>Schedule Studio Professional v8.6.1</title>
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=8.3.0" />
+  <link rel="stylesheet" href="./styles.css?v=8.6.1" />
 </head>
 <body class="p6-desktop">
   <header class="p6-titlebar">
-    <div class="p6-product"><span class="p6-mark">SS</span><strong>Schedule Studio Professional <span class="version-badge">v8.5.0</span></strong><span id="titleProject">Single-User Project Controls Workbench</span></div>
+    <div class="p6-product"><span class="p6-mark">SS</span><strong>Schedule Studio Professional <span class="version-badge">v8.6.1</span></strong><span id="titleProject">Single-User Project Controls Workbench</span></div>
     <div class="p6-user"><span>Local Planner</span><span class="dot">•</span><span>Single User</span><span class="dot">•</span><span>Browser Local</span></div>
   </header>
 
@@ -33,7 +33,6 @@
     <details><summary>Tools</summary><div class="p6-menu p6-menu-wide"><button data-command="shareSchedule">Share Schedule…</button><button data-command="saveOneDriveCopy">Save a Copy to My OneDrive…</button>
       <button data-command="scheduleOptions">Schedule Options…</button><button data-command="levelResources">Level Resources</button><button data-command="levelOptions">Leveling Options…</button><button data-command="updateProgress">Apply / Update Actuals</button><button data-command="globalChange">Global Change / Schedule Editor</button><button data-command="traceLogic">Trace Logic</button><button data-view="history">History & Scenarios</button><button data-view="searchAll">Global Search</button><button data-view="bim">BIM Links</button>
     </div></details>
-    <button class="menu-direct" data-view="reportStudio">Reports</button>
     <details><summary>AI Studio</summary><div class="p6-menu"><button data-view="aiStudio" data-ai="contracts">Contract Manager</button><button data-view="aiStudio" data-ai="drawing">Drawing Measurement</button><button data-view="aiStudio" data-ai="manpower">Manpower Breakout</button><button data-view="aiStudio" data-ai="risk">Risk Analysis</button><button data-view="aiStudio" data-ai="claims">Claims &amp; Forensics</button><button data-view="aiStudio" data-ai="builder">Schedule Builder</button><button data-view="aiStudio" data-ai="settings">AI Settings</button></div></details>
     <details><summary>Help</summary><div class="p6-menu"><button data-view="tutorial">Tutorial</button><a href="./api.html" target="_blank" rel="noopener">Reports &amp; Results API</a><button data-command="oneDriveSetup">OneDrive Setup</button><button data-command="about">About Schedule Studio</button></div></details>
   </nav>
@@ -76,7 +75,7 @@
       <p id="importSummary" role="status" hidden></p>
       <div class="p6-view-actions"><input id="globalSearch" type="search" placeholder="Find activity…" /><button id="exportBtn" disabled>Export</button></div>
     </section>
-    <section id="view" class="view"><div class="welcome"><div class="hero-icon">SS</div><h2>Schedule Studio Professional <span class="version-badge welcome-version">v8.5.0</span></h2><p>A single-user Primavera-style schedule intelligence, editing, forensic analysis and reporting workbench. Open a P6 XER or Microsoft Project XML schedule to begin.</p><label for="fileInput" id="welcomeOpen" class="primary large p6-file-open-control welcome-open-control" role="button" tabindex="0">Open schedule file</label><div class="feature-grid"><span>Activities + Gantt</span><span>WBS & Logic</span><span>Resources</span><span>Baselines</span><span>Critical Paths</span><span>50+ Schedule Assurance Checks</span><span>Revision Intelligence</span><span>Paths & Delay Navigator</span><span>QSRA / Risk</span></div></div></section>
+    <section id="view" class="view"><div class="welcome"><div class="hero-icon">SS</div><h2>Schedule Studio Professional <span class="version-badge welcome-version">v8.6.1</span></h2><p>A single-user Primavera-style schedule intelligence, editing, forensic analysis and reporting workbench. Open a P6 XER or Microsoft Project XML schedule to begin.</p><label for="fileInput" id="welcomeOpen" class="primary large p6-file-open-control welcome-open-control" role="button" tabindex="0">Open schedule file</label><div class="feature-grid"><span>Activities + Gantt</span><span>WBS & Logic</span><span>Resources</span><span>Baselines</span><span>Critical Paths</span><span>50+ Schedule Assurance Checks</span><span>Revision Intelligence</span><span>Paths & Delay Navigator</span><span>QSRA / Risk</span></div></div></section>
   </main>
 
   <footer class="p6-statusbar"><span id="fileStatus">No file loaded</span><span id="statusDataDate">Data Date: —</span><span id="statusBaseline">Baseline: —</span><span id="offlineStatus">Local browser database</span><span>User: Local Planner</span></footer>
@@ -116,6 +115,6 @@
       if(detail)detail.textContent=event.message||'The application could not start.';
     });
   </script>
-  <script type="module" src="./src/app.js?v=8.3.0"></script>
+  <script type="module" src="./src/app.js?v=8.6.1"></script>
 </body>
 </html>
