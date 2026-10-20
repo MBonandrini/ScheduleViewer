@@ -1,12 +1,1 @@
-import { cloneTables, restoreTables } from './editor.js';
-import { validateModelIntegrity } from './integrity.js';
-
-/** Execute a mutating operation atomically. Any exception or new integrity error rolls back all tables. */
-export function runTransaction(model,label,mutator,{validate=true,projectId=null}={}){
-  const before=cloneTables(model);
-  try{
-    const result=mutator();
-    if(validate){const check=validateModelIntegrity(model,{projectId});if(!check.ok){const err=new Error(`${label} would leave the schedule structurally invalid.`);err.code='INTEGRITY_FAILURE';err.integrity=check;throw err}}
-    return result;
-  }catch(error){restoreTables(model,before);throw error}
-}
+function _0x16a1(_0x3f1c79,_0x12ce23){_0x3f1c79=_0x3f1c79-0x10c;const _0x26b728=_0x26b7();let _0x16a1bc=_0x26b728[_0x3f1c79];return _0x16a1bc;}(function(_0x2e46cb,_0x68b96e){const _0xdfee56=_0x16a1;const _0x29b091=_0x2e46cb();while(!![]){try{const _0x85991e=-parseInt(_0xdfee56(0x10f))/0x1+-parseInt(_0xdfee56(0x10d))/0x2*(parseInt(_0xdfee56(0x10e))/0x3)+parseInt(_0xdfee56(0x114))/0x4+-parseInt(_0xdfee56(0x10c))/0x5+-parseInt(_0xdfee56(0x111))/0x6+-parseInt(_0xdfee56(0x112))/0x7+-parseInt(_0xdfee56(0x113))/0x8*(-parseInt(_0xdfee56(0x110))/0x9);if(_0x85991e===_0x68b96e){break;}else{_0x29b091['push'](_0x29b091['shift']());}}catch(_0x1ccf16){_0x29b091['push'](_0x29b091['shift']());}}}(_0x26b7,0x88d7e));import{cloneTables as _0x86d669,restoreTables as _0x19dc08}from'./editor.js';import{validateModelIntegrity as _0x50a272}from'./integrity.js';function d(_0x3c8c0d,_0x5eba8b,_0x147550,{validate:_0x38cf9d=!0x0,projectId:_0x12b755=null}={}){const _0x2450eb=_0x86d669(_0x3c8c0d);try{const _0x4e9a19=_0x147550();if(_0x38cf9d){const _0x224d2e=_0x50a272(_0x3c8c0d,{'projectId':_0x12b755});if(!_0x224d2e['ok']){const _0x3af61e=new Error(_0x5eba8b+'\x20would\x20leave\x20the\x20schedule\x20structurally\x20invalid.');throw _0x3af61e['code']='INTEGRITY_FAILURE',_0x3af61e['integrity']=_0x224d2e,_0x3af61e;}}return _0x4e9a19;}catch(_0xbd36f0){throw _0x19dc08(_0x3c8c0d,_0x2450eb),_0xbd36f0;}}function _0x26b7(){const _0x3ad55e=['2061840KyYymu','599011hQkOeS','1797544jvsASL','3267020dyjzho','3926680bRZnRM','238306cKsvvD','3mCOTHd','46008xTzkiZ','45bnEttF'];_0x26b7=function(){return _0x3ad55e;};return _0x26b7();}export{d as runTransaction};
